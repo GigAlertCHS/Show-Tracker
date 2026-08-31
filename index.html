@@ -185,13 +185,17 @@
     border-right:1px solid var(--line);
     border-radius:8px 0 0 8px;
   }
-  .time-block .show{
+  .time-block .time-pair + .time-pair{margin-top:6px;}
+  .time-block .time-pair.show-pair .time-value{
     font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.02em;color:var(--amber);line-height:1.1;
   }
-  .time-block .show a{color:var(--amber);text-decoration:none;}
-  .time-block .show .ampm{font-size:12px;margin-left:1px;}
-  .time-block .doors{font-size:9.5px;color:var(--muted);margin-top:3px;}
-  .time-block .doors a{color:var(--muted);}
+  .time-block .time-pair.show-pair .time-value a{color:var(--amber);text-decoration:none;}
+  .time-block .time-pair.doors-pair .time-value{
+    font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.02em;color:var(--text);line-height:1.1;
+  }
+  .time-block .time-pair.doors-pair .time-value a{color:var(--text);text-decoration:none;}
+  .time-block .time-value .ampm{font-size:12px;margin-left:1px;}
+  .time-block .time-label{font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
   .time-block .price{font-size:10.5px;color:var(--text);margin-top:5px;font-weight:600;}
   .main{padding:10px 40px 10px 12px;min-width:0;position:relative;}
   .main > * + *{margin-top:4px;}
@@ -200,6 +204,8 @@
   .band a:hover{color:#ffc773;}
   .opener{color:var(--muted);font-size:12.5px;}
   .venue{font-size:12.5px;color:#c9cddb;}
+  .venue a{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(201,205,219,0.4);}
+  .venue a:hover{color:var(--amber);border-bottom-color:var(--amber);}
   .stage{font-size:11.5px;color:var(--muted);font-style:italic;}
   .stage::before{content:', ';font-style:normal;color:var(--muted);}
   .star-btn{
@@ -267,7 +273,7 @@
     .day-head{font-size:17px;padding:4px 8px;}
     .card{grid-template-columns:56px 1fr;}
     .time-block{padding:8px 5px;}
-    .time-block .show{font-size:16px;}
+    .time-block .time-pair.show-pair .time-value{font-size:16px;}
     .main{padding:9px 36px 9px 10px;}
     .band{font-size:14.5px;}
     .artist-chip{font-size:10.5px;padding:3px 8px;}
@@ -703,25 +709,25 @@ function matchesFavorite(bandName){
 function isUnknownTime(t){
   return !t || /see ticket link|tba|^—$/i.test(t.trim());
 }
+function formatTimeValue(t){
+  const m = t.match(/^(\d{1,2}:\d{2})\s*([AP]M)$/i);
+  return m ? `${m[1]}<span class="ampm">${m[2].toUpperCase()}</span>` : t;
+}
 function timeBlockHTML(s){
   const showKnown = !isUnknownTime(s.sh);
   const doorsKnown = !isUnknownTime(s.dr);
-  const ticketLink = s.u ? `<a href="${s.u}" target="_blank" rel="noopener">Tickets</a>` : 'Tickets';
-
-  if (!showKnown && !doorsKnown) {
-    // Nothing concrete to show at all — lead with the ticket link itself.
-    return `<div class="time-block"><div class="show" style="font-size:15px;">${ticketLink}</div></div>`;
-  }
-  let showLine;
-  if (showKnown) {
-    const m = s.sh.match(/^(\d{1,2}:\d{2})\s*([AP]M)$/i);
-    showLine = m ? `${m[1]}<span class="ampm">${m[2].toUpperCase()}</span>` : s.sh;
-  } else {
-    showLine = ticketLink;
-  }
-  const doorsLine = doorsKnown ? `doors ${s.dr}` : `doors: ${ticketLink}`;
   const priceLine = (typeof s.p === 'number') ? `<div class="price">from $${Math.round(s.p)}</div>` : '';
-  return `<div class="time-block"><div class="show">${showLine}</div><div class="doors">${doorsLine}</div>${priceLine}</div>`;
+
+  const showPair = showKnown
+    ? `<div class="time-pair show-pair"><div class="time-value">${formatTimeValue(s.sh)}</div><div class="time-label">Show</div></div>`
+    : '';
+  const doorsPair = doorsKnown
+    ? `<div class="time-pair doors-pair"><div class="time-value">${formatTimeValue(s.dr)}</div><div class="time-label">Doors</div></div>`
+    : '';
+
+  // If neither time is known, the block renders with just price (or empty) —
+  // the ticket link lives only on the artist name, not here.
+  return `<div class="time-block">${showPair}${doorsPair}${priceLine}</div>`;
 }
 
 function cardHTML(s, isNew, flatDate, isFavoriteNew){
@@ -763,7 +769,7 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
         ${dateLine}
         <div class="band">${bandLink}</div>
         ${opener}
-        <div class="venue">${venue.name}${stageInline}</div>
+        <div class="venue"><a href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a>${stageInline}</div>
       </div>
       ${lineup}
     </div>`;
