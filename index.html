@@ -308,6 +308,11 @@
   <div id="venue-view" class="venue-view" style="display:none;"></div>
 
   <div id="all-view">
+  <section class="block" id="recently-added-section" style="display:none;">
+    <div class="section-title teal">Added This Week</div>
+    <div id="recent-list"></div>
+  </section>
+
   <section class="block">
     <div class="section-title gold">Favorites</div>
     <div id="watch-list"></div>
@@ -323,6 +328,22 @@
     </div>
     <div id="fav-chips" class="fav-chips"></div>
     <div class="fav-hint">Favoriting a show also favorites the artist — any of their other shows get the same ★ treatment and join this list automatically. Removing a single show here won't un-favorite the artist; manage that here instead.</div>
+  </section>
+
+  <section class="block" id="suggest-venue-section">
+    <div class="section-title teal">Suggest a Venue</div>
+    <div id="suggest-venue-signedout" class="fav-hint">
+      <button type="button" class="link-btn" id="suggest-venue-signin-btn">Sign in</button> to suggest a venue we should add.
+    </div>
+    <div id="suggest-venue-form" style="display:none;">
+      <div class="fav-input-row">
+        <input type="text" id="suggest-venue-name" class="fav-input" placeholder="Venue name">
+      </div>
+      <div class="fav-input-row">
+        <input type="text" id="suggest-venue-notes" class="fav-input" placeholder="Notes (optional) — why, what kind of shows, etc.">
+        <button type="button" id="suggest-venue-submit-btn" class="fav-add-btn">Suggest</button>
+      </div>
+    </div>
   </section>
   </div>
 
@@ -372,7 +393,6 @@ let WATCHLIST = new Set();
 let FAVORITES = []; // array of artist name strings, as entered by the user
 let AUTO_WATCHED = new Set(); // show ids already auto-added to the watchlist via a favorite match —
                                 // tracked separately so a manual un-watch later doesn't get overridden
-let BRAND_NEW_IDS = new Set(); // ids seen for the very first time on this load
 let INITIALIZED = false; // storage is loaded into memory once; after that, in-memory state is authoritative
 
 // --- Account sync (Cloudflare Worker + KV backend) ---
@@ -563,13 +583,22 @@ function signOut(){
 
 function renderAccountUI(){
   const btn = document.getElementById('account-btn');
-  if(!btn) return;
-  if(SESSION_TOKEN && SESSION_EMAIL){
-    btn.textContent = `Signed in as ${SESSION_EMAIL} · Sign out`;
-    btn.onclick = signOut;
-  } else {
-    btn.textContent = 'Sign in to sync across devices';
-    btn.onclick = beginSignIn;
+  if(btn){
+    if(SESSION_TOKEN && SESSION_EMAIL){
+      btn.textContent = `Signed in as ${SESSION_EMAIL} · Sign out`;
+      btn.onclick = signOut;
+    } else {
+      btn.textContent = 'Sign in to sync across devices';
+      btn.onclick = beginSignIn;
+    }
+  }
+
+  const signedOutEl = document.getElementById('suggest-venue-signedout');
+  const formEl = document.getElementById('suggest-venue-form');
+  if(signedOutEl && formEl){
+    const isSignedIn = !!(SESSION_TOKEN && SESSION_EMAIL);
+    signedOutEl.style.display = isSignedIn ? 'none' : '';
+    formEl.style.display = isSignedIn ? '' : 'none';
   }
 }
 
@@ -658,10 +687,6 @@ function attachWatchHandlers(){
 }
 
 async function render(){
-  const now = Date.now();
-  const THRESHOLD = 21 * 24 * 60 * 60 * 1000; // 21 days
-  const seen = await getMap('seen-shows');
-
   if(!INITIALIZED){
     const watchObj = await getMap('watchlist');
     WATCHLIST = new Set(Object.keys(watchObj));
@@ -673,8 +698,6 @@ async function render(){
   }
 
   const currentIds = new Set();
-  const newIds = new Set();
-  const brandNewIds = new Set();
   // Same past-show cutoff the digest email uses: anything more than 1 day old is
   // dropped, using the end date for multi-day events so an ongoing festival doesn't
   // disappear mid-run just because its start date has passed.
@@ -683,20 +706,7 @@ async function render(){
     .filter(s => (s.e || s.d) >= pastCutoff)
     .sort((a,b)=> a.d.localeCompare(b.d));
 
-  sorted.forEach(s=>{
-    const id = showId(s);
-    currentIds.add(id);
-    if(!(id in seen)){
-      brandNewIds.add(id);
-      seen[id] = now;
-      newIds.add(id);
-    } else if (now - seen[id] <= THRESHOLD){
-      newIds.add(id);
-    }
-  });
-  Object.keys(seen).forEach(id=>{ if(!currentIds.has(id)) delete seen[id]; });
-  await saveMap('seen-shows', seen);
-  BRAND_NEW_IDS = brandNewIds;
+  sorted.forEach(s=> currentIds.add(showId(s)));
 
   const favHit = (s) => matchesFavorite(extractArtistName(s.b));
 
@@ -722,15 +732,21 @@ async function render(){
     await saveMap('auto-watched', autoObj);
   }
 
-  // "Added in the last 21 days" section is omitted for this first iteration.
-  // (seen/newIds are still tracked above so future updates have a real baseline
-  // to diff against once that section is reinstated.)
-  const newListEl = document.getElementById('new-list');
-  if(newListEl){
-    const newShows = sorted.filter(s => newIds.has(showId(s)));
-    newListEl.innerHTML = newShows.length
-      ? newShows.map(s=>cardHTML(s,false,true,favHit(s))).join('')
-      : '<div class="empty">Nothing new since the last update.</div>';
+  // "Added This Week": based on each show's own 'added' field (a real, shared date
+  // stamped when the show was actually added to the data), not a per-browser "have I
+  // seen this yet" heuristic — so everyone sees the same "recently added" list,
+  // regardless of when they personally first opened the site.
+  const recentCutoff = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const recentShows = sorted.filter(s => s.added && s.added >= recentCutoff);
+  const recentSectionEl = document.getElementById('recently-added-section');
+  const recentListEl = document.getElementById('recent-list');
+  if(recentSectionEl && recentListEl){
+    if(recentShows.length){
+      recentSectionEl.style.display = '';
+      recentListEl.innerHTML = recentShows.map(s=>cardHTML(s, false, true, favHit(s))).join('');
+    } else {
+      recentSectionEl.style.display = 'none';
+    }
   }
 
   // Favorite Artists chips
@@ -859,6 +875,40 @@ document.getElementById('fav-input').addEventListener('keydown', (e)=>{
 document.getElementById('jump-to-artists').addEventListener('click', ()=>{
   document.getElementById('favorite-artists-mgmt').scrollIntoView({behavior:'smooth', block:'start'});
 });
+
+document.getElementById('suggest-venue-signin-btn').addEventListener('click', beginSignIn);
+
+async function submitVenueSuggestion(){
+  const nameInput = document.getElementById('suggest-venue-name');
+  const notesInput = document.getElementById('suggest-venue-notes');
+  const venueName = nameInput.value.trim();
+  const notes = notesInput.value.trim();
+  if(!venueName){
+    alert('Please enter a venue name.');
+    return;
+  }
+  try{
+    const res = await fetch(`${WORKER_BASE_URL}/api/suggest-venue`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SESSION_TOKEN}`
+      },
+      body: JSON.stringify({ venueName, notes })
+    });
+    const data = await res.json();
+    if(data.error){
+      alert(data.error);
+      return;
+    }
+    alert(data.message || 'Thanks for the suggestion!');
+    nameInput.value = '';
+    notesInput.value = '';
+  }catch(e){
+    alert('Something went wrong sending your suggestion. Please try again.');
+  }
+}
+document.getElementById('suggest-venue-submit-btn').addEventListener('click', submitVenueSuggestion);
 
 (async function init(){
   await loadShowData(); // fetch shows.json before anything that reads SHOWS/VENUES

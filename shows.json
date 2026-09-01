@@ -2161,7 +2161,8 @@
       "sh": "6:00 PM",
       "v": "PH",
       "u": "",
-      "p": 0.0
+      "p": 0.0,
+      "added": "2026-09-01"
     },
     {
       "d": "2026-09-19",
@@ -2169,7 +2170,8 @@
       "dr": "see ticket link",
       "sh": "see ticket link",
       "v": "CMH",
-      "u": "https://charlestonjazz.com/event/2026-piano-legends-5pm/"
+      "u": "https://charlestonjazz.com/event/2026-piano-legends-5pm/",
+      "added": "2026-09-01"
     },
     {
       "d": "2026-09-04",
@@ -2178,7 +2180,8 @@
       "dr": "—",
       "sh": "9:30 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85147"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85147",
+      "added": "2026-09-01"
     },
     {
       "d": "2026-09-06",
@@ -2187,7 +2190,8 @@
       "dr": "—",
       "sh": "9:00 PM",
       "v": "WJ",
-      "u": ""
+      "u": "",
+      "added": "2026-09-01"
     }
   ]
 }
