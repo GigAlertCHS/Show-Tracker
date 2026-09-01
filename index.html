@@ -541,7 +541,7 @@ async function beginSignIn(){
       body: JSON.stringify({email})
     });
     const data = await res.json();
-    if(data.error){ alert(data.error); return; }
+    if(data.error){ alert(data.error + (data.detail ? '\n\n' + data.detail : '')); return; }
     if(data.testMode){
       // No email service connected yet — surface the link directly so sign-in is still testable.
       alert('Email sending isn\'t connected yet, so here\'s your link directly:\n\n' + data.magicLink);
