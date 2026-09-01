@@ -1,5 +1,5 @@
 {
-  "dataUpdatedAt": "2026-08-29",
+  "dataUpdatedAt": "2026-09-01",
   "venues": {
     "PH": {
       "name": "Charleston Pour House",
@@ -92,7 +92,7 @@
       "dr": "—",
       "sh": "9:30 PM",
       "v": "WJ",
-      "u": "https://the-windjammer.com/event/darren-deese-on-the-inside-stage-3/"
+      "u": "https://the-windjammer.com/event/darren-deess-on-the-inside-stage-3/"
     },
     {
       "d": "2026-08-28",
@@ -165,7 +165,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/8qj4dvnljm"
+      "u": "https://aftontickets.com/event/buyticket/8qj4dvnljm",
+      "p": 10.0
     },
     {
       "d": "2026-09-01",
@@ -174,7 +175,8 @@
       "dr": "7:30 PM",
       "sh": "8:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/k3xde8od9w/preview"
+      "u": "https://aftontickets.com/event/buyticket/k3xde8od9w/preview",
+      "p": 50.0
     },
     {
       "d": "2026-09-02",
@@ -183,7 +185,8 @@
       "dr": "5:00 PM",
       "sh": "6:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10.0
     },
     {
       "d": "2026-09-02",
@@ -192,7 +195,8 @@
       "dr": "8:30 PM",
       "sh": "9:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/g3xlkz67j6"
+      "u": "https://aftontickets.com/event/buyticket/g3xlkz67j6",
+      "p": 50.0
     },
     {
       "d": "2026-09-02",
@@ -218,7 +222,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/qpxvvr2lxe/preview"
+      "u": "https://aftontickets.com/event/buyticket/qpxvvr2lxe/preview",
+      "p": 15.0
     },
     {
       "d": "2026-09-04",
@@ -228,7 +233,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/57jmloz69v"
+      "u": "https://aftontickets.com/event/buyticket/57jmloz69v",
+      "p": 10.0
     },
     {
       "d": "2026-09-04",
@@ -237,16 +243,18 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/57jmloql9v"
+      "u": "https://aftontickets.com/event/buyticket/57jmloql9v",
+      "p": 13.0
     },
     {
       "d": "2026-09-04",
-      "b": "Sister Hazel",
+      "b": "Moon Taxi",
       "s": "NÜTRL Beach Stage",
       "dr": "—",
-      "sh": "11:30 AM",
+      "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/e/sundayHang2026"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84646",
+      "o": "Fo Daniels"
     },
     {
       "d": "2026-09-05",
@@ -256,7 +264,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/z59r730kjq/preview"
+      "u": "https://aftontickets.com/event/buyticket/z59r730kjq/preview",
+      "p": 10.0
     },
     {
       "d": "2026-09-05",
@@ -265,7 +274,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/gl9e7y76x5"
+      "u": "https://aftontickets.com/event/buyticket/gl9e7y76x5",
+      "p": 20.0
     },
     {
       "d": "2026-09-05",
@@ -283,7 +293,8 @@
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84646"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84647",
+      "o": "Fo Daniels"
     },
     {
       "d": "2026-09-05",
@@ -301,7 +312,8 @@
       "dr": "11:00 AM",
       "sh": "1:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 5.0
     },
     {
       "d": "2026-09-06",
@@ -311,7 +323,8 @@
       "dr": "6:30 PM",
       "sh": "7:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/nvjqo7lrxo/preview"
+      "u": "https://aftontickets.com/event/buyticket/nvjqo7lrxo/preview",
+      "p": 22.0
     },
     {
       "d": "2026-09-06",
@@ -328,7 +341,8 @@
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84647"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84648",
+      "o": "Fo Daniels"
     },
     {
       "d": "2026-09-06",
@@ -2137,6 +2151,43 @@
       "sh": "see ticket link",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D0064D095D3B4DB"
+    },
+    {
+      "d": "2026-09-07",
+      "b": "The Headstrings Collective",
+      "o": "Monday Muse",
+      "s": "Deck Stage",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "u": "",
+      "p": 0.0
+    },
+    {
+      "d": "2026-09-19",
+      "b": "Piano Legends — Charleston Jazz Orchestra",
+      "dr": "see ticket link",
+      "sh": "see ticket link",
+      "v": "CMH",
+      "u": "https://charlestonjazz.com/event/2026-piano-legends-5pm/"
+    },
+    {
+      "d": "2026-09-04",
+      "b": "Baby Fat",
+      "s": "Inside Stage",
+      "dr": "—",
+      "sh": "9:30 PM",
+      "v": "WJ",
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85147"
+    },
+    {
+      "d": "2026-09-06",
+      "b": "Reverse Cowgirl",
+      "s": "Inside Stage",
+      "dr": "—",
+      "sh": "9:00 PM",
+      "v": "WJ",
+      "u": ""
     }
   ]
 }
