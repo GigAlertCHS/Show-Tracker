@@ -692,7 +692,7 @@ async function render(){
   await saveMap('seen-shows', seen);
   BRAND_NEW_IDS = brandNewIds;
 
-  const favHit = (s) => matchesFavorite(s.b);
+  const favHit = (s) => matchesFavorite(extractArtistName(s.b));
 
   // Auto-add favorite-matching shows to the watchlist — once per show only,
   // so a later manual un-watch sticks instead of being re-added next render.
@@ -805,7 +805,7 @@ function showVenueView(code, sorted){
   });
   const body = Object.values(groups).map(g=>{
     const head = fmtDate(g.d, g.e);
-    const cards = g.items.map(s=>cardHTML(s, false, false, matchesFavorite(s.b))).join('');
+    const cards = g.items.map(s=>cardHTML(s, false, false, matchesFavorite(extractArtistName(s.b)))).join('');
     return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
   }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
 
