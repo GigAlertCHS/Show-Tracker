@@ -130,6 +130,11 @@
   }
   .fav-chip button:hover{color:#fff;}
   .fav-hint{font-size:11px;color:var(--muted);}
+  .site-footer{max-width:640px;margin:32px auto 24px auto;padding:0 16px;text-align:center;}
+  .site-footer .disclaimer{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+  .privacy-details{margin-top:10px;text-align:left;font-size:11px;color:var(--muted);line-height:1.6;}
+  .privacy-details p{margin:0 0 10px 0;}
+  .privacy-details a{color:var(--teal);}
   .card.is-favorite-new{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal) inset, 0 0 14px rgba(79,209,176,0.25);}
   .favorite-badge{
     position:absolute;top:-9px;left:10px;
@@ -348,6 +353,17 @@
   </div>
 
 </div>
+
+<footer class="site-footer">
+  <p class="disclaimer">Show details are believed accurate but not guaranteed. Dates, times, and prices can change — always confirm with the venue or ticket link before making plans.</p>
+  <button type="button" class="link-btn" id="privacy-toggle-btn">Privacy</button>
+  <div id="privacy-details" class="privacy-details" style="display:none;">
+    <p>If you sign in, we store your email address, watchlist, and favorite artists so they sync across your devices and power the weekly digest email. Venue suggestions you submit are stored along with your email so we can follow up if needed.</p>
+    <p>Digest emails include open and click tracking (via our email provider, Resend) so we can see whether emails are opened and which links get clicked — this is to understand what's actually useful, not to build profiles on anyone. We don't sell or share your information with advertisers or any other third party.</p>
+    <p>Site hosting, backend storage, and email delivery are handled by GitHub Pages, Cloudflare, and Resend respectively, each under their own privacy practices.</p>
+    <p>Unsubscribe from emails anytime via the link in any digest. To ask us to delete your data entirely, email <a href="mailto:gigalertchs@gmail.com">gigalertchs@gmail.com</a>.</p>
+  </div>
+</footer>
 
 <script>
 let VENUES = {};
@@ -877,6 +893,11 @@ document.getElementById('jump-to-artists').addEventListener('click', ()=>{
 });
 
 document.getElementById('suggest-venue-signin-btn').addEventListener('click', beginSignIn);
+
+document.getElementById('privacy-toggle-btn').addEventListener('click', ()=>{
+  const el = document.getElementById('privacy-details');
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+});
 
 async function submitVenueSuggestion(){
   const nameInput = document.getElementById('suggest-venue-name');
