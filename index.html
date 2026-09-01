@@ -675,7 +675,13 @@ async function render(){
   const currentIds = new Set();
   const newIds = new Set();
   const brandNewIds = new Set();
-  const sorted = [...SHOWS].sort((a,b)=> a.d.localeCompare(b.d));
+  // Same past-show cutoff the digest email uses: anything more than 1 day old is
+  // dropped, using the end date for multi-day events so an ongoing festival doesn't
+  // disappear mid-run just because its start date has passed.
+  const pastCutoff = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const sorted = SHOWS
+    .filter(s => (s.e || s.d) >= pastCutoff)
+    .sort((a,b)=> a.d.localeCompare(b.d));
 
   sorted.forEach(s=>{
     const id = showId(s);
