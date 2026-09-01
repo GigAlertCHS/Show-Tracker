@@ -301,6 +301,7 @@
     <div class="utility-row">
       <span class="last-updated" id="last-updated"></span>
       <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
+      <button type="button" class="link-btn" id="account-btn">Sign in to sync across devices</button>
     </div>
   </header>
 
@@ -690,6 +691,11 @@ let AUTO_WATCHED = new Set(); // show ids already auto-added to the watchlist vi
 let BRAND_NEW_IDS = new Set(); // ids seen for the very first time on this load
 let INITIALIZED = false; // storage is loaded into memory once; after that, in-memory state is authoritative
 
+// --- Account sync (Cloudflare Worker + KV backend) ---
+const WORKER_BASE_URL = 'https://show-tracker-api.gigalertchs.workers.dev';
+let SESSION_TOKEN = localStorage.getItem('sessionToken') || null;
+let SESSION_EMAIL = localStorage.getItem('sessionEmail') || null;
+
 function normalizeName(s){
   return s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 }
@@ -787,6 +793,133 @@ async function getMap(key){
 }
 async function saveMap(key, obj){
   try{ localStorage.setItem(key, JSON.stringify(obj)); }catch(e){}
+  // Local save above always happens regardless of sign-in state or network status —
+  // the site keeps working offline/signed-out exactly as it always has.
+  if(SESSION_TOKEN && (key === 'watchlist' || key === 'favorite-artists')){
+    pushToServer(); // fire-and-forget; a failure here doesn't affect the local save
+  }
+}
+
+// --- Account sync: sign-in flow + KV read/write against the Worker ---
+
+async function pushToServer(){
+  if(!SESSION_TOKEN) return;
+  try{
+    await fetch(`${WORKER_BASE_URL}/api/user/data`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${SESSION_TOKEN}` },
+      body: JSON.stringify({ watchlist: Array.from(WATCHLIST), favorites: FAVORITES })
+    });
+  }catch(e){ /* offline or the Worker is unreachable — local data is unaffected, will retry on next change */ }
+}
+
+// Pulls the server's copy and unions it with whatever's already local, so linking a
+// second device (or just reloading while signed in) never silently drops data from
+// either side. Known limitation: this union-merge doesn't propagate *removals* made on
+// another device — an item deleted elsewhere can reappear here until this is revisited
+// with proper per-item timestamps.
+async function syncWithServer(){
+  if(!SESSION_TOKEN) return;
+  try{
+    const res = await fetch(`${WORKER_BASE_URL}/api/user/data`, {
+      headers:{ 'Authorization': `Bearer ${SESSION_TOKEN}` }
+    });
+    if(res.status === 401){ signOut(); return; } // session expired or invalid — drop it locally
+    const data = await res.json();
+    if(!data.ok) return;
+    const remote = data.data || {watchlist:[], favorites:[]};
+
+    const watchObj = await getMap('watchlist');
+    const mergedWatch = Array.from(new Set([...Object.keys(watchObj), ...remote.watchlist]));
+    const favObj = await getMap('favorite-artists');
+    const mergedFavs = Array.from(new Set([...Object.keys(favObj), ...remote.favorites]));
+
+    WATCHLIST = new Set(mergedWatch);
+    FAVORITES = mergedFavs;
+    INITIALIZED = true; // we've now loaded state ourselves; render() shouldn't reload from storage
+
+    const newWatchObj = {}; mergedWatch.forEach(id=>newWatchObj[id]=true);
+    localStorage.setItem('watchlist', JSON.stringify(newWatchObj));
+    const newFavObj = {}; mergedFavs.forEach(f=>newFavObj[f]=true);
+    localStorage.setItem('favorite-artists', JSON.stringify(newFavObj));
+
+    await pushToServer(); // push the merged result back up so both sides match
+  }catch(e){ /* offline or the Worker is unreachable — local data still works fine on its own */ }
+}
+
+async function beginSignIn(){
+  const email = prompt('Enter your email to get a sign-in link:');
+  if(!email) return;
+  try{
+    const res = await fetch(`${WORKER_BASE_URL}/api/auth/request-link`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email})
+    });
+    const data = await res.json();
+    if(data.error){ alert(data.error); return; }
+    if(data.testMode){
+      // No email service connected yet — surface the link directly so sign-in is still testable.
+      alert('Email sending isn\'t connected yet, so here\'s your link directly:\n\n' + data.magicLink);
+    } else {
+      alert('Check your email for a sign-in link.');
+    }
+  }catch(e){
+    alert('Something went wrong requesting a sign-in link. Please try again.');
+  }
+}
+
+function signOut(){
+  SESSION_TOKEN = null;
+  SESSION_EMAIL = null;
+  localStorage.removeItem('sessionToken');
+  localStorage.removeItem('sessionEmail');
+  renderAccountUI();
+}
+
+function renderAccountUI(){
+  const btn = document.getElementById('account-btn');
+  if(!btn) return;
+  if(SESSION_TOKEN && SESSION_EMAIL){
+    btn.textContent = `Signed in as ${SESSION_EMAIL} · Sign out`;
+    btn.onclick = signOut;
+  } else {
+    btn.textContent = 'Sign in to sync across devices';
+    btn.onclick = beginSignIn;
+  }
+}
+
+// Picks up ?session=&email= left by the Worker's verify redirect, stores it, cleans the
+// URL so a refresh doesn't reprocess it, then merges with whatever's on the server.
+async function handleIncomingSession(){
+  const params = new URLSearchParams(window.location.search);
+  const incomingSession = params.get('session');
+  const incomingEmail = params.get('email');
+  const authError = params.get('authError');
+
+  if(incomingSession){
+    SESSION_TOKEN = incomingSession;
+    SESSION_EMAIL = incomingEmail || null;
+    localStorage.setItem('sessionToken', SESSION_TOKEN);
+    if(SESSION_EMAIL) localStorage.setItem('sessionEmail', SESSION_EMAIL);
+  }
+
+  if(incomingSession || authError){
+    params.delete('session');
+    params.delete('email');
+    params.delete('authError');
+    const query = params.toString();
+    const newUrl = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
+    window.history.replaceState({}, '', newUrl);
+  }
+
+  if(authError){
+    alert('That sign-in link is invalid or has expired. Please request a new one.');
+  }
+
+  if(SESSION_TOKEN){
+    await syncWithServer();
+  }
 }
 
 function attachWatchHandlers(){
@@ -1009,7 +1142,11 @@ document.getElementById('jump-to-artists').addEventListener('click', ()=>{
   document.getElementById('favorite-artists-mgmt').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
-render();
+(async function init(){
+  await handleIncomingSession(); // may set SESSION_TOKEN/merge server data before first render
+  renderAccountUI();
+  await render();
+})();
 </script>
 </body>
 </html>
