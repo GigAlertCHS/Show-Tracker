@@ -601,8 +601,28 @@ async function handleIncomingSession(){
     alert('That sign-in link is invalid or has expired. Please request a new one.');
   }
 
-  if(SESSION_TOKEN){
+  if(incomingSession){
+    // Fresh sign-in redirect (just clicked a magic link) — always merge with the server.
     await syncWithServer();
+  } else if(SESSION_TOKEN){
+    // Returning visit with an existing session. Only pull from the server if there's
+    // NOTHING local yet (a genuinely new device/browser).
+    //
+    // Why not always pull, like before: pulling and merging on every single page load
+    // meant that if you changed something and reloaded quickly, the pull could win a
+    // race against the still-in-flight push of that change, silently bringing back
+    // the old value — that was the cause of "I unfavorited a show and it came back
+    // after reloading." Trusting local state on a device that already has data avoids
+    // that, at the cost of a real, known tradeoff: changes made on another device won't
+    // show up here automatically anymore — you'd need to click a fresh sign-in link on
+    // this device again to pull them in. A proper two-way sync would need per-item
+    // timestamps to do better than that; this is a deliberate simpler v1 tradeoff.
+    const watchObj = await getMap('watchlist');
+    const favObj = await getMap('favorite-artists');
+    const hasLocalData = Object.keys(watchObj).length > 0 || Object.keys(favObj).length > 0;
+    if(!hasLocalData){
+      await syncWithServer();
+    }
   }
 }
 
@@ -613,18 +633,26 @@ function attachWatchHandlers(){
       const band = btn.getAttribute('data-band');
       const turningOn = !WATCHLIST.has(id);
       if(turningOn) WATCHLIST.add(id); else WATCHLIST.delete(id);
-      if(turningOn && band && !FAVORITES.some(f=>normalizeName(f)===normalizeName(band))){
-        FAVORITES.push(band);
+
+      if(turningOn){
+        if(band && !FAVORITES.some(f=>normalizeName(f)===normalizeName(band))){
+          FAVORITES.push(band);
+        }
+      } else {
+        // Unstarring fully un-favorites the artist too — note this affects ALL of that
+        // artist's shows, not just the one clicked, since the favorite border is per-artist.
+        if(band){
+          FAVORITES = FAVORITES.filter(f=>normalizeName(f)!==normalizeName(band));
+        }
       }
+
       render(); // reflect immediately, regardless of whether the saves below succeed
       const wObj = {};
       WATCHLIST.forEach(k=>wObj[k]=true);
       await saveMap('watchlist', wObj);
-      if(turningOn){
-        const fObj = {};
-        FAVORITES.forEach(f=>fObj[f]=true);
-        await saveMap('favorite-artists', fObj);
-      }
+      const fObj = {};
+      FAVORITES.forEach(f=>fObj[f]=true);
+      await saveMap('favorite-artists', fObj); // save on both directions now, not just turning on
     });
   });
 }
