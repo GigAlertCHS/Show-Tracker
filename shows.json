@@ -5,49 +5,57 @@
       "name": "Charleston Pour House",
       "site": "https://charlestonpourhouse.com/",
       "type": "venue",
-      "color": "#c17a4a"
+      "color": "#c17a4a",
+      "address": "1977 Maybank Hwy, Charleston, SC 29412"
     },
     "REF": {
       "name": "The Refinery",
       "site": "https://www.therefinerychs.com/",
       "type": "venue",
-      "color": "#8ac97a"
+      "color": "#8ac97a",
+      "address": "1640 Meeting St, Charleston, SC 29405"
     },
     "CMH": {
       "name": "Charleston Music Hall",
       "site": "https://charlestonmusichall.com/",
       "type": "venue",
-      "color": "#c98ac9"
+      "color": "#c98ac9",
+      "address": "37 John St, Charleston, SC 29403"
     },
     "WJ": {
       "name": "The Windjammer",
       "site": "https://the-windjammer.com/",
       "type": "venue",
-      "color": "#4fb0d1"
+      "color": "#4fb0d1",
+      "address": "1008 Ocean Blvd, Isle of Palms, SC 29451"
     },
     "C1S": {
       "name": "Credit One Stadium",
       "site": "https://creditonestadium.com/",
       "type": "venue",
-      "color": "#e06a6a"
+      "color": "#e06a6a",
+      "address": "161 Seven Farms Dr, Charleston, SC 29492"
     },
     "NCC": {
       "name": "North Charleston Coliseum",
       "site": "https://www.northcharlestoncoliseumpac.com/",
       "type": "venue",
-      "color": "#9a8fd6"
+      "color": "#9a8fd6",
+      "address": "5001 Coliseum Dr, North Charleston, SC 29418"
     },
     "MF": {
       "name": "Music Farm",
       "site": "https://musicfarm.com/",
       "type": "venue",
-      "color": "#7ed67a"
+      "color": "#7ed67a",
+      "address": "32 Ann St, Charleston, SC 29403"
     },
     "RFR": {
       "name": "Riverfront Revival",
       "site": "https://www.riverfrontrevival.com/",
       "type": "festival",
-      "color": "#e8c94a"
+      "color": "#e8c94a",
+      "address": "1061 Everglades Ave, North Charleston, SC 29405"
     },
     "CJF": {
       "name": "Charleston Jazz Festival",
@@ -59,37 +67,43 @@
       "name": "Firefly Distillery",
       "site": "https://fireflydistillery.com/concerts/",
       "type": "venue",
-      "color": "#b06ab3"
+      "color": "#b06ab3",
+      "address": "4201 Spruill Ave, North Charleston, SC 29405"
     },
     "GC": {
       "name": "Charleston Gaillard Center",
       "site": "https://gaillardcenter.org/",
       "type": "venue",
-      "color": "#6a7ac9"
+      "color": "#6a7ac9",
+      "address": "95 Calhoun St, Charleston, SC 29401"
     },
     "RFP": {
       "name": "Riverfront Park",
       "site": "https://www.northcharleston.org/visitors/attractions_points_of_interest/riverfront_park/index.php",
       "type": "venue",
-      "color": "#c9663a"
+      "color": "#c9663a",
+      "address": "1061 Everglades Ave, North Charleston, SC 29405"
     },
     "NRB": {
       "name": "New Realm Brewing",
       "site": "https://newrealmbrewing.com/charleston/live-music-events/",
       "type": "venue",
-      "color": "#a8825a"
+      "color": "#a8825a",
+      "address": "880 Island Park Dr, Charleston, SC 29492"
     },
     "TR": {
       "name": "Tin Roof",
       "site": "http://www.charlestontinroof.com/",
       "type": "venue",
-      "color": "#a63d4a"
+      "color": "#a63d4a",
+      "address": "1117 Magnolia Rd, Charleston, SC 29407"
     },
     "RA": {
       "name": "The Royal American",
       "site": "http://www.theroyalamerican.com/",
       "type": "venue",
-      "color": "#c9a23a"
+      "color": "#c9a23a",
+      "address": "970 Morrison Dr, Charleston, SC 29403"
     }
   },
   "shows": [
@@ -2300,7 +2314,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58341"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58341",
+      "g": "classical"
     },
     {
       "d": "2026-09-26",
@@ -2308,7 +2323,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58344"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58344",
+      "g": "classical"
     },
     {
       "d": "2026-09-28",
@@ -2316,7 +2332,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=56582"
+      "u": "https://gaillardcenter.org/seat-selector?performance=56582",
+      "g": "classical"
     },
     {
       "d": "2026-10-09",
@@ -2324,7 +2341,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58346"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58346",
+      "g": "classical"
     },
     {
       "d": "2026-10-10",
@@ -2332,7 +2350,8 @@
       "sh": "11:00 AM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58246"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58246",
+      "g": "classical"
     },
     {
       "d": "2026-10-10",
@@ -2340,7 +2359,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58349"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58349",
+      "g": "classical"
     },
     {
       "d": "2026-10-15",
@@ -2372,7 +2392,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58378"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58378",
+      "g": "classical"
     },
     {
       "d": "2026-11-01",
@@ -2380,7 +2401,8 @@
       "sh": "5:00 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=56224"
+      "u": "https://gaillardcenter.org/seat-selector?performance=56224",
+      "g": "classical"
     },
     {
       "d": "2026-11-20",
@@ -2388,7 +2410,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58351"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58351",
+      "g": "classical"
     },
     {
       "d": "2026-11-21",
@@ -2396,7 +2419,8 @@
       "sh": "7:30 PM",
       "dr": "—",
       "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58354"
+      "u": "https://gaillardcenter.org/seat-selector?performance=58354",
+      "g": "classical"
     },
     {
       "d": "2026-11-22",

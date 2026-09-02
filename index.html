@@ -60,14 +60,18 @@
     border:1px dashed var(--c,var(--line));color:var(--c,var(--muted));
   }
   .utility-row{
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+    display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;
     margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
     font-size:11.5px;color:var(--muted);
   }
+  .utility-col{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
   .link-btn{color:var(--teal);text-decoration:none;font-weight:600;background:none;border:none;padding:0;font:inherit;cursor:pointer;}
   .link-btn:hover{color:#6fe0c2;}
   .last-updated{font-size:11.5px;color:var(--muted);}
   .last-updated b{color:var(--text);font-weight:600;}
+  .genre-filter-row{margin-top:8px;font-size:11.5px;color:var(--muted);}
+  .genre-filter-row label{display:flex;align-items:center;gap:6px;cursor:pointer;width:fit-content;}
+  .genre-filter-row input[type="checkbox"]{cursor:pointer;}
   .meta-note{
     background:var(--panel);
     border:1px solid var(--line);
@@ -132,17 +136,11 @@
   .fav-chip button:hover{color:#fff;}
   .fav-hint{font-size:11px;color:var(--muted);}
   .site-footer{max-width:640px;margin:32px auto 24px auto;padding:0 16px;text-align:center;}
+  .back-to-top-btn{display:block;margin:16px auto 0 auto;font-size:11.5px;}
   .site-footer .disclaimer{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
   .privacy-details{margin-top:10px;text-align:left;font-size:11px;color:var(--muted);line-height:1.6;}
   .privacy-details p{margin:0 0 10px 0;}
   .privacy-details a{color:var(--teal);}
-  .card.is-favorite-new{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal) inset, 0 0 14px rgba(79,209,176,0.25);}
-  .favorite-badge{
-    position:absolute;top:-9px;left:10px;
-    background:var(--teal);color:#0b1512;
-    font-size:10px;font-weight:700;letter-spacing:0.04em;
-    padding:2px 8px;border-radius:20px;
-  }
   .day-group{margin-bottom:26px;}
   .day-head{
     font-family:'Bebas Neue',sans-serif;
@@ -179,10 +177,10 @@
     padding:2px 8px;border-radius:20px;z-index:2;
   }
   .favorite-badge{
-    position:absolute;top:-9px;left:10px;
+    position:absolute;top:-8px;left:10px;
     background:var(--teal);color:#0b1512;
-    font-size:10px;font-weight:700;letter-spacing:0.04em;
-    padding:2px 8px;border-radius:20px;z-index:2;
+    font-size:9px;font-weight:700;letter-spacing:0.03em;
+    padding:1px 6px;border-radius:20px;z-index:2;
   }
   .time-block{
     background:var(--ink);
@@ -211,12 +209,14 @@
   .band a{color:var(--amber);text-decoration:none;border-bottom:1px dashed var(--amber-dim);}
   .band a:hover{color:#ffc773;}
   .opener{color:var(--muted);font-size:12.5px;}
-  .venue-line{font-size:12.5px;color:#c9cddb;}
+  .venue-line{font-size:12.5px;color:#c9cddb;display:flex;align-items:baseline;}
+  .price-col{flex:0 0 58px;white-space:nowrap;}
+  .venue-col{flex:1;min-width:0;}
   .venue-line .price-or-tickets{color:var(--teal);text-decoration:none;border-bottom:1px dotted rgba(79,209,176,0.4);}
   .venue-line .price-or-tickets:hover{border-bottom-color:var(--teal);}
   .venue-line .venue-name-link{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(201,205,219,0.4);}
   .venue-line .venue-name-link:hover{color:var(--amber);border-bottom-color:var(--amber);}
-  .stage-line{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:2px;}
+  .stage-line{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:2px;display:flex;align-items:baseline;}
   .star-btn{
     position:absolute;top:8px;right:8px;
     width:26px;height:26px;border-radius:50%;
@@ -268,6 +268,9 @@
     color:var(--amber);
     margin:0 0 4px;
   }
+  .venue-view .venue-address{font-size:13px;color:var(--muted);margin-top:2px;margin-bottom:6px;}
+  .venue-view .venue-address a{color:var(--muted);text-decoration:none;border-bottom:1px dotted rgba(149,153,173,0.5);}
+  .venue-view .venue-address a:hover{color:var(--amber);border-bottom-color:var(--amber);}
   .venue-view .venue-site-link{font-size:12px;color:var(--muted);margin-bottom:18px;display:block;}
   .venue-view .venue-site-link a{color:var(--amber);text-decoration:none;}
   .empty{color:var(--muted);font-size:13px;padding:8px 0;}
@@ -307,10 +310,20 @@
     <div class="chip-row" id="festival-links"></div>
 
     <div class="utility-row">
-      <span class="last-updated" id="last-updated"></span>
-      <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
-      <button type="button" class="link-btn" id="jump-to-suggest-venue">Suggest a venue ↓</button>
-      <button type="button" class="link-btn" id="account-btn">Sign in to sync across devices</button>
+      <div class="utility-col">
+        <span class="last-updated" id="last-updated"></span>
+        <button type="button" class="link-btn" id="account-btn">Sign in to sync across devices</button>
+      </div>
+      <div class="utility-col">
+        <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
+        <button type="button" class="link-btn" id="jump-to-suggest-venue">Suggest a venue ↓</button>
+      </div>
+    </div>
+    <div class="genre-filter-row">
+      <label>
+        <input type="checkbox" id="hide-classical-checkbox">
+        Hide classical music
+      </label>
     </div>
   </header>
 
@@ -379,6 +392,7 @@
     <p>Site hosting, backend storage, and email delivery are handled by GitHub Pages, Cloudflare, and Resend respectively, each under their own privacy practices.</p>
     <p>Unsubscribe from emails anytime via the link in any digest — once you do, signing back in won't automatically re-subscribe you; use the "Subscribe to email updates" link above if you change your mind. To ask us to delete your data entirely, email <a href="mailto:admin@gigalertchs.com">admin@gigalertchs.com</a>.</p>
   </div>
+  <button type="button" class="link-btn back-to-top-btn" id="back-to-top-btn">↑ Back to top</button>
 </footer>
 
 <script>
@@ -426,6 +440,12 @@ let FAVORITES = []; // array of artist name strings, as entered by the user
 let AUTO_WATCHED = new Set(); // show ids already auto-added to the watchlist via a favorite match —
                                 // tracked separately so a manual un-watch later doesn't get overridden
 let INITIALIZED = false; // storage is loaded into memory once; after that, in-memory state is authoritative
+// Purely a display preference (not synced to the server like watchlist/favorites) —
+// only meaningful for shows that have a "g" (genre) field set, which right now is
+// just the Gaillard Center classical/CSO shows since that's the only source that
+// gave us clean genre data. Future research needs to keep tagging genre for this
+// to keep working on new shows.
+let HIDE_CLASSICAL = localStorage.getItem('hideClassical') === 'true';
 
 // --- Account sync (Cloudflare Worker + KV backend) ---
 const WORKER_BASE_URL = 'https://api.gigalertchs.com';
@@ -534,12 +554,12 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
   // Stage name gets its own line below the venue name rather than appended inline —
   // inline caused the stage name to wrap awkwardly mid-line on narrow phone screens
   // when the venue name + stage name together didn't fit on one line.
-  const stageLine = s.s ? `<div class="stage-line">${s.s}</div>` : '';
+  const stageLine = s.s ? `<div class="stage-line"><span class="price-col"></span><span class="venue-col">${s.s}</span></div>` : '';
   const priceOrTix = priceOrTicketsHTML(s, venue);
-  const venueLine = `<div class="venue-line">${priceOrTix ? priceOrTix + ' &middot; ' : ''}<a class="venue-name-link" href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a></div>`;
+  const venueLine = `<div class="venue-line"><span class="price-col">${priceOrTix ? priceOrTix + ' &middot;' : ''}</span><span class="venue-col"><a class="venue-name-link" href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a></span></div>`;
 
   return `
-    <div class="card${isNew?' is-new':''}${watched?' is-watched':''}${isFavoriteNew?' is-favorite-new':''}" data-id="${id}">
+    <div class="card${isNew?' is-new':''}${watched?' is-watched':''}" data-id="${id}">
       ${isNew ? '<div class="new-badge">New</div>' : ''}
       ${isFavoriteNew ? '<div class="favorite-badge">★ Favorite Artist</div>' : ''}
       ${timeBlockHTML(s)}
@@ -794,6 +814,7 @@ async function render(){
   const pastCutoff = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const sorted = SHOWS
     .filter(s => (s.e || s.d) >= pastCutoff)
+    .filter(s => !(HIDE_CLASSICAL && s.g === 'classical'))
     .sort((a,b)=> a.d.localeCompare(b.d));
 
   sorted.forEach(s=> currentIds.add(showId(s)));
@@ -879,8 +900,8 @@ async function render(){
   // venue chips, colored per venue, grouped: standing venues row, then festivals row
   const venueLinksEl = document.getElementById('venue-links');
   const festivalLinksEl = document.getElementById('festival-links');
-  const venueEntries = Object.entries(VENUES).filter(([,v])=>v.type==='venue');
-  const festivalEntries = Object.entries(VENUES).filter(([,v])=>v.type==='festival');
+  const venueEntries = Object.entries(VENUES).filter(([,v])=>v.type==='venue').sort((a,b)=> a[1].name.localeCompare(b[1].name));
+  const festivalEntries = Object.entries(VENUES).filter(([,v])=>v.type==='festival').sort((a,b)=> a[1].name.localeCompare(b[1].name));
 
   venueLinksEl.innerHTML = venueEntries.map(([code,v])=>
     `<button type="button" class="venue-chip" style="--c:${v.color}" data-venue="${code}">${v.name}</button>`
@@ -922,9 +943,13 @@ function showVenueView(code, sorted){
   }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
 
   const viewEl = document.getElementById('venue-view');
+  const addressLine = venue.address
+    ? `<div class="venue-address"><a href="https://maps.apple.com/?q=${encodeURIComponent(venue.address)}" target="_blank" rel="noopener">${venue.address}</a></div>`
+    : '';
   viewEl.innerHTML = `
     <button type="button" class="back-link" id="back-to-all">← Back to full tracker</button>
     <h2>${venue.name}</h2>
+    ${addressLine}
     <span class="venue-site-link"><a href="${venue.site}" target="_blank" rel="noopener">${venue.site} ↗</a></span>
     ${body}
   `;
@@ -998,6 +1023,10 @@ document.getElementById('subscribe-btn').addEventListener('click', async ()=>{
   }
 });
 
+document.getElementById('back-to-top-btn').addEventListener('click', ()=>{
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
 async function submitVenueSuggestion(){
   const nameInput = document.getElementById('suggest-venue-name');
   const notesInput = document.getElementById('suggest-venue-notes');
@@ -1040,6 +1069,15 @@ document.getElementById('signin-submit-btn').addEventListener('click', submitSig
   await loadShowData(); // fetch shows.json before anything that reads SHOWS/VENUES
   await handleIncomingSession(); // may set SESSION_TOKEN/merge server data before first render
   renderAccountUI();
+
+  const hideClassicalCheckbox = document.getElementById('hide-classical-checkbox');
+  hideClassicalCheckbox.checked = HIDE_CLASSICAL;
+  hideClassicalCheckbox.addEventListener('change', async ()=>{
+    HIDE_CLASSICAL = hideClassicalCheckbox.checked;
+    localStorage.setItem('hideClassical', String(HIDE_CLASSICAL));
+    await render();
+  });
+
   await render();
 })();
 </script>
