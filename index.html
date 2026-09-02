@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lowcountry Show Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -314,6 +315,15 @@
     </div>
   </header>
 
+  <section class="block" id="sign-in-section" style="display:none;">
+    <div class="section-title teal">Sign In</div>
+    <div class="fav-input-row">
+      <input type="email" id="signin-email" class="fav-input" placeholder="your@email.com">
+    </div>
+    <div id="signin-turnstile" style="margin:10px 0;"></div>
+    <button type="button" id="signin-submit-btn" class="fav-add-btn">Send sign-in link</button>
+  </section>
+
   <div id="venue-view" class="venue-view" style="display:none;"></div>
 
   <div id="all-view">
@@ -350,8 +360,9 @@
       </div>
       <div class="fav-input-row">
         <input type="text" id="suggest-venue-notes" class="fav-input" placeholder="Notes (optional) — why, what kind of shows, etc.">
-        <button type="button" id="suggest-venue-submit-btn" class="fav-add-btn">Suggest</button>
       </div>
+      <div id="suggest-venue-turnstile" style="margin:10px 0;"></div>
+      <button type="button" id="suggest-venue-submit-btn" class="fav-add-btn">Suggest</button>
     </div>
   </section>
   </div>
@@ -417,6 +428,23 @@ let INITIALIZED = false; // storage is loaded into memory once; after that, in-m
 
 // --- Account sync (Cloudflare Worker + KV backend) ---
 const WORKER_BASE_URL = 'https://show-tracker-api.gigalertchs.workers.dev';
+const TURNSTILE_SITE_KEY = '0x4AAAAAAEkfZ3ATboand-06';
+let SIGNIN_TURNSTILE_WIDGET_ID = null;
+let SUGGEST_VENUE_TURNSTILE_WIDGET_ID = null;
+
+// Explicit rendering (rather than the implicit cf-turnstile class) so each of the two
+// widgets on this page gets its own tracked ID — needed since turnstile.getResponse()
+// is ambiguous with more than one widget unless you pass an explicit ID.
+window.onTurnstileLoad = function(){
+  const signinContainer = document.getElementById('signin-turnstile');
+  const suggestContainer = document.getElementById('suggest-venue-turnstile');
+  if(signinContainer){
+    SIGNIN_TURNSTILE_WIDGET_ID = turnstile.render(signinContainer, { sitekey: TURNSTILE_SITE_KEY });
+  }
+  if(suggestContainer){
+    SUGGEST_VENUE_TURNSTILE_WIDGET_ID = turnstile.render(suggestContainer, { sitekey: TURNSTILE_SITE_KEY });
+  }
+};
 let SESSION_TOKEN = localStorage.getItem('sessionToken') || null;
 let SESSION_EMAIL = localStorage.getItem('sessionEmail') || null;
 
@@ -588,24 +616,42 @@ async function syncWithServer(){
   }catch(e){ /* offline or the Worker is unreachable — local data still works fine on its own */ }
 }
 
-async function beginSignIn(){
-  const email = prompt('Enter your email to get a sign-in link:');
-  if(!email) return;
+// Toggles the inline sign-in form section (replaces the old prompt()-based flow,
+// since Turnstile needs a real page element to render its widget into).
+function toggleSignInSection(){
+  const el = document.getElementById('sign-in-section');
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? '' : 'none';
+  if(isHidden) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function submitSignIn(){
+  const emailInput = document.getElementById('signin-email');
+  const email = emailInput.value.trim();
+  if(!email){ alert('Please enter your email.'); return; }
+
+  const turnstileToken = (window.turnstile && SIGNIN_TURNSTILE_WIDGET_ID !== null)
+    ? turnstile.getResponse(SIGNIN_TURNSTILE_WIDGET_ID)
+    : '';
+
   try{
     const res = await fetch(`${WORKER_BASE_URL}/api/auth/request-link`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({email})
+      body: JSON.stringify({email, turnstileToken})
     });
     const data = await res.json();
-    if(data.error){ alert(data.error + (data.detail ? '\n\n' + data.detail : '')); return; }
+    if(window.turnstile && SIGNIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SIGNIN_TURNSTILE_WIDGET_ID);
+    if(data.error){ alert(data.error); return; }
     if(data.testMode){
       // No email service connected yet — surface the link directly so sign-in is still testable.
       alert('Email sending isn\'t connected yet, so here\'s your link directly:\n\n' + data.magicLink);
     } else {
       alert('Check your email for a sign-in link.');
     }
+    emailInput.value = '';
   }catch(e){
+    if(window.turnstile && SIGNIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SIGNIN_TURNSTILE_WIDGET_ID);
     alert('Something went wrong requesting a sign-in link. Please try again.');
   }
 }
@@ -620,13 +666,15 @@ function signOut(){
 
 function renderAccountUI(){
   const btn = document.getElementById('account-btn');
+  const signInSection = document.getElementById('sign-in-section');
   if(btn){
     if(SESSION_TOKEN && SESSION_EMAIL){
       btn.textContent = `Signed in as ${SESSION_EMAIL} · Sign out`;
       btn.onclick = signOut;
+      if(signInSection) signInSection.style.display = 'none';
     } else {
       btn.textContent = 'Sign in to sync across devices';
-      btn.onclick = beginSignIn;
+      btn.onclick = toggleSignInSection;
     }
   }
 
@@ -917,7 +965,7 @@ document.getElementById('jump-to-suggest-venue').addEventListener('click', ()=>{
   document.getElementById('suggest-venue-section').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
-document.getElementById('suggest-venue-signin-btn').addEventListener('click', beginSignIn);
+document.getElementById('suggest-venue-signin-btn').addEventListener('click', toggleSignInSection);
 
 document.getElementById('privacy-toggle-btn').addEventListener('click', ()=>{
   const el = document.getElementById('privacy-details');
@@ -933,6 +981,9 @@ async function submitVenueSuggestion(){
     alert('Please enter a venue name.');
     return;
   }
+  const turnstileToken = (window.turnstile && SUGGEST_VENUE_TURNSTILE_WIDGET_ID !== null)
+    ? turnstile.getResponse(SUGGEST_VENUE_TURNSTILE_WIDGET_ID)
+    : '';
   try{
     const res = await fetch(`${WORKER_BASE_URL}/api/suggest-venue`, {
       method: 'POST',
@@ -940,9 +991,10 @@ async function submitVenueSuggestion(){
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SESSION_TOKEN}`
       },
-      body: JSON.stringify({ venueName, notes })
+      body: JSON.stringify({ venueName, notes, turnstileToken })
     });
     const data = await res.json();
+    if(window.turnstile && SUGGEST_VENUE_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SUGGEST_VENUE_TURNSTILE_WIDGET_ID);
     if(data.error){
       alert(data.error);
       return;
@@ -951,10 +1003,12 @@ async function submitVenueSuggestion(){
     nameInput.value = '';
     notesInput.value = '';
   }catch(e){
+    if(window.turnstile && SUGGEST_VENUE_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SUGGEST_VENUE_TURNSTILE_WIDGET_ID);
     alert('Something went wrong sending your suggestion. Please try again.');
   }
 }
 document.getElementById('suggest-venue-submit-btn').addEventListener('click', submitVenueSuggestion);
+document.getElementById('signin-submit-btn').addEventListener('click', submitSignIn);
 
 (async function init(){
   await loadShowData(); // fetch shows.json before anything that reads SHOWS/VENUES
