@@ -167,6 +167,7 @@
     display:grid;
     grid-template-columns:64px 1fr;
     align-items:stretch;
+    max-width:480px;
   }
   .card.is-new{box-shadow:0 0 0 1px var(--teal) inset;}
   .card.is-watched::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);}
@@ -192,7 +193,7 @@
   }
   .time-block .time-pair + .time-pair{margin-top:6px;}
   .time-block .time-pair.show-pair .time-value{
-    font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.02em;color:var(--amber);line-height:1.1;
+    font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:0.02em;color:var(--amber);line-height:1.1;
   }
   .time-block .time-pair.show-pair .time-value a{color:var(--amber);text-decoration:none;}
   .time-block .time-pair.doors-pair .time-value{
@@ -201,16 +202,19 @@
   .time-block .time-pair.doors-pair .time-value a{color:var(--text);text-decoration:none;}
   .time-block .time-value .ampm{font-size:12px;margin-left:1px;}
   .time-block .time-label{font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
-  .time-block .price{font-size:10.5px;color:var(--text);margin-top:5px;font-weight:600;}
+  .time-block .time-tbd-value{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.02em;color:var(--amber);line-height:1.1;}
+  .time-block .time-tbd-label{font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
   .main{padding:10px 40px 10px 12px;min-width:0;position:relative;}
   .main > * + *{margin-top:4px;}
-  .band{font-weight:700;font-size:15px;line-height:1.25;}
+  .band{font-weight:700;font-size:15px;line-height:1.25;color:var(--amber);}
   .band a{color:var(--amber);text-decoration:none;border-bottom:1px dashed var(--amber-dim);}
   .band a:hover{color:#ffc773;}
   .opener{color:var(--muted);font-size:12.5px;}
-  .venue{font-size:12.5px;color:#c9cddb;}
-  .venue a{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(201,205,219,0.4);}
-  .venue a:hover{color:var(--amber);border-bottom-color:var(--amber);}
+  .venue-line{font-size:12.5px;color:#c9cddb;}
+  .venue-line .price-or-tickets{color:var(--teal);text-decoration:none;border-bottom:1px dotted rgba(79,209,176,0.4);}
+  .venue-line .price-or-tickets:hover{border-bottom-color:var(--teal);}
+  .venue-line .venue-name-link{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(201,205,219,0.4);}
+  .venue-line .venue-name-link:hover{color:var(--amber);border-bottom-color:var(--amber);}
   .stage{font-size:11.5px;color:var(--muted);font-style:italic;}
   .stage::before{content:', ';font-style:normal;color:var(--muted);}
   .star-btn{
@@ -220,8 +224,7 @@
     font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
   }
   .star-btn.active{background:var(--teal);border-color:var(--teal);color:#0b1512;}
-  .lineup{grid-column:1/-1;padding:0 12px 10px;border-top:2px solid rgba(240,168,60,0.13);margin-top:2px;}
-  .lineup-chips{display:flex;flex-wrap:wrap;gap:5px;padding-top:8px;}
+  .lineup-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
   .artist-chip{
     font-size:11px;
     padding:3px 9px;
@@ -306,6 +309,7 @@
     <div class="utility-row">
       <span class="last-updated" id="last-updated"></span>
       <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
+      <button type="button" class="link-btn" id="jump-to-suggest-venue">Suggest a venue ↓</button>
       <button type="button" class="link-btn" id="account-btn">Sign in to sync across devices</button>
     </div>
   </header>
@@ -442,7 +446,12 @@ function formatTimeValue(t){
 function timeBlockHTML(s){
   const showKnown = !isUnknownTime(s.sh);
   const doorsKnown = !isUnknownTime(s.dr);
-  const priceLine = (typeof s.p === 'number') ? `<div class="price">from $${Math.round(s.p)}</div>` : '';
+
+  if(!showKnown && !doorsKnown){
+    // Neither time is known — show a "Time TBD" placeholder rather than an empty box,
+    // using the same value/label convention as a real time (value on top, label below).
+    return `<div class="time-block"><div class="time-tbd-value">Time</div><div class="time-tbd-label">TBD</div></div>`;
+  }
 
   const showPair = showKnown
     ? `<div class="time-pair show-pair"><div class="time-value">${formatTimeValue(s.sh)}</div><div class="time-label">Show</div></div>`
@@ -451,9 +460,19 @@ function timeBlockHTML(s){
     ? `<div class="time-pair doors-pair"><div class="time-value">${formatTimeValue(s.dr)}</div><div class="time-label">Doors</div></div>`
     : '';
 
-  // If neither time is known, the block renders with just price (or empty) —
-  // the ticket link lives only on the artist name, not here.
-  return `<div class="time-block">${showPair}${doorsPair}${priceLine}</div>`;
+  return `<div class="time-block">${showPair}${doorsPair}</div>`;
+}
+
+// Returns the price (or "Tickets") as a link — to the show's own ticket URL if it has
+// one, falling back to the venue's general site if not, so this is basically always
+// clickable to somewhere useful rather than being a dead end.
+function priceOrTicketsHTML(s, venue){
+  const url = s.u || (venue && venue.site) || '';
+  if(typeof s.p === 'number'){
+    const label = s.p === 0 ? 'Free' : `$${Math.round(s.p)}`;
+    return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">${label}</a>` : label;
+  }
+  return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">Tickets</a>` : '';
 }
 
 function cardHTML(s, isNew, flatDate, isFavoriteNew){
@@ -475,7 +494,7 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
         const isMore = /& more$/i.test(p);
         return `<span class="artist-chip${isMore?' more':''}">${p}</span>`;
       }).join('');
-      lineup = `<div class="lineup"><div class="lineup-chips">${chips}</div></div>`;
+      lineup = `<div class="lineup-chips">${chips}</div>`;
     } else {
       opener = `<div class="opener">w/ ${s.o}</div>`;
     }
@@ -484,6 +503,8 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
   const watched = WATCHLIST.has(id);
   const dateLine = flatDate ? `<div class="flat-date">${fmtDayDate(s.d)}${s.e?(' – '+fmtDayDate(s.e)):''}</div>` : '';
   const stageInline = s.s ? `<span class="stage">${s.s}</span>` : '';
+  const priceOrTix = priceOrTicketsHTML(s, venue);
+  const venueLine = `<div class="venue-line">${priceOrTix ? priceOrTix + ' &middot; ' : ''}<a class="venue-name-link" href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a>${stageInline}</div>`;
 
   return `
     <div class="card${isNew?' is-new':''}${watched?' is-watched':''}${isFavoriteNew?' is-favorite-new':''}" data-id="${id}">
@@ -495,9 +516,9 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
         ${dateLine}
         <div class="band">${bandLink}</div>
         ${opener}
-        <div class="venue"><a href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a>${stageInline}</div>
+        ${venueLine}
+        ${lineup}
       </div>
-      ${lineup}
     </div>`;
 }
 
@@ -890,6 +911,10 @@ document.getElementById('fav-input').addEventListener('keydown', (e)=>{
 
 document.getElementById('jump-to-artists').addEventListener('click', ()=>{
   document.getElementById('favorite-artists-mgmt').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('jump-to-suggest-venue').addEventListener('click', ()=>{
+  document.getElementById('suggest-venue-section').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 document.getElementById('suggest-venue-signin-btn').addEventListener('click', beginSignIn);
