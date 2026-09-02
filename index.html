@@ -176,12 +176,6 @@
     font-size:10px;font-weight:700;letter-spacing:0.06em;
     padding:2px 8px;border-radius:20px;z-index:2;
   }
-  .favorite-badge{
-    position:absolute;top:-8px;left:10px;
-    background:var(--teal);color:#0b1512;
-    font-size:9px;font-weight:700;letter-spacing:0.03em;
-    padding:1px 6px;border-radius:20px;z-index:2;
-  }
   .time-block{
     background:var(--ink);
     padding:10px 8px;
@@ -561,7 +555,6 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
   return `
     <div class="card${isNew?' is-new':''}${watched?' is-watched':''}" data-id="${id}">
       ${isNew ? '<div class="new-badge">New</div>' : ''}
-      ${isFavoriteNew ? '<div class="favorite-badge">★ Favorite Artist</div>' : ''}
       ${timeBlockHTML(s)}
       <div class="main">
         <button class="star-btn${watched?' active':''}" data-toggle="${id}" data-band="${extractArtistName(s.b)}" title="${watched?'Remove from Favorites':'Add to Favorites'}">${watched?'★':'☆'}</button>
