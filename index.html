@@ -216,8 +216,7 @@
   .venue-line .price-or-tickets:hover{border-bottom-color:var(--teal);}
   .venue-line .venue-name-link{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(201,205,219,0.4);}
   .venue-line .venue-name-link:hover{color:var(--amber);border-bottom-color:var(--amber);}
-  .stage{font-size:11.5px;color:var(--muted);font-style:italic;}
-  .stage::before{content:', ';font-style:normal;color:var(--muted);}
+  .stage-line{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:2px;}
   .star-btn{
     position:absolute;top:8px;right:8px;
     width:26px;height:26px;border-radius:50%;
@@ -371,12 +370,14 @@
 
 <footer class="site-footer">
   <p class="disclaimer">Show details are believed accurate but not guaranteed. Dates, times, and prices can change — always confirm with the venue or ticket link before making plans.</p>
+  <button type="button" class="link-btn" id="subscribe-btn">Subscribe to email updates</button>
+  &nbsp;·&nbsp;
   <button type="button" class="link-btn" id="privacy-toggle-btn">Privacy</button>
   <div id="privacy-details" class="privacy-details" style="display:none;">
     <p>If you sign in, we store your email address, watchlist, and favorite artists so they sync across your devices and power the weekly digest email. Venue suggestions you submit are stored along with your email so we can follow up if needed.</p>
     <p>Digest emails include open and click tracking (via our email provider, Resend) so we can see whether emails are opened and which links get clicked — this is to understand what's actually useful, not to build profiles on anyone. We don't sell or share your information with advertisers or any other third party.</p>
     <p>Site hosting, backend storage, and email delivery are handled by GitHub Pages, Cloudflare, and Resend respectively, each under their own privacy practices.</p>
-    <p>Unsubscribe from emails anytime via the link in any digest. To ask us to delete your data entirely, email <a href="mailto:admin@gigalertchs.com">admin@gigalertchs.com</a>.</p>
+    <p>Unsubscribe from emails anytime via the link in any digest — once you do, signing back in won't automatically re-subscribe you; use the "Subscribe to email updates" link above if you change your mind. To ask us to delete your data entirely, email <a href="mailto:admin@gigalertchs.com">admin@gigalertchs.com</a>.</p>
   </div>
 </footer>
 
@@ -427,7 +428,7 @@ let AUTO_WATCHED = new Set(); // show ids already auto-added to the watchlist vi
 let INITIALIZED = false; // storage is loaded into memory once; after that, in-memory state is authoritative
 
 // --- Account sync (Cloudflare Worker + KV backend) ---
-const WORKER_BASE_URL = 'https://show-tracker-api.gigalertchs.workers.dev';
+const WORKER_BASE_URL = 'https://api.gigalertchs.com';
 const TURNSTILE_SITE_KEY = '0x4AAAAAAEkfZ3ATboand-06';
 let SIGNIN_TURNSTILE_WIDGET_ID = null;
 let SUGGEST_VENUE_TURNSTILE_WIDGET_ID = null;
@@ -530,9 +531,12 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
 
   const watched = WATCHLIST.has(id);
   const dateLine = flatDate ? `<div class="flat-date">${fmtDayDate(s.d)}${s.e?(' – '+fmtDayDate(s.e)):''}</div>` : '';
-  const stageInline = s.s ? `<span class="stage">${s.s}</span>` : '';
+  // Stage name gets its own line below the venue name rather than appended inline —
+  // inline caused the stage name to wrap awkwardly mid-line on narrow phone screens
+  // when the venue name + stage name together didn't fit on one line.
+  const stageLine = s.s ? `<div class="stage-line">${s.s}</div>` : '';
   const priceOrTix = priceOrTicketsHTML(s, venue);
-  const venueLine = `<div class="venue-line">${priceOrTix ? priceOrTix + ' &middot; ' : ''}<a class="venue-name-link" href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a>${stageInline}</div>`;
+  const venueLine = `<div class="venue-line">${priceOrTix ? priceOrTix + ' &middot; ' : ''}<a class="venue-name-link" href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a></div>`;
 
   return `
     <div class="card${isNew?' is-new':''}${watched?' is-watched':''}${isFavoriteNew?' is-favorite-new':''}" data-id="${id}">
@@ -545,6 +549,7 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
         <div class="band">${bandLink}</div>
         ${opener}
         ${venueLine}
+        ${stageLine}
         ${lineup}
       </div>
     </div>`;
@@ -970,6 +975,25 @@ document.getElementById('suggest-venue-signin-btn').addEventListener('click', to
 document.getElementById('privacy-toggle-btn').addEventListener('click', ()=>{
   const el = document.getElementById('privacy-details');
   el.style.display = el.style.display === 'none' ? '' : 'none';
+});
+
+document.getElementById('subscribe-btn').addEventListener('click', async ()=>{
+  if(!SESSION_TOKEN){
+    alert('Sign in first, then you can subscribe to email updates.');
+    toggleSignInSection();
+    return;
+  }
+  try{
+    const res = await fetch(`${WORKER_BASE_URL}/api/subscribe`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SESSION_TOKEN}` }
+    });
+    const data = await res.json();
+    if(data.error){ alert(data.error); return; }
+    alert(data.message || "You're subscribed!");
+  }catch(e){
+    alert('Something went wrong. Please try again.');
+  }
 });
 
 async function submitVenueSuggestion(){

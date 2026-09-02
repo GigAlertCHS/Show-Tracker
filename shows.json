@@ -1,5 +1,5 @@
 {
-  "dataUpdatedAt": "2026-09-01",
+  "dataUpdatedAt": "2026-09-02",
   "venues": {
     "PH": {
       "name": "Charleston Pour House",
@@ -54,6 +54,42 @@
       "site": "https://charlestonjazz.com/performance/charleston-jazz-festival/",
       "type": "festival",
       "color": "#7ac9e0"
+    },
+    "FD": {
+      "name": "Firefly Distillery",
+      "site": "https://fireflydistillery.com/concerts/",
+      "type": "venue",
+      "color": "#b06ab3"
+    },
+    "GC": {
+      "name": "Charleston Gaillard Center",
+      "site": "https://gaillardcenter.org/",
+      "type": "venue",
+      "color": "#6a7ac9"
+    },
+    "RFP": {
+      "name": "Riverfront Park",
+      "site": "https://www.northcharleston.org/visitors/attractions_points_of_interest/riverfront_park/index.php",
+      "type": "venue",
+      "color": "#c9663a"
+    },
+    "NRB": {
+      "name": "New Realm Brewing",
+      "site": "https://newrealmbrewing.com/charleston/live-music-events/",
+      "type": "venue",
+      "color": "#a8825a"
+    },
+    "TR": {
+      "name": "Tin Roof",
+      "site": "http://www.charlestontinroof.com/",
+      "type": "venue",
+      "color": "#a63d4a"
+    },
+    "RA": {
+      "name": "The Royal American",
+      "site": "http://www.theroyalamerican.com/",
+      "type": "venue",
+      "color": "#c9a23a"
     }
   },
   "shows": [
@@ -2192,6 +2228,504 @@
       "v": "WJ",
       "u": "",
       "added": "2026-09-01"
+    },
+    {
+      "d": "2026-09-06",
+      "b": "NEEDTOBREATHE — The Long Surrender Tour",
+      "o": "Drew and Ellie Holcomb",
+      "dr": "—",
+      "sh": "6:30 PM",
+      "v": "FD",
+      "u": ""
+    },
+    {
+      "d": "2026-09-10",
+      "b": "Billy Currington & Kip Moore",
+      "dr": "—",
+      "sh": "7:00 PM",
+      "v": "FD",
+      "u": ""
+    },
+    {
+      "d": "2026-09-22",
+      "b": "Charley Crockett — Age of the Ram Tour",
+      "dr": "—",
+      "sh": "7:00 PM",
+      "v": "FD",
+      "u": ""
+    },
+    {
+      "d": "2026-10-02",
+      "b": "Turnpike Troubadours",
+      "dr": "—",
+      "sh": "6:00 PM",
+      "v": "FD",
+      "u": ""
+    },
+    {
+      "d": "2026-09-19",
+      "b": "Oktoberfest at New Realm — Live Music All Day",
+      "dr": "—",
+      "sh": "—",
+      "v": "NRB",
+      "u": ""
+    },
+    {
+      "d": "2026-09-04",
+      "b": "Lowcountry Jazz Festival 2026: The All White Party",
+      "sh": "7:00 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/events/lowcountry-jazz-festival-2026-the-all-white-party/"
+    },
+    {
+      "d": "2026-09-05",
+      "b": "Lowcountry Jazz Festival 2026: Day One",
+      "sh": "7:00 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=55886"
+    },
+    {
+      "d": "2026-09-06",
+      "b": "Lowcountry Jazz Festival 2026: Day Two",
+      "sh": "7:00 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=55888"
+    },
+    {
+      "d": "2026-09-25",
+      "b": "CSO Masterworks 1: CSO Season Opening Weekend",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58341"
+    },
+    {
+      "d": "2026-09-26",
+      "b": "CSO Masterworks 1: CSO Season Opening Weekend",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58344"
+    },
+    {
+      "d": "2026-09-28",
+      "b": "Lang Lang with the CSO",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=56582"
+    },
+    {
+      "d": "2026-10-09",
+      "b": "CSO Masterworks 2: Firebird and Fairy Tales",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58346"
+    },
+    {
+      "d": "2026-10-10",
+      "b": "CSO Family Concert: Peter and the Wolf",
+      "sh": "11:00 AM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58246"
+    },
+    {
+      "d": "2026-10-10",
+      "b": "CSO Masterworks 2: Firebird and Fairy Tales",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58349"
+    },
+    {
+      "d": "2026-10-15",
+      "b": "Black Violin",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=55837"
+    },
+    {
+      "d": "2026-10-20",
+      "b": "Chucho Valdés 85th Birthday Celebration",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=56195"
+    },
+    {
+      "d": "2026-10-25",
+      "b": "Ghostbusters in Concert",
+      "sh": "6:00 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=55169"
+    },
+    {
+      "d": "2026-10-29",
+      "b": "CSO Pops 1: The Witching Hour",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58378"
+    },
+    {
+      "d": "2026-11-01",
+      "b": "The Complete Philip Glass Piano Etudes",
+      "sh": "5:00 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=56224"
+    },
+    {
+      "d": "2026-11-20",
+      "b": "CSO Masterworks 3: Concerto for Orchestra",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58351"
+    },
+    {
+      "d": "2026-11-21",
+      "b": "CSO Masterworks 3: Concerto for Orchestra",
+      "sh": "7:30 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=58354"
+    },
+    {
+      "d": "2026-11-22",
+      "b": "An Evening with Renée Elise Goldsberry",
+      "sh": "7:00 PM",
+      "dr": "—",
+      "v": "GC",
+      "u": "https://gaillardcenter.org/seat-selector?performance=55828"
+    },
+    {
+      "d": "2026-09-05",
+      "b": "Never Really Over",
+      "o": "Sunhouse, Erin Indigo",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/never-really-over-9-5-26"
+    },
+    {
+      "d": "2026-09-10",
+      "b": "Campbell & Sons",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 0.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/campbell-and-sons-9-10-26"
+    },
+    {
+      "d": "2026-09-11",
+      "b": "Haunters",
+      "o": "Windley, Sigourney's",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/haunters-9-11-26"
+    },
+    {
+      "d": "2026-09-12",
+      "b": "Jerkweed",
+      "o": "Pocket Full Of Shells",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/jerkweed-9-12-26"
+    },
+    {
+      "d": "2026-09-17",
+      "b": "Campbell & Sons",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 0.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/campbell-and-sons-9-17-26"
+    },
+    {
+      "d": "2026-09-18",
+      "b": "Dog Named Squid (Album Release)",
+      "o": "The Boonies, Social Void",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/dog-namewd-squid-9-18-26"
+    },
+    {
+      "d": "2026-09-19",
+      "b": "Mommy's Little Monster (Social Distortion Tribute)",
+      "o": "Super Runaway, Modern Fires",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/mommys-little-monster-9-19-26"
+    },
+    {
+      "d": "2026-09-24",
+      "b": "Campbell & Sons",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 0.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/campbell-and-sons-9-24-26"
+    },
+    {
+      "d": "2026-09-25",
+      "b": "Mindwater",
+      "o": "Impending Joy, Concept Rxch",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/mindwater-9-25-26"
+    },
+    {
+      "d": "2026-09-26",
+      "b": "Maraluso",
+      "o": "Visit Neptune, Stono River Project",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/maraluso-9-26-26"
+    },
+    {
+      "d": "2026-10-01",
+      "b": "Campbell & Sons",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 0.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/campbell-and-sons-10-1-26"
+    },
+    {
+      "d": "2026-10-02",
+      "b": "Daddy's Beemer",
+      "o": "Sunhouse",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/daddys-beemer-10-2-26"
+    },
+    {
+      "d": "2026-10-03",
+      "b": "Meredith Foster",
+      "o": "Macelyn Batten, Bennett Bost",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/meredith-foster-10-3-26"
+    },
+    {
+      "d": "2026-10-09",
+      "b": "Beau Monde",
+      "o": "Gritty Flyright, Sidecar",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/beau-monde-10-9-26"
+    },
+    {
+      "d": "2026-10-16",
+      "b": "Nick Matthews",
+      "o": "Olympic Blvd, Kendall Wase",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/nick-matthews-10-16-26"
+    },
+    {
+      "d": "2026-10-17",
+      "b": "Campbell & Sons — 50th Anniversary Show",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/campbell-and-sons-10-17-26"
+    },
+    {
+      "d": "2026-10-23",
+      "b": "Sounds of BlackFox",
+      "o": "Royal Tide, Gator Food",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/sounds-of-blackfox-10-23-26"
+    },
+    {
+      "d": "2026-10-24",
+      "b": "Nordista Freeze",
+      "o": "Camisole",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/nordista-freeze-10-24-26"
+    },
+    {
+      "d": "2026-10-30",
+      "b": "Boogieman VI Kick-Off Party",
+      "o": "The Saint Cecilia",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/boogieman-kick-off-party-10-30-26"
+    },
+    {
+      "d": "2026-10-31",
+      "b": "6th Annual Boogieman Halloween Festival",
+      "o": "15 bands across 2 stages",
+      "dr": "12:00 PM",
+      "sh": "1:00 PM",
+      "v": "RA",
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85050"
+    },
+    {
+      "d": "2026-11-06",
+      "b": "The Smoaks",
+      "o": "Nick Matthews",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/the-smoaks-11-6-26"
+    },
+    {
+      "d": "2026-11-07",
+      "b": "Tyrie",
+      "o": "Slim S.O.U.L., JT Rawww",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/tyrie-11-7-26"
+    },
+    {
+      "d": "2026-11-13",
+      "b": "Kenny George Band",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/kenny-george-band-11-13-26"
+    },
+    {
+      "d": "2026-11-14",
+      "b": "The Head",
+      "o": "Emma Grace Burton, Lilly Hartle",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/the-head-11-14-26"
+    },
+    {
+      "d": "2026-11-20",
+      "b": "Hotel Hugo",
+      "o": "Yesterday's Clothes",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/hotel-hugo-11-20-26"
+    },
+    {
+      "d": "2026-11-21",
+      "b": "Buko Boys",
+      "o": "Winterteeth, Never Really Over",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/buko-boys-11-21-26"
+    },
+    {
+      "d": "2026-11-27",
+      "b": "C. Shreve The Professor",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/c-shreve-the-professor-11-27-26"
+    },
+    {
+      "d": "2026-11-28",
+      "b": "North By North",
+      "o": "Thoroughfare, Garter",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/north-by-north-11-28-26"
+    },
+    {
+      "d": "2026-12-04",
+      "b": "The Defilers",
+      "o": "Jared Petteys",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/the-defilers-12-4-26"
+    },
+    {
+      "d": "2026-12-05",
+      "b": "Rap-A-Lot: Royal Finale",
+      "o": "DC, THRY, ShogunRew, Mahatma Mook, JxShamar, Amaru tha God",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/rap-a-lot-12-5-26"
+    },
+    {
+      "d": "2026-12-11",
+      "b": "CARLS",
+      "o": "The Inhibitors",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/carls-12-11-26"
+    },
+    {
+      "d": "2026-12-19",
+      "b": "Campbell Brown's Holiday Show",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/campbell-brown-holiday-show-12-19-26"
+    },
+    {
+      "d": "2027-01-29",
+      "b": "North By North",
+      "o": "The Fiori, The Boonies",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "p": 10.0,
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/north-by-north-1-29-27"
     }
   ]
 }
