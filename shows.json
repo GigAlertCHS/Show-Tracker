@@ -1140,7 +1140,8 @@
       "dr": "see ticket link",
       "sh": "7:30 PM",
       "v": "REF",
-      "u": "https://www.ticketweb.com/event/trampled-by-turtles-the-refinery-tickets/14856503"
+      "u": "https://www.ticketweb.com/event/trampled-by-turtles-the-refinery-tickets/14856503",
+      "o": "The Last Revel"
     },
     {
       "d": "2026-10-17",
@@ -2750,6 +2751,79 @@
       "p": 10.0,
       "v": "RA",
       "u": "http://www.theroyalamerican.com/schedule/north-by-north-1-29-27"
+    },
+    {
+      "d": "2026-09-02",
+      "b": "Sheer Terror",
+      "o": "South Held Social Club",
+      "dr": "—",
+      "sh": "—",
+      "v": "TR",
+      "u": "https://www.songkick.com/concerts/43381177-sheer-terror-at-tin-roof-charleston"
+    },
+    {
+      "d": "2026-09-21",
+      "b": "Major Moment",
+      "dr": "—",
+      "sh": "6:00 PM",
+      "v": "TR",
+      "u": "https://www.bandsintown.com/e/1039863228-major-moment-at-tin-roof"
+    },
+    {
+      "d": "2026-10-08",
+      "b": "stop.drop.rewind",
+      "dr": "—",
+      "sh": "7:30 PM",
+      "v": "TR",
+      "u": "https://www.bandsintown.com/e/1039339215-stop.drop.rewind-at-tin-roof"
+    },
+    {
+      "d": "2026-10-28",
+      "b": "Infinitefreefall",
+      "dr": "—",
+      "sh": "8:00 PM",
+      "v": "TR",
+      "u": "https://www.bandsintown.com/e/1040117990-infinitefreefall-at-tin-roof"
+    },
+    {
+      "d": "2026-11-19",
+      "b": "Üga Büga",
+      "dr": "—",
+      "sh": "7:00 PM",
+      "v": "TR",
+      "u": "https://www.bandsintown.com/e/1039657467-uga-buga-at-tin-roof"
+    },
+    {
+      "d": "2026-09-12",
+      "b": "High 5",
+      "dr": "—",
+      "sh": "9:00 PM",
+      "v": "WJ",
+      "u": "https://www.bandsintown.com/e/1039927626-high-5-at-windjammer"
+    },
+    {
+      "d": "2026-12-05",
+      "b": "Wim Tapley & The Cannons",
+      "dr": "—",
+      "sh": "7:00 PM",
+      "v": "WJ",
+      "u": "https://www.bandsintown.com/e/1040043272-wim-tapley-and-the-cannons-at-windjammer"
+    },
+    {
+      "d": "2027-01-01",
+      "b": "The Piedmont Boys",
+      "dr": "—",
+      "sh": "8:00 PM",
+      "v": "WJ",
+      "u": "https://www.bandsintown.com/e/1039867208-the-piedmont-boys-at-windjammer"
+    },
+    {
+      "d": "2026-09-11",
+      "b": "TFOBV Drums",
+      "dr": "—",
+      "sh": "6:00 PM",
+      "v": "REF",
+      "u": "https://www.bandsintown.com/e/1039403028-tfobv-drums-at-the-refinery-charleston"
     }
   ]
 }

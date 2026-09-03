@@ -69,9 +69,6 @@
   .link-btn:hover{color:#6fe0c2;}
   .last-updated{font-size:11.5px;color:var(--muted);}
   .last-updated b{color:var(--text);font-weight:600;}
-  .genre-filter-row{margin-top:8px;font-size:11.5px;color:var(--muted);}
-  .genre-filter-row label{display:flex;align-items:center;gap:6px;cursor:pointer;width:fit-content;}
-  .genre-filter-row input[type="checkbox"]{cursor:pointer;}
   .meta-note{
     background:var(--panel);
     border:1px solid var(--line);
@@ -266,6 +263,10 @@
   .venue-view .venue-address a{color:var(--muted);text-decoration:none;border-bottom:1px dotted rgba(149,153,173,0.5);}
   .venue-view .venue-address a:hover{color:var(--amber);border-bottom-color:var(--amber);}
   .venue-view .venue-site-link{font-size:12px;color:var(--muted);margin-bottom:18px;display:block;}
+  .classical-note{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:12.5px;color:var(--muted);}
+  .classical-note p{margin:0 0 8px 0;}
+  .classical-note label{display:flex;align-items:center;gap:6px;cursor:pointer;width:fit-content;}
+  .classical-note input[type="checkbox"]{cursor:pointer;}
   .venue-view .venue-site-link a{color:var(--amber);text-decoration:none;}
   .empty{color:var(--muted);font-size:13px;padding:8px 0;}
   .flag{font-size:11px;color:var(--muted);font-style:italic;width:100%;}
@@ -312,12 +313,6 @@
         <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
         <button type="button" class="link-btn" id="jump-to-suggest-venue">Suggest a venue ↓</button>
       </div>
-    </div>
-    <div class="genre-filter-row">
-      <label>
-        <input type="checkbox" id="hide-classical-checkbox">
-        Hide classical music
-      </label>
     </div>
   </header>
 
@@ -434,12 +429,6 @@ let FAVORITES = []; // array of artist name strings, as entered by the user
 let AUTO_WATCHED = new Set(); // show ids already auto-added to the watchlist via a favorite match —
                                 // tracked separately so a manual un-watch later doesn't get overridden
 let INITIALIZED = false; // storage is loaded into memory once; after that, in-memory state is authoritative
-// Purely a display preference (not synced to the server like watchlist/favorites) —
-// only meaningful for shows that have a "g" (genre) field set, which right now is
-// just the Gaillard Center classical/CSO shows since that's the only source that
-// gave us clean genre data. Future research needs to keep tagging genre for this
-// to keep working on new shows.
-let HIDE_CLASSICAL = localStorage.getItem('hideClassical') === 'true';
 
 // --- Account sync (Cloudflare Worker + KV backend) ---
 const WORKER_BASE_URL = 'https://api.gigalertchs.com';
@@ -805,10 +794,13 @@ async function render(){
   // dropped, using the end date for multi-day events so an ongoing festival doesn't
   // disappear mid-run just because its start date has passed.
   const pastCutoff = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const sorted = SHOWS
+  const pastCutoffAll = SHOWS
     .filter(s => (s.e || s.d) >= pastCutoff)
-    .filter(s => !(HIDE_CLASSICAL && s.g === 'classical'))
     .sort((a,b)=> a.d.localeCompare(b.d));
+  // Classical is always excluded from the main site views (not a user toggle here) —
+  // a venue's own page still has full access via pastCutoffAll, with its own local
+  // checkbox to reveal classical shows specifically for that venue if it has any.
+  const sorted = pastCutoffAll.filter(s => s.g !== 'classical');
 
   sorted.forEach(s=> currentIds.add(showId(s)));
 
@@ -906,7 +898,7 @@ async function render(){
   [venueLinksEl, festivalLinksEl].forEach(el=>{
     el.querySelectorAll('[data-venue]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        showVenueView(btn.getAttribute('data-venue'), sorted);
+        showVenueView(btn.getAttribute('data-venue'), pastCutoffAll);
       });
     });
   });
@@ -922,33 +914,56 @@ async function render(){
 
 function showVenueView(code, sorted){
   const venue = VENUES[code];
-  const shows = sorted.filter(s => s.v === code);
-  const groups = {};
-  shows.forEach(s=>{
-    const key = s.d + (s.e ? "_" + s.e : "");
-    if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
-    groups[key].items.push(s);
-  });
-  const body = Object.values(groups).map(g=>{
-    const head = fmtDate(g.d, g.e);
-    const cards = g.items.map(s=>cardHTML(s, false, false, matchesFavorite(extractArtistName(s.b)))).join('');
-    return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
-  }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
+  const allShowsForVenue = sorted.filter(s => s.v === code);
+  const hasClassical = allShowsForVenue.some(s => s.g === 'classical');
+
+  function buildBody(showClassical){
+    const shows = showClassical ? allShowsForVenue : allShowsForVenue.filter(s => s.g !== 'classical');
+    const groups = {};
+    shows.forEach(s=>{
+      const key = s.d + (s.e ? "_" + s.e : "");
+      if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
+      groups[key].items.push(s);
+    });
+    return Object.values(groups).map(g=>{
+      const head = fmtDate(g.d, g.e);
+      const cards = g.items.map(s=>cardHTML(s, false, false, matchesFavorite(extractArtistName(s.b)))).join('');
+      return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
+    }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
+  }
 
   const viewEl = document.getElementById('venue-view');
   const addressLine = venue.address
     ? `<div class="venue-address"><a href="https://maps.apple.com/?q=${encodeURIComponent(venue.address)}" target="_blank" rel="noopener">${venue.address}</a></div>`
     : '';
+  // Only shown at all if this venue actually has classical-tagged shows — no point
+  // cluttering every other venue's page with a note that doesn't apply to them.
+  const classicalNoteHtml = hasClassical ? `
+    <div class="classical-note">
+      <p>Classical/orchestral shows here are hidden by default across the site.</p>
+      <label>
+        <input type="checkbox" id="show-classical-checkbox">
+        Show classical music for this venue
+      </label>
+    </div>` : '';
+
   viewEl.innerHTML = `
     <button type="button" class="back-link" id="back-to-all">← Back to full tracker</button>
     <h2>${venue.name}</h2>
     ${addressLine}
     <span class="venue-site-link"><a href="${venue.site}" target="_blank" rel="noopener">${venue.site} ↗</a></span>
-    ${body}
+    ${classicalNoteHtml}
+    <div id="venue-shows-body">${buildBody(false)}</div>
   `;
   document.getElementById('back-to-all').addEventListener('click', ()=>{
     showAllView();
   });
+  if(hasClassical){
+    document.getElementById('show-classical-checkbox').addEventListener('change', (e)=>{
+      document.getElementById('venue-shows-body').innerHTML = buildBody(e.target.checked);
+      attachWatchHandlers();
+    });
+  }
   attachWatchHandlers();
 
   document.getElementById('all-view').style.display = 'none';
@@ -1062,14 +1077,6 @@ document.getElementById('signin-submit-btn').addEventListener('click', submitSig
   await loadShowData(); // fetch shows.json before anything that reads SHOWS/VENUES
   await handleIncomingSession(); // may set SESSION_TOKEN/merge server data before first render
   renderAccountUI();
-
-  const hideClassicalCheckbox = document.getElementById('hide-classical-checkbox');
-  hideClassicalCheckbox.checked = HIDE_CLASSICAL;
-  hideClassicalCheckbox.addEventListener('change', async ()=>{
-    HIDE_CLASSICAL = hideClassicalCheckbox.checked;
-    localStorage.setItem('hideClassical', String(HIDE_CLASSICAL));
-    await render();
-  });
 
   await render();
 })();
