@@ -471,6 +471,20 @@ function matchesFavorite(bandName){
 function isUnknownTime(t){
   return !t || /see ticket link|tba|^—$/i.test(t.trim());
 }
+// Converts "8:00 PM" into minutes-since-midnight for sorting. Unknown/unparseable
+// times sort last (a show with no known time shouldn't jump ahead of ones with a
+// real, known start time).
+function timeToMinutes(t){
+  if(isUnknownTime(t)) return 9999;
+  const m = t.match(/(\d{1,2}):(\d{2})\s*([AP]M)/i);
+  if(!m) return 9999;
+  let hours = parseInt(m[1], 10);
+  const minutes = parseInt(m[2], 10);
+  const ampm = m[3].toUpperCase();
+  if(ampm === 'PM' && hours !== 12) hours += 12;
+  if(ampm === 'AM' && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
 function formatTimeValue(t){
   const m = t.match(/^(\d{1,2}:\d{2})\s*([AP]M)$/i);
   return m ? `${m[1]}<span class="ampm">${m[2].toUpperCase()}</span>` : t;
@@ -876,6 +890,17 @@ async function render(){
     if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
     groups[key].items.push(s);
   });
+  // Within a given day, cluster shows by venue, and order each venue's shows by
+  // show time ascending — so a day with multiple shows at the same venue reads as
+  // one clear block instead of being scattered based on data-entry order.
+  Object.values(groups).forEach(g => {
+    g.items.sort((a, b) => {
+      const venueA = (VENUES[a.v] && VENUES[a.v].name) || a.v;
+      const venueB = (VENUES[b.v] && VENUES[b.v].name) || b.v;
+      if(venueA !== venueB) return venueA.localeCompare(venueB);
+      return timeToMinutes(a.sh) - timeToMinutes(b.sh);
+    });
+  });
   mainEl.innerHTML = Object.values(groups).map(g=>{
     const head = fmtDate(g.d, g.e);
     const cards = g.items.map(s=>cardHTML(s, false, false, favHit(s))).join('');
@@ -925,6 +950,7 @@ function showVenueView(code, sorted){
       if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
       groups[key].items.push(s);
     });
+    Object.values(groups).forEach(g => g.items.sort((a, b) => timeToMinutes(a.sh) - timeToMinutes(b.sh)));
     return Object.values(groups).map(g=>{
       const head = fmtDate(g.d, g.e);
       const cards = g.items.map(s=>cardHTML(s, false, false, matchesFavorite(extractArtistName(s.b)))).join('');
