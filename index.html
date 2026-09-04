@@ -895,24 +895,38 @@ async function handleIncomingSession(){
   }
 }
 
+// Attached exactly once (called from init, not from render or showVenueView) --
+// star buttons are created and destroyed constantly as cards re-render, so binding
+// a fresh listener to each one every render caused listeners to pile up on any
+// button that survived a re-render un-replaced (e.g. venue-view cards, which used
+// to persist across a toggle). Event delegation on a single listener sidesteps
+// that entirely: there is never more than one handler, regardless of how many
+// times anything re-renders.
 function attachWatchHandlers(){
-  document.querySelectorAll('[data-toggle]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const id = btn.getAttribute('data-toggle');
-      const turningOn = !MY_SHOWS.has(id);
-      if(turningOn) MY_SHOWS.add(id); else MY_SHOWS.delete(id);
+  document.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-toggle]');
+    if(!btn) return;
+    const id = btn.getAttribute('data-toggle');
+    const turningOn = !MY_SHOWS.has(id);
+    if(turningOn) MY_SHOWS.add(id); else MY_SHOWS.delete(id);
 
-      // Favoriting a show is fully independent of Favorite Artists — starring or
-      // unstarring one show never adds or removes anything from that list. Only the
-      // Favorite Artists section itself (fav-input / fav-chips remove) touches FAVORITES.
+    // Favoriting a show is fully independent of Favorite Artists — starring or
+    // unstarring one show never adds or removes anything from that list. Only the
+    // Favorite Artists section itself (fav-input / fav-chips remove) touches FAVORITES.
 
-      render(); // reflect immediately, regardless of whether the save below succeeds
-      const wObj = {};
-      MY_SHOWS.forEach(k=>wObj[k]=true);
-      await saveMap('my-shows', wObj);
-    });
+    // Refresh whichever view is actually on screen -- a toggle clicked from inside
+    // a venue page needs that page's own body refreshed (the global render() below
+    // only ever touched #all-view, which is invisible there, so previously the
+    // star's new state never appeared until you left and came back).
+    const inVenueView = document.getElementById('venue-view').style.display !== 'none';
+    if(inVenueView) renderVenueShowsBody(); else await render();
+
+    const wObj = {};
+    MY_SHOWS.forEach(k=>wObj[k]=true);
+    await saveMap('my-shows', wObj);
   });
 }
+
 
 async function render(){
   if(!INITIALIZED){
@@ -1092,32 +1106,33 @@ async function render(){
   const stamp = new Date(DATA_UPDATED_AT + "T12:00:00");
   const stampStr = stamp.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
   lastUpdatedEl.innerHTML = `Last updated: <b>${stampStr}</b>`;
+}
 
-  attachWatchHandlers();
+let CURRENT_VENUE_CODE = null;
+let CURRENT_VENUE_SORTED = null;
+
+function renderVenueShowsBody(){
+  const bodyEl = document.getElementById('venue-shows-body');
+  if(!bodyEl || !CURRENT_VENUE_CODE) return;
+  const allShowsForVenue = CURRENT_VENUE_SORTED.filter(s => s.v === CURRENT_VENUE_CODE && s.g !== 'classical');
+  const groups = {};
+  allShowsForVenue.forEach(s=>{
+    const key = s.d + (s.e ? "_" + s.e : "");
+    if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
+    groups[key].items.push(s);
+  });
+  Object.values(groups).forEach(g => g.items.sort((a, b) => timeToMinutes(a.sh) - timeToMinutes(b.sh)));
+  bodyEl.innerHTML = Object.values(groups).map(g=>{
+    const head = fmtDate(g.d, g.e);
+    const cards = g.items.map(s=>cardHTML(s, false, false)).join('');
+    return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
+  }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
 }
 
 function showVenueView(code, sorted){
   const venue = VENUES[code];
-  // Classical/orchestral shows are unconditionally excluded here -- no reveal toggle
-  // anymore. Was previously hide-by-default with a per-venue "show classical" checkbox;
-  // that option was removed, so this filter is now permanent rather than the default
-  // of a choice a visitor could opt out of.
-  const allShowsForVenue = sorted.filter(s => s.v === code && s.g !== 'classical');
-
-  function buildBody(){
-    const groups = {};
-    allShowsForVenue.forEach(s=>{
-      const key = s.d + (s.e ? "_" + s.e : "");
-      if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
-      groups[key].items.push(s);
-    });
-    Object.values(groups).forEach(g => g.items.sort((a, b) => timeToMinutes(a.sh) - timeToMinutes(b.sh)));
-    return Object.values(groups).map(g=>{
-      const head = fmtDate(g.d, g.e);
-      const cards = g.items.map(s=>cardHTML(s, false, false)).join('');
-      return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
-    }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
-  }
+  CURRENT_VENUE_CODE = code;
+  CURRENT_VENUE_SORTED = sorted;
 
   const viewEl = document.getElementById('venue-view');
   const addressLine = venue.address
@@ -1129,12 +1144,12 @@ function showVenueView(code, sorted){
     <h2>${venue.name}</h2>
     ${addressLine}
     <span class="venue-site-link"><a href="${venue.site}" target="_blank" rel="noopener">${venue.site} ↗</a></span>
-    <div id="venue-shows-body">${buildBody()}</div>
+    <div id="venue-shows-body"></div>
   `;
+  renderVenueShowsBody();
   document.getElementById('back-to-all').addEventListener('click', ()=>{
     showAllView();
   });
-  attachWatchHandlers();
 
   document.getElementById('all-view').style.display = 'none';
   viewEl.style.display = 'block';
@@ -1293,6 +1308,7 @@ document.getElementById('filter-apply-btn').addEventListener('click', ()=>{
 });
 
 (async function init(){
+  attachWatchHandlers(); // one-time delegated listener -- see its own comment for why
   await loadShowData(); // fetch shows.json before anything that reads SHOWS/VENUES
   await handleIncomingSession(); // may set SESSION_TOKEN/merge server data before first render
   renderAccountUI();
