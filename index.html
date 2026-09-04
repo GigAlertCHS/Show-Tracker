@@ -18,6 +18,7 @@
     --amber-dim:#8a672a;
     --teal:#4fd1b0;
     --gold:#e0c46a;
+    --sold-out:#c96a6a;
     --deck:#c17a4a;
     --beach:#4fb0d1;
   }
@@ -204,6 +205,8 @@
   .price-col{flex:0 0 58px;white-space:nowrap;}
   .venue-col{flex:1;min-width:0;}
   .venue-line .price-or-tickets{color:var(--teal);text-decoration:none;border-bottom:1px dotted rgba(79,209,176,0.4);}
+  .venue-line .sold-out-label{color:var(--sold-out);font-weight:700;letter-spacing:0.02em;}
+  .venue-line .low-tix-label{color:var(--gold);font-weight:700;text-decoration:none;border-bottom:1px dotted rgba(224,196,106,0.4);}
   .venue-line .price-or-tickets:hover{border-bottom-color:var(--teal);}
   .venue-line .venue-name-link{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(201,205,219,0.4);}
   .venue-line .venue-name-link:hover{color:var(--amber);border-bottom-color:var(--amber);}
@@ -316,10 +319,6 @@
   .venue-view .venue-address a{color:var(--muted);text-decoration:none;border-bottom:1px dotted rgba(149,153,173,0.5);}
   .venue-view .venue-address a:hover{color:var(--amber);border-bottom-color:var(--amber);}
   .venue-view .venue-site-link{font-size:12px;color:var(--muted);margin-bottom:18px;display:block;}
-  .classical-note{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:12.5px;color:var(--muted);}
-  .classical-note p{margin:0 0 8px 0;}
-  .classical-note label{display:flex;align-items:center;gap:6px;cursor:pointer;width:fit-content;}
-  .classical-note input[type="checkbox"]{cursor:pointer;}
   .venue-view .venue-site-link a{color:var(--amber);text-decoration:none;}
   .empty{color:var(--muted);font-size:13px;padding:8px 0;}
   .flag{font-size:11px;color:var(--muted);font-style:italic;width:100%;}
@@ -629,7 +628,17 @@ function timeBlockHTML(s){
 // one, falling back to the venue's general site if not, so this is basically always
 // clickable to somewhere useful rather than being a dead end.
 function priceOrTicketsHTML(s, venue){
+  // Sold-out status always wins over price/tickets -- there's nothing to buy, so a
+  // price or a "Tickets" link would be actively misleading. Not a link, since a
+  // sold-out event page has nothing useful to click through to (no waitlist support
+  // on any of the venues' platforms currently).
+  if(s.soldOut) return `<span class="sold-out-label">Sold Out</span>`;
   const url = s.u || (venue && venue.site) || '';
+  // Low Tix is a real status some venues surface (still purchasable, just running low)
+  // -- distinct from Sold Out, so it stays a working link rather than plain text.
+  if(s.lowTix){
+    return url ? `<a class="low-tix-label" href="${url}" target="_blank" rel="noopener">Low Tix</a>` : `<span class="low-tix-label">Low Tix</span>`;
+  }
   if(typeof s.p === 'number'){
     const label = s.p === 0 ? 'Free' : `$${Math.round(s.p)}`;
     return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">${label}</a>` : label;
@@ -917,9 +926,9 @@ async function render(){
   const pastCutoffAll = SHOWS
     .filter(s => (s.e || s.d) >= pastCutoff)
     .sort((a,b)=> a.d.localeCompare(b.d));
-  // Classical is always excluded from the main site views (not a user toggle here) —
-  // a venue's own page still has full access via pastCutoffAll, with its own local
-  // checkbox to reveal classical shows specifically for that venue if it has any.
+  // Classical/orchestral shows are excluded everywhere, unconditionally -- main list,
+  // Added This Week, and individual venue pages alike. There is no reveal toggle
+  // anymore (there used to be one, per-venue); this filter is now the only word on it.
   const sorted = pastCutoffAll.filter(s => s.g !== 'classical');
 
   sorted.forEach(s=> currentIds.add(showId(s)));
@@ -1082,13 +1091,15 @@ async function render(){
 
 function showVenueView(code, sorted){
   const venue = VENUES[code];
-  const allShowsForVenue = sorted.filter(s => s.v === code);
-  const hasClassical = allShowsForVenue.some(s => s.g === 'classical');
+  // Classical/orchestral shows are unconditionally excluded here -- no reveal toggle
+  // anymore. Was previously hide-by-default with a per-venue "show classical" checkbox;
+  // that option was removed, so this filter is now permanent rather than the default
+  // of a choice a visitor could opt out of.
+  const allShowsForVenue = sorted.filter(s => s.v === code && s.g !== 'classical');
 
-  function buildBody(showClassical){
-    const shows = showClassical ? allShowsForVenue : allShowsForVenue.filter(s => s.g !== 'classical');
+  function buildBody(){
     const groups = {};
-    shows.forEach(s=>{
+    allShowsForVenue.forEach(s=>{
       const key = s.d + (s.e ? "_" + s.e : "");
       if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
       groups[key].items.push(s);
@@ -1105,34 +1116,17 @@ function showVenueView(code, sorted){
   const addressLine = venue.address
     ? `<div class="venue-address"><a href="https://maps.apple.com/?q=${encodeURIComponent(venue.address)}" target="_blank" rel="noopener">${venue.address}</a></div>`
     : '';
-  // Only shown at all if this venue actually has classical-tagged shows — no point
-  // cluttering every other venue's page with a note that doesn't apply to them.
-  const classicalNoteHtml = hasClassical ? `
-    <div class="classical-note">
-      <p>Classical/orchestral shows here are hidden by default across the site.</p>
-      <label>
-        <input type="checkbox" id="show-classical-checkbox">
-        Show classical music for this venue
-      </label>
-    </div>` : '';
 
   viewEl.innerHTML = `
     <button type="button" class="back-link" id="back-to-all">← Back to full tracker</button>
     <h2>${venue.name}</h2>
     ${addressLine}
     <span class="venue-site-link"><a href="${venue.site}" target="_blank" rel="noopener">${venue.site} ↗</a></span>
-    ${classicalNoteHtml}
-    <div id="venue-shows-body">${buildBody(false)}</div>
+    <div id="venue-shows-body">${buildBody()}</div>
   `;
   document.getElementById('back-to-all').addEventListener('click', ()=>{
     showAllView();
   });
-  if(hasClassical){
-    document.getElementById('show-classical-checkbox').addEventListener('change', (e)=>{
-      document.getElementById('venue-shows-body').innerHTML = buildBody(e.target.checked);
-      attachWatchHandlers();
-    });
-  }
   attachWatchHandlers();
 
   document.getElementById('all-view').style.display = 'none';

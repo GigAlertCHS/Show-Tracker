@@ -606,7 +606,7 @@
       "u": "https://go.seated.com/tour-events/37058618-abd2-4e67-a3c8-5ee96c93f65e"
     },
     {
-      "d": "2026-09-17",
+      "d": "2026-09-13",
       "b": "The Swimming Pool Q's",
       "s": "Inside Stage",
       "dr": "—",
@@ -626,7 +626,7 @@
       "p": 15
     },
     {
-      "d": "2026-09-18",
+      "d": "2026-09-17",
       "b": "Winyah",
       "o": "Old Mervs",
       "s": "NÜTRL Beach Stage — Night 1",
@@ -657,7 +657,7 @@
       "p": 30
     },
     {
-      "d": "2026-09-19",
+      "d": "2026-09-18",
       "b": "Winyah",
       "o": "Old Mervs",
       "s": "NÜTRL Beach Stage — Night 2",
@@ -1833,7 +1833,8 @@
       "dr": "7:30 PM",
       "sh": "8:00 PM",
       "v": "MF",
-      "u": "https://www.ticketmaster.com/the-bouncing-souls-born-to-be-charleston-south-carolina-09-11-2026/event/2D00648DD40DB8EF"
+      "u": "https://www.ticketmaster.com/the-bouncing-souls-born-to-be-charleston-south-carolina-09-11-2026/event/2D00648DD40DB8EF",
+      "lowTix": true
     },
     {
       "d": "2026-09-12",
@@ -1868,7 +1869,8 @@
       "dr": "6:30 PM",
       "sh": "7:00 PM",
       "v": "MF",
-      "u": "https://www.ticketmaster.com/cortney-lacorte-charleston-south-carolina-09-17-2026/event/2D0064D7ACF6AE08"
+      "u": "https://www.ticketmaster.com/cortney-lacorte-charleston-south-carolina-09-17-2026/event/2D0064D7ACF6AE08",
+      "lowTix": true
     },
     {
       "d": "2026-09-18",
@@ -2016,7 +2018,8 @@
       "dr": "7:30 PM",
       "sh": "8:00 PM",
       "v": "MF",
-      "u": "https://www.ticketmaster.com/blake-whiten-charleston-south-carolina-10-22-2026/event/2D00649E96D6EF6D"
+      "u": "https://www.ticketmaster.com/blake-whiten-charleston-south-carolina-10-22-2026/event/2D00649E96D6EF6D",
+      "lowTix": true
     },
     {
       "d": "2026-10-29",
@@ -2095,7 +2098,8 @@
       "sh": "8:00 PM",
       "v": "MF",
       "u": "https://www.ticketmaster.com/kurt-vile-the-violators-charleston-south-carolina-11-21-2026/event/2D006483BC428747",
-      "flag": "SOLD OUT as of this pull"
+      "flag": "SOLD OUT as of this pull",
+      "soldOut": true
     },
     {
       "d": "2026-11-22",
@@ -2336,60 +2340,6 @@
       "u": "https://gaillardcenter.org/seat-selector?performance=55888"
     },
     {
-      "d": "2026-09-25",
-      "b": "CSO Masterworks 1: CSO Season Opening Weekend",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58341",
-      "g": "classical"
-    },
-    {
-      "d": "2026-09-26",
-      "b": "CSO Masterworks 1: CSO Season Opening Weekend",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58344",
-      "g": "classical"
-    },
-    {
-      "d": "2026-09-28",
-      "b": "Lang Lang with the CSO",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=56582",
-      "g": "classical"
-    },
-    {
-      "d": "2026-10-09",
-      "b": "CSO Masterworks 2: Firebird and Fairy Tales",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58346",
-      "g": "classical"
-    },
-    {
-      "d": "2026-10-10",
-      "b": "CSO Family Concert: Peter and the Wolf",
-      "sh": "11:00 AM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58246",
-      "g": "classical"
-    },
-    {
-      "d": "2026-10-10",
-      "b": "CSO Masterworks 2: Firebird and Fairy Tales",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58349",
-      "g": "classical"
-    },
-    {
       "d": "2026-10-15",
       "b": "Black Violin",
       "sh": "7:30 PM",
@@ -2412,42 +2362,6 @@
       "dr": "—",
       "v": "GC",
       "u": "https://gaillardcenter.org/seat-selector?performance=55169"
-    },
-    {
-      "d": "2026-10-29",
-      "b": "CSO Pops 1: The Witching Hour",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58378",
-      "g": "classical"
-    },
-    {
-      "d": "2026-11-01",
-      "b": "The Complete Philip Glass Piano Etudes",
-      "sh": "5:00 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=56224",
-      "g": "classical"
-    },
-    {
-      "d": "2026-11-20",
-      "b": "CSO Masterworks 3: Concerto for Orchestra",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58351",
-      "g": "classical"
-    },
-    {
-      "d": "2026-11-21",
-      "b": "CSO Masterworks 3: Concerto for Orchestra",
-      "sh": "7:30 PM",
-      "dr": "—",
-      "v": "GC",
-      "u": "https://gaillardcenter.org/seat-selector?performance=58354",
-      "g": "classical"
     },
     {
       "d": "2026-11-22",
@@ -2850,6 +2764,58 @@
       "sh": "6:00 PM",
       "v": "REF",
       "u": "https://www.bandsintown.com/e/1039403028-tfobv-drums-at-the-refinery-charleston"
+    },
+    {
+      "d": "2026-09-12",
+      "b": "Retroland Market",
+      "v": "MF",
+      "u": "https://www.ticketmaster.com/retroland-market-charleston-south-carolina-09-12-2026/event/2D0064F7BCD441FD",
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-25",
+      "b": "Let's F*cking Date with Serena Kerrigan",
+      "dr": "7:30 PM",
+      "sh": "8:00 PM",
+      "v": "MF",
+      "u": "https://www.ticketmaster.com/serena-kerrigan-lets-fcking-date-18-charleston-south-carolina-09-25-2026/event/2D0064FF9259BBDB",
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-26",
+      "b": "90s Burlesque",
+      "dr": "8:30 PM",
+      "sh": "9:00 PM",
+      "v": "MF",
+      "u": "https://www.ticketmaster.com/90s-burlesque-18-charleston-south-carolina-09-26-2026/event/2D0064DEBCDCA437",
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-10-23",
+      "b": "Sexy Unique Podcast",
+      "v": "MF",
+      "u": "https://www.ticketmaster.com/sexy-unique-podcast-charleston-south-carolina-10-23-2026/event/2D0064FC99429505",
+      "flag": "Venue lists this as \"2 SHOWS!\" (early/late) under one ticket link -- not split into two entries",
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-10-24",
+      "b": "Emo Night Brooklyn: Halloween Edition",
+      "dr": "9:00 PM",
+      "sh": "9:30 PM",
+      "v": "MF",
+      "u": "https://www.ticketmaster.com/emo-night-brooklyn-halloween-edition-18-charleston-south-carolina-10-24-2026/event/2D00651B959485FD",
+      "flag": "Tickets not yet on sale as of this pull (venue shows \"On Sale Soon\")",
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-11-20",
+      "b": "Winter Solstice Ball",
+      "dr": "8:00 PM",
+      "sh": "8:00 PM",
+      "v": "MF",
+      "u": "https://www.ticketmaster.com/winter-solstice-ball-18-charleston-south-carolina-11-20-2026/event/2D0064F5C0781CA1",
+      "added": "2026-09-04"
     }
   ]
 }
