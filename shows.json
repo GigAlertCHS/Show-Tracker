@@ -1793,15 +1793,6 @@
       "u": "https://www.ticketmaster.com/the-aquabats-charleston-south-carolina-09-03-2026/event/2D006483E40F443D"
     },
     {
-      "d": "2026-09-04",
-      "b": "Off Campus Night",
-      "dr": "9:00 PM",
-      "sh": "9:30 PM",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/briar-house-party-18-charleston-south-carolina-09-04-2026/event/2D0064C594A7E989",
-      "flag": "18+ themed party night, not a booked band"
-    },
-    {
       "d": "2026-09-05",
       "b": "Xavier Wulf",
       "dr": "7:00 PM",
@@ -1835,15 +1826,6 @@
       "v": "MF",
       "u": "https://www.ticketmaster.com/the-bouncing-souls-born-to-be-charleston-south-carolina-09-11-2026/event/2D00648DD40DB8EF",
       "lowTix": true
-    },
-    {
-      "d": "2026-09-12",
-      "b": "Sploinky Rave: Charleston",
-      "dr": "9:00 PM",
-      "sh": "9:00 PM",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/sploinky-rave-charleston-18-charleston-south-carolina-09-12-2026/event/2D0064F596A6947F",
-      "flag": "18+ DJ dance rave, not a live band"
     },
     {
       "d": "2026-09-13",
@@ -1880,15 +1862,6 @@
       "sh": "8:00 PM",
       "v": "MF",
       "u": "https://www.ticketmaster.com/jet-down-the-moonlit-mile-revue-charleston-south-carolina-09-18-2026/event/2D006472CB636950"
-    },
-    {
-      "d": "2026-10-01",
-      "b": "Booty Bounce Charleston",
-      "dr": "9:00 PM",
-      "sh": "9:00 PM",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/booty-bounce-charleston-18-charleston-south-carolina-10-01-2026/event/2D006513D1E44416",
-      "flag": "18+ DJ dance party, not a live band"
     },
     {
       "d": "2026-10-03",
@@ -2031,15 +2004,6 @@
       "u": "https://www.ticketmaster.com/hex-appeal-all-killer-no-filler-charleston-south-carolina-10-29-2026/event/2D0064F60FC28CDD"
     },
     {
-      "d": "2026-10-31",
-      "b": "Gasolina Halloween Party",
-      "dr": "9:00 PM",
-      "sh": "9:00 PM",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/gasolina-halloween-party-18-charleston-south-carolina-10-31-2026/event/2D006513CA9F30E3",
-      "flag": "18+ DJ dance party, not a live band"
-    },
-    {
       "d": "2026-11-06",
       "b": "AJJ",
       "o": "Greet Death",
@@ -2119,17 +2083,6 @@
       "sh": "TBA",
       "v": "CJF",
       "u": "https://charlestonjazz.com/performance/charleston-jazz-festival/"
-    },
-    {
-      "d": "2026-08-29",
-      "b": "Bulls, Bands, and Barrels",
-      "o": "Stella Lefty & Dexter and The Moonrocks",
-      "s": "Coliseum",
-      "dr": "see ticket link",
-      "sh": "6:30 PM",
-      "v": "NCC",
-      "u": "https://www.northcharlestoncoliseumpac.com/events/detail/bulls-bands-and-barrels",
-      "flag": "Bull-riding event with a live-music component, not a standalone concert"
     },
     {
       "d": "2026-09-26",
@@ -2764,49 +2717,6 @@
       "sh": "6:00 PM",
       "v": "REF",
       "u": "https://www.bandsintown.com/e/1039403028-tfobv-drums-at-the-refinery-charleston"
-    },
-    {
-      "d": "2026-09-12",
-      "b": "Retroland Market",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/retroland-market-charleston-south-carolina-09-12-2026/event/2D0064F7BCD441FD",
-      "added": "2026-09-04"
-    },
-    {
-      "d": "2026-09-25",
-      "b": "Let's F*cking Date with Serena Kerrigan",
-      "dr": "7:30 PM",
-      "sh": "8:00 PM",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/serena-kerrigan-lets-fcking-date-18-charleston-south-carolina-09-25-2026/event/2D0064FF9259BBDB",
-      "added": "2026-09-04"
-    },
-    {
-      "d": "2026-09-26",
-      "b": "90s Burlesque",
-      "dr": "8:30 PM",
-      "sh": "9:00 PM",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/90s-burlesque-18-charleston-south-carolina-09-26-2026/event/2D0064DEBCDCA437",
-      "added": "2026-09-04"
-    },
-    {
-      "d": "2026-10-23",
-      "b": "Sexy Unique Podcast",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/sexy-unique-podcast-charleston-south-carolina-10-23-2026/event/2D0064FC99429505",
-      "flag": "Venue lists this as \"2 SHOWS!\" (early/late) under one ticket link -- not split into two entries",
-      "added": "2026-09-04"
-    },
-    {
-      "d": "2026-10-24",
-      "b": "Emo Night Brooklyn: Halloween Edition",
-      "dr": "9:00 PM",
-      "sh": "9:30 PM",
-      "v": "MF",
-      "u": "https://www.ticketmaster.com/emo-night-brooklyn-halloween-edition-18-charleston-south-carolina-10-24-2026/event/2D00651B959485FD",
-      "flag": "Tickets not yet on sale as of this pull (venue shows \"On Sale Soon\")",
-      "added": "2026-09-04"
     },
     {
       "d": "2026-11-20",
