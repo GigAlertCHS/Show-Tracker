@@ -304,7 +304,8 @@
       "sh": "6:00 PM",
       "v": "WJ",
       "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84646",
-      "o": "Fo Daniels"
+      "o": "Fo Daniels",
+      "p": 40
     },
     {
       "d": "2026-09-05",
@@ -344,7 +345,8 @@
       "sh": "6:00 PM",
       "v": "WJ",
       "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84647",
-      "o": "Fo Daniels"
+      "o": "Fo Daniels",
+      "p": 40
     },
     {
       "d": "2026-09-05",
@@ -353,7 +355,8 @@
       "dr": "—",
       "sh": "9:30 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85142"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85142",
+      "p": 10
     },
     {
       "d": "2026-09-06",
@@ -392,7 +395,8 @@
       "sh": "6:00 PM",
       "v": "WJ",
       "u": "https://whollyticket.com/paymentpage/payment.php?event_id=84648",
-      "o": "Fo Daniels"
+      "o": "Fo Daniels",
+      "p": 40
     },
     {
       "d": "2026-09-06",
@@ -410,7 +414,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10
     },
     {
       "d": "2026-09-09",
@@ -419,7 +424,8 @@
       "dr": "5:00 PM",
       "sh": "6:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10
     },
     {
       "d": "2026-09-10",
@@ -428,7 +434,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/p79pp1139k"
+      "u": "https://aftontickets.com/event/buyticket/p79pp1139k",
+      "p": 10
     },
     {
       "d": "2026-09-11",
@@ -437,7 +444,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://charlestonpourhouse.com/event/dr-bacon-4/"
+      "u": "https://charlestonpourhouse.com/event/dr-bacon-4/",
+      "p": 10
     },
     {
       "d": "2026-09-11",
@@ -446,7 +454,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/om9o13o8jg/preview"
+      "u": "https://aftontickets.com/event/buyticket/om9o13o8jg/preview",
+      "p": 15
     },
     {
       "d": "2026-09-11",
@@ -473,7 +482,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/l3x3nmd3jd/preview"
+      "u": "https://aftontickets.com/event/buyticket/l3x3nmd3jd/preview",
+      "p": 25
     },
     {
       "d": "2026-09-12",
@@ -482,7 +492,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/p79pp1z09k"
+      "u": "https://aftontickets.com/event/buyticket/p79pp1z09k",
+      "p": 20
     },
     {
       "d": "2026-09-12",
@@ -516,7 +527,8 @@
       "dr": "11:00 AM",
       "sh": "1:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 5
     },
     {
       "d": "2026-09-14",
@@ -534,7 +546,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10
     },
     {
       "d": "2026-09-15",
@@ -552,7 +565,8 @@
       "dr": "5:00 PM",
       "sh": "6:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10
     },
     {
       "d": "2026-09-16",
@@ -571,7 +585,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/27x0gp189d/preview"
+      "u": "https://aftontickets.com/event/buyticket/27x0gp189d/preview",
+      "p": 18
     },
     {
       "d": "2026-09-17",
@@ -597,7 +612,8 @@
       "dr": "—",
       "sh": "12:00 PM",
       "v": "WJ",
-      "u": "https://the-windjammer.com/event/spq/"
+      "u": "https://the-windjammer.com/event/spq/",
+      "p": 0
     },
     {
       "d": "2026-09-18",
@@ -606,7 +622,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/group/z59r7z8jql/preview"
+      "u": "https://aftontickets.com/event/group/z59r7z8jql/preview",
+      "p": 15
     },
     {
       "d": "2026-09-18",
@@ -616,7 +633,8 @@
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85033"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85033",
+      "p": 25
     },
     {
       "d": "2026-09-19",
@@ -625,7 +643,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/group/z59r7z8jql/preview"
+      "u": "https://aftontickets.com/event/group/z59r7z8jql/preview",
+      "p": 15
     },
     {
       "d": "2026-09-19",
@@ -634,7 +653,8 @@
       "dr": "7:30 PM",
       "sh": "8:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/nvjqo72pxo/preview"
+      "u": "https://aftontickets.com/event/buyticket/nvjqo72pxo/preview",
+      "p": 30
     },
     {
       "d": "2026-09-19",
@@ -644,7 +664,8 @@
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85000"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85000",
+      "p": 25
     },
     {
       "d": "2026-09-19",
@@ -661,7 +682,8 @@
       "dr": "11:00 AM",
       "sh": "1:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 5
     },
     {
       "d": "2026-09-22",
@@ -670,7 +692,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10
     },
     {
       "d": "2026-09-22",
@@ -688,7 +711,8 @@
       "dr": "5:00 PM",
       "sh": "6:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10
     },
     {
       "d": "2026-09-24",
@@ -698,7 +722,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/k3xde81r9w"
+      "u": "https://aftontickets.com/event/buyticket/k3xde81r9w",
+      "p": 10
     },
     {
       "d": "2026-09-24",
@@ -707,7 +732,8 @@
       "dr": "7:30 PM",
       "sh": "8:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/8qj4dv2ojm"
+      "u": "https://aftontickets.com/event/buyticket/8qj4dv2ojm",
+      "p": 20
     },
     {
       "d": "2026-09-25",

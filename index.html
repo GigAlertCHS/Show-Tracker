@@ -257,13 +257,6 @@
     width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text);
     border-radius:8px;padding:9px 10px;font-size:14px;font-family:inherit;
   }
-  .filter-exclude-row{
-    display:none;align-items:center;gap:8px;margin-top:10px;padding:9px 10px;
-    background:rgba(224,196,106,0.1);border:1px solid var(--gold);border-radius:8px;
-  }
-  .filter-exclude-row.show{display:flex;}
-  .filter-exclude-row input{width:16px;height:16px;accent-color:var(--gold);}
-  .filter-exclude-row label{font-size:13px;color:var(--gold);}
   .filter-fav-row{margin:22px 0 4px 0;display:flex;align-items:center;gap:8px;}
   .filter-fav-row .flabel{font-size:13.5px;color:var(--text);flex:1;}
   .filter-fav-toggle{position:relative;width:38px;height:22px;flex:0 0 auto;display:inline-block;}
@@ -399,19 +392,15 @@
     <div class="filter-sheet" id="filter-sheet">
       <div class="filter-label">When</div>
       <div class="filter-chips" id="filter-date-chips">
-        <button type="button" class="filter-chip active" data-date="week">This week</button>
+        <button type="button" class="filter-chip" data-date="week">This week</button>
         <button type="button" class="filter-chip" data-date="month">This month</button>
-        <button type="button" class="filter-chip" data-date="all">All</button>
+        <button type="button" class="filter-chip active" data-date="all">All</button>
       </div>
 
       <div class="filter-label">Where</div>
       <select class="filter-select" id="filter-venue-sel">
         <option value="">All venues</option>
       </select>
-      <div class="filter-exclude-row" id="filter-exclude-row">
-        <input type="checkbox" id="filter-exclude-check">
-        <label for="filter-exclude-check">Skip <span id="filter-exclude-venue-name">this venue</span> instead</label>
-      </div>
 
       <div class="filter-fav-row">
         <span class="flabel">Favorite artists only</span>
@@ -536,7 +525,7 @@ let INITIALIZED = false; // storage is loaded into memory once; after that, in-m
 // Week + the main day-grouped list), not to My Shows or Favorite Artists, which are
 // personal curated lists rather than the calendar you're browsing. Not persisted
 // across visits — every fresh page load starts back at the default below.
-let FILTER_STATE = { date: 'week', venue: '', exclude: false, favOnly: false };
+let FILTER_STATE = { date: 'all', venue: '', favOnly: false };
 let FILTER_VENUE_OPTIONS_POPULATED = false;
 
 function computeDateCutoff(range){
@@ -550,11 +539,7 @@ function applyBrowseFilters(list){
   let out = list;
   const cutoff = computeDateCutoff(FILTER_STATE.date);
   if(cutoff) out = out.filter(s => s.d <= cutoff);
-  if(FILTER_STATE.venue){
-    out = FILTER_STATE.exclude
-      ? out.filter(s => s.v !== FILTER_STATE.venue)
-      : out.filter(s => s.v === FILTER_STATE.venue);
-  }
+  if(FILTER_STATE.venue) out = out.filter(s => s.v === FILTER_STATE.venue);
   if(FILTER_STATE.favOnly){
     out = out.filter(s => matchesFavorite(extractArtistName(s.b)));
   }
@@ -1072,10 +1057,10 @@ async function render(){
   // (but not yet applied) in the open sheet.
   const tagsEl = document.getElementById('active-filter-tags');
   const tags = [];
-  if(FILTER_STATE.date !== 'week') tags.push(FILTER_STATE.date === 'month' ? 'This month' : 'All dates');
+  if(FILTER_STATE.date !== 'all') tags.push(FILTER_STATE.date === 'month' ? 'This month' : 'This week');
   if(FILTER_STATE.venue){
     const vName = (VENUES[FILTER_STATE.venue] && VENUES[FILTER_STATE.venue].name) || FILTER_STATE.venue;
-    tags.push((FILTER_STATE.exclude ? 'Excluding ' : '') + vName);
+    tags.push(vName);
   }
   if(FILTER_STATE.favOnly) tags.push('Favorite artists only');
   if(tags.length){
@@ -1274,18 +1259,6 @@ document.querySelectorAll('#filter-date-chips .filter-chip').forEach(chip=>{
 });
 
 const filterVenueSel = document.getElementById('filter-venue-sel');
-const filterExcludeRow = document.getElementById('filter-exclude-row');
-const filterExcludeCheck = document.getElementById('filter-exclude-check');
-filterVenueSel.addEventListener('change', ()=>{
-  if(filterVenueSel.value){
-    filterExcludeRow.classList.add('show');
-    document.getElementById('filter-exclude-venue-name').textContent =
-      (VENUES[filterVenueSel.value] && VENUES[filterVenueSel.value].name) || filterVenueSel.value;
-    filterExcludeCheck.checked = false;
-  } else {
-    filterExcludeRow.classList.remove('show');
-  }
-});
 
 const filterFavCheck = document.getElementById('filter-fav-check');
 const filterFavTrack = document.getElementById('filter-fav-track');
@@ -1297,22 +1270,20 @@ filterFavCheck.addEventListener('change', ()=>{
 
 document.getElementById('filter-clear-btn').addEventListener('click', ()=>{
   document.querySelectorAll('#filter-date-chips .filter-chip').forEach(c=>c.classList.remove('active'));
-  document.querySelector('#filter-date-chips .filter-chip[data-date="week"]').classList.add('active');
+  document.querySelector('#filter-date-chips .filter-chip[data-date="all"]').classList.add('active');
   filterVenueSel.value = '';
-  filterExcludeRow.classList.remove('show');
   filterFavCheck.checked = false;
   filterFavTrack.classList.remove('on');
   filterFavThumb.classList.remove('on');
-  FILTER_STATE = { date: 'week', venue: '', exclude: false, favOnly: false };
+  FILTER_STATE = { date: 'all', venue: '', favOnly: false };
   render();
 });
 
 document.getElementById('filter-apply-btn').addEventListener('click', ()=>{
   const activeDateChip = document.querySelector('#filter-date-chips .filter-chip.active');
   FILTER_STATE = {
-    date: activeDateChip ? activeDateChip.getAttribute('data-date') : 'week',
+    date: activeDateChip ? activeDateChip.getAttribute('data-date') : 'all',
     venue: filterVenueSel.value,
-    exclude: filterExcludeCheck.checked,
     favOnly: filterFavCheck.checked
   };
   filterSheet.classList.remove('open');
