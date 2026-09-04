@@ -370,17 +370,6 @@
     },
     {
       "d": "2026-09-06",
-      "b": "Schur",
-      "o": "Fai Laci",
-      "s": "Deck Stage",
-      "dr": "6:30 PM",
-      "sh": "7:30 PM",
-      "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/nvjqo7lrxo/preview",
-      "p": 22.0
-    },
-    {
-      "d": "2026-09-06",
       "b": "Collie Buddz",
       "dr": "see ticket link",
       "sh": "7:30 PM",
@@ -668,7 +657,7 @@
       "p": 25
     },
     {
-      "d": "2026-09-19",
+      "d": "2026-09-20",
       "b": "James Taylor and His All-Star Band",
       "dr": "—",
       "sh": "7:00 PM",
@@ -742,7 +731,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/57jmlo3v9v"
+      "u": "https://aftontickets.com/event/buyticket/57jmlo3v9v",
+      "p": 15
     },
     {
       "d": "2026-09-25",
@@ -759,7 +749,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/el95nemp92/preview"
+      "u": "https://aftontickets.com/event/buyticket/el95nemp92/preview",
+      "p": 15
     },
     {
       "d": "2026-09-26",
@@ -769,7 +760,8 @@
       "dr": "7:30 PM",
       "sh": "8:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/3rx70yvrj1/preview"
+      "u": "https://aftontickets.com/event/buyticket/3rx70yvrj1/preview",
+      "p": 15
     },
     {
       "d": "2026-09-26",
@@ -805,7 +797,8 @@
       "dr": "11:00 AM",
       "sh": "1:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 5
     },
     {
       "d": "2026-09-27",
@@ -814,7 +807,8 @@
       "dr": "7:00 PM",
       "sh": "8:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/p79plomkxk/preview"
+      "u": "https://aftontickets.com/event/buyticket/p79plomkxk/preview",
+      "p": 30
     },
     {
       "d": "2026-09-27",
@@ -833,7 +827,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 15
     },
     {
       "d": "2026-09-30",
@@ -842,7 +837,8 @@
       "dr": "5:00 PM",
       "sh": "6:30 PM",
       "v": "PH",
-      "u": ""
+      "u": "",
+      "p": 10
     },
     {
       "d": "2026-09-30",
@@ -851,7 +847,8 @@
       "dr": "9:00 PM",
       "sh": "10:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/group/qpxvvplxe1/preview"
+      "u": "https://aftontickets.com/event/group/qpxvvplxe1/preview",
+      "p": 35
     },
     {
       "d": "2026-09-30",
@@ -869,7 +866,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/group/qpxvvplxe1/preview"
+      "u": "https://aftontickets.com/event/group/qpxvvplxe1/preview",
+      "p": 35
     },
     {
       "d": "2026-10-01",
@@ -896,7 +894,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/o69nyre4x3/preview"
+      "u": "https://aftontickets.com/event/buyticket/o69nyre4x3/preview",
+      "p": 20
     },
     {
       "d": "2026-10-02",
@@ -906,7 +905,8 @@
       "dr": "7:30 PM",
       "sh": "8:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/3px8ev4zx1"
+      "u": "https://aftontickets.com/event/buyticket/3px8ev4zx1",
+      "p": 15
     },
     {
       "d": "2026-10-02",
@@ -933,7 +933,8 @@
       "dr": "12:00 PM",
       "sh": "1:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/g3xlkzrrj6"
+      "u": "https://aftontickets.com/event/buyticket/g3xlkzrrj6",
+      "p": 15
     },
     {
       "d": "2026-10-03",
@@ -942,7 +943,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/group/68x2g35jg2/preview"
+      "u": "https://aftontickets.com/event/group/68x2g35jg2/preview",
+      "p": 22
     },
     {
       "d": "2026-10-03",
@@ -960,7 +962,8 @@
       "dr": "5:00 PM",
       "sh": "5:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/z59r7le1jq"
+      "u": "https://aftontickets.com/event/buyticket/z59r7le1jq",
+      "p": 10
     },
     {
       "d": "2026-10-04",
@@ -969,7 +972,8 @@
       "dr": "7:00 PM",
       "sh": "8:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/group/68x2g35jg2/preview"
+      "u": "https://aftontickets.com/event/group/68x2g35jg2/preview",
+      "p": 22
     },
     {
       "d": "2026-10-04",
@@ -987,7 +991,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/z59r71dzjq/preview"
+      "u": "https://aftontickets.com/event/buyticket/z59r71dzjq/preview",
+      "p": 20
     },
     {
       "d": "2026-10-08",
@@ -996,7 +1001,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/1qjww151j7"
+      "u": "https://aftontickets.com/event/buyticket/1qjww151j7",
+      "p": 10
     },
     {
       "d": "2026-10-08",
@@ -1005,7 +1011,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/p79pp18k9k/preview"
+      "u": "https://aftontickets.com/event/buyticket/p79pp18k9k/preview",
+      "p": 15
     },
     {
       "d": "2026-10-08",
@@ -1041,7 +1048,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/1qjww121j7/preview"
+      "u": "https://aftontickets.com/event/buyticket/1qjww121j7/preview",
+      "p": 10
     },
     {
       "d": "2026-10-09",
@@ -1050,7 +1058,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/nvjqo22pxo/preview"
+      "u": "https://aftontickets.com/event/buyticket/nvjqo22pxo/preview",
+      "p": 30
     },
     {
       "d": "2026-10-10",
@@ -1068,7 +1077,8 @@
       "dr": "5:00 PM",
       "sh": "6:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/z59rd648jq/preview"
+      "u": "https://aftontickets.com/event/buyticket/z59rd648jq/preview",
+      "p": 12
     },
     {
       "d": "2026-10-10",
@@ -1078,7 +1088,8 @@
       "dr": "8:00 PM",
       "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/7pj6nmzg9r/preview"
+      "u": "https://aftontickets.com/event/buyticket/7pj6nmzg9r/preview",
+      "p": 35
     },
     {
       "d": "2026-10-10",
@@ -1105,7 +1116,8 @@
       "dr": "7:00 PM",
       "sh": "8:00 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/57jm30p69v/preview"
+      "u": "https://aftontickets.com/event/buyticket/57jm30p69v/preview",
+      "p": 20
     },
     {
       "d": "2026-10-11",
@@ -1150,7 +1162,8 @@
       "dr": "7:30 PM",
       "sh": "8:30 PM",
       "v": "PH",
-      "u": "https://aftontickets.com/event/buyticket/zp9kqo2595/preview"
+      "u": "https://aftontickets.com/event/buyticket/zp9kqo2595/preview",
+      "p": 25
     },
     {
       "d": "2026-10-16",
@@ -1184,7 +1197,8 @@
       "dr": "6:00 PM",
       "sh": "7:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85091"
+      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85091",
+      "p": 15
     },
     {
       "d": "2026-10-17",
@@ -1257,10 +1271,13 @@
     {
       "d": "2026-10-24",
       "b": "Karina Rykman",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "8:00 PM",
+      "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://www.jambase.com/show/karina-rykman-the-charleston-pour-house-20261024"
+      "u": "https://charlestonpourhouse.com/event/karina-rykman-3/",
+      "p": 25,
+      "o": "Wax Monkey",
+      "s": "Main Stage"
     },
     {
       "d": "2026-10-24",
@@ -2089,8 +2106,8 @@
       "b": "Travis Tritt",
       "o": "Tyler Reese Tritt",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "6:30 PM",
+      "sh": "7:30 PM",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D00645BB5186067"
     },
@@ -2098,20 +2115,22 @@
       "d": "2026-10-02",
       "b": "Sugarland — Ride or Die Tour",
       "s": "Coliseum",
-      "dr": "see ticket link",
+      "dr": "6:00 PM",
       "sh": "7:00 PM",
       "v": "NCC",
-      "u": "https://www.ticketmaster.com/event/2D006505FC5EB060"
+      "u": "https://www.ticketmaster.com/event/2D006505FC5EB060",
+      "o": "Payton Sullivan"
     },
     {
       "d": "2026-10-09",
       "b": "MercyMe",
       "o": "Jeremy Camp, Tim Timmons, Sam Wesley",
       "s": "Coliseum",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "6:00 PM",
+      "sh": "7:00 PM",
       "v": "NCC",
-      "u": "https://www.ticketmaster.com/event/2D0064A43243C7AB"
+      "u": "https://www.ticketmaster.com/event/2D0064A43243C7AB",
+      "p": 25
     },
     {
       "d": "2026-10-27",
@@ -2234,7 +2253,7 @@
       "dr": "—",
       "sh": "6:30 PM",
       "v": "FD",
-      "u": ""
+      "u": "https://fireflydistillery.com/event/live-at-firefly-with-needtobreathe-the-long-surrender-tour/"
     },
     {
       "d": "2026-09-10",
@@ -2242,7 +2261,7 @@
       "dr": "—",
       "sh": "7:00 PM",
       "v": "FD",
-      "u": ""
+      "u": "https://fireflydistillery.com/event/live-at-firefly-with-billy-currington-kip-moore-live/"
     },
     {
       "d": "2026-09-22",
@@ -2250,7 +2269,7 @@
       "dr": "—",
       "sh": "7:00 PM",
       "v": "FD",
-      "u": ""
+      "u": "https://fireflydistillery.com/event/live-at-firefly-with-charley-crockett/"
     },
     {
       "d": "2026-10-02",
@@ -2258,7 +2277,7 @@
       "dr": "—",
       "sh": "6:00 PM",
       "v": "FD",
-      "u": ""
+      "u": "https://fireflydistillery.com/event/live-at-firefly-with-turnpike-troubadours/"
     },
     {
       "d": "2026-09-19",
@@ -2725,6 +2744,114 @@
       "sh": "8:00 PM",
       "v": "MF",
       "u": "https://www.ticketmaster.com/winter-solstice-ball-18-charleston-south-carolina-11-20-2026/event/2D0064F5C0781CA1",
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-06",
+      "b": "Schur",
+      "o": "Fai Laci",
+      "dr": "6:30 PM",
+      "sh": "7:30 PM",
+      "v": "PH",
+      "s": "Deck Stage",
+      "u": "https://charlestonpourhouse.com/event/schur/",
+      "p": 22,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-13",
+      "b": "Shelby Kemp Trio",
+      "dr": "6:30 PM",
+      "sh": "7:30 PM",
+      "v": "PH",
+      "s": "Deck Stage",
+      "u": "https://charlestonpourhouse.com/event/shelby-kemp-trio/",
+      "p": 12,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-14",
+      "b": "The Headstrings Collective – Monday Muse",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "s": "Deck Stage",
+      "u": "https://charlestonpourhouse.com/event/the-headstrings-collective-monday-muse-8-2026-09-14/",
+      "p": 0,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-20",
+      "b": "Andy Thomas",
+      "o": "Macelyn Batten",
+      "dr": "6:30 PM",
+      "sh": "7:30 PM",
+      "v": "PH",
+      "s": "Deck Stage",
+      "u": "https://charlestonpourhouse.com/event/andy-thomas/",
+      "p": 13,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-21",
+      "b": "The Headstrings Collective – Monday Muse",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "s": "Deck Stage",
+      "u": "https://charlestonpourhouse.com/event/the-headstrings-collective-monday-muse-8-2026-09-14-2/",
+      "p": 0,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-25",
+      "b": "Reedy River String Band",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "s": "Deck Stage",
+      "u": "https://charlestonpourhouse.com/event/reedy-river-string-band/",
+      "p": 10,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-09-28",
+      "b": "The Headstrings Collective – Monday Muse",
+      "dr": "5:00 PM",
+      "sh": "6:30 PM",
+      "v": "PH",
+      "s": "Main Stage",
+      "u": "https://charlestonpourhouse.com/event/the-headstrings-collective-monday-muse-8-2026-09-14-2-2/",
+      "p": 0,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-10-18",
+      "b": "Silverada",
+      "o": "The Pink Stones",
+      "dr": "7:30 PM",
+      "sh": "8:30 PM",
+      "v": "PH",
+      "s": "Main Stage",
+      "u": "https://charlestonpourhouse.com/event/silverada-2/",
+      "p": 20,
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-11-14",
+      "b": "Hudson Westbrook — The Hits Me Tour",
+      "v": "FD",
+      "u": "https://fireflydistillery.com/event/live-at-firefly-with-hudson-westbrook-the-hits-me-tour/",
+      "added": "2026-09-04"
+    },
+    {
+      "d": "2026-12-18",
+      "b": "Fancy As F*ck: Our 15th Anniversary Party",
+      "dr": "9:00 PM",
+      "sh": "—",
+      "v": "RA",
+      "u": "http://www.theroyalamerican.com/schedule/fancy-as-fuck-12-18-26",
+      "flag": "Venue lists only \"With special performances…\" with no named act -- genuinely ambiguous whether this is a live-music show; included per that rule rather than excluded",
       "added": "2026-09-04"
     }
   ]

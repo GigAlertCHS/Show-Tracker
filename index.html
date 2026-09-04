@@ -639,8 +639,15 @@ function priceOrTicketsHTML(s, venue){
   if(s.lowTix){
     return url ? `<a class="low-tix-label" href="${url}" target="_blank" rel="noopener">Low Tix</a>` : `<span class="low-tix-label">Low Tix</span>`;
   }
-  if(typeof s.p === 'number'){
-    const label = s.p === 0 ? 'Free' : `$${Math.round(s.p)}`;
+  // `p` is always the advance price when a show has one. `dop` (day-of price) is
+  // optional -- only some venues publish it, and it only applies once the show's
+  // actual date has arrived. Before that date, advance pricing is what's actually
+  // available to buy, so that's what's shown regardless of whether `dop` exists.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isShowDay = todayStr === s.d;
+  const effectivePrice = (isShowDay && typeof s.dop === 'number') ? s.dop : s.p;
+  if(typeof effectivePrice === 'number'){
+    const label = effectivePrice === 0 ? 'Free' : `$${Math.round(effectivePrice)}`;
     return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">${label}</a>` : label;
   }
   return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">Tickets</a>` : '';
