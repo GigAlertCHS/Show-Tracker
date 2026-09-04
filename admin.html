@@ -68,7 +68,7 @@ function renderStats(data){
     : '<div class="empty">No subscribers yet.</div>';
 
   const usersHtml = data.users.list.length
-    ? data.users.list.map(u => `<div class="stat-row"><span>${u.email}</span><span class="muted">${u.watchlistCount} watched &middot; ${u.favoritesCount} favorites</span></div>`).join('')
+    ? data.users.list.map(u => `<div class="stat-row"><span>${u.email}</span><span class="muted">${u.myShowsCount} shows &middot; ${u.favoritesCount} favorites</span></div>`).join('')
     : '<div class="empty">No accounts yet.</div>';
 
   const artistsHtml = data.topFavoriteArtists.length

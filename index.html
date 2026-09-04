@@ -60,7 +60,7 @@
     border:1px dashed var(--c,var(--line));color:var(--c,var(--muted));
   }
   .utility-row{
-    display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;
+    display:flex;flex-direction:column;gap:14px;
     margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
     font-size:11.5px;color:var(--muted);
   }
@@ -199,7 +199,7 @@
   .band{font-weight:700;font-size:15px;line-height:1.25;color:var(--amber);}
   .band a{color:var(--amber);text-decoration:none;border-bottom:1px dashed var(--amber-dim);}
   .band a:hover{color:#ffc773;}
-  .opener{color:var(--muted);font-size:12.5px;}
+  .band .opener{font-weight:400;color:var(--muted);font-size:12.5px;}
   .venue-line{font-size:12.5px;color:#c9cddb;display:flex;align-items:baseline;}
   .price-col{flex:0 0 58px;white-space:nowrap;}
   .venue-col{flex:1;min-width:0;}
@@ -229,6 +229,66 @@
     border-style:dashed;
     color:var(--muted);
     font-style:italic;
+  }
+  .filter-bar{margin-bottom:22px;}
+  .filter-pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:9px 16px;background:var(--panel);border:1px solid var(--amber);
+    border-radius:999px;color:var(--amber);font-size:13px;font-weight:700;
+    cursor:pointer;font-family:inherit;
+  }
+  .filter-pill .chev{display:inline-block;transition:transform .15s;font-size:11px;}
+  .filter-pill.open .chev{transform:rotate(180deg);}
+  .filter-sheet{
+    display:none;margin-top:12px;background:var(--panel);
+    border-top:2px solid var(--amber);border-left:1px solid var(--line);
+    border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    border-radius:12px;padding:1.1rem;max-width:480px;
+  }
+  .filter-sheet.open{display:block;}
+  .filter-label{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;margin-bottom:8px;}
+  .filter-chips{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+  .filter-chip{
+    padding:7px 15px;border-radius:999px;font-size:13px;background:var(--ink);
+    border:1px solid var(--line);color:#c9cddb;cursor:pointer;font-family:inherit;
+  }
+  .filter-chip.active{background:rgba(240,168,60,0.12);border-color:var(--amber);color:var(--amber);}
+  .filter-select{
+    width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text);
+    border-radius:8px;padding:9px 10px;font-size:14px;font-family:inherit;
+  }
+  .filter-exclude-row{
+    display:none;align-items:center;gap:8px;margin-top:10px;padding:9px 10px;
+    background:rgba(224,196,106,0.1);border:1px solid var(--gold);border-radius:8px;
+  }
+  .filter-exclude-row.show{display:flex;}
+  .filter-exclude-row input{width:16px;height:16px;accent-color:var(--gold);}
+  .filter-exclude-row label{font-size:13px;color:var(--gold);}
+  .filter-fav-row{margin:22px 0 4px 0;display:flex;align-items:center;gap:8px;}
+  .filter-fav-row .flabel{font-size:13.5px;color:var(--text);flex:1;}
+  .filter-fav-toggle{position:relative;width:38px;height:22px;flex:0 0 auto;display:inline-block;}
+  .filter-fav-toggle input{opacity:0;width:0;height:0;position:absolute;}
+  .filter-fav-track{position:absolute;inset:0;background:var(--line);border-radius:11px;transition:background .15s;}
+  .filter-fav-track.on{background:var(--gold);}
+  .filter-fav-thumb{
+    position:absolute;top:2px;left:2px;width:18px;height:18px;background:var(--panel);
+    border-radius:50%;transition:transform .15s;
+  }
+  .filter-fav-thumb.on{transform:translateX(16px);}
+  .filter-actions{display:flex;gap:8px;margin-top:20px;}
+  .filter-btn-clear{
+    flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);
+    border-radius:8px;padding:10px;font-size:13px;cursor:pointer;font-family:inherit;
+  }
+  .filter-btn-apply{
+    flex:1;background:var(--amber);border:none;color:var(--ink);
+    border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .active-filter-tags{display:none;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .active-filter-tags.show{display:flex;}
+  .tag-chip{
+    display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:4px 10px;
+    border-radius:999px;background:rgba(240,168,60,0.12);color:var(--amber);border:1px solid var(--amber);
   }
   .venue-list{list-style:none;padding:0;margin:0;display:grid;gap:8px;}
   .venue-list li{
@@ -290,6 +350,9 @@
     .fav-input{padding:10px 12px;font-size:14px;}
     .venue-view h2{font-size:22px;}
   }
+  @media (min-width: 641px){
+    .utility-row{flex-direction:row;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+  }
 </style>
 </head>
 <body>
@@ -328,13 +391,52 @@
   <div id="venue-view" class="venue-view" style="display:none;"></div>
 
   <div id="all-view">
+  <div class="filter-bar">
+    <button type="button" class="filter-pill" id="filter-pill-btn">
+      <span>Filter and sort</span>
+      <span class="chev">⌄</span>
+    </button>
+    <div class="filter-sheet" id="filter-sheet">
+      <div class="filter-label">When</div>
+      <div class="filter-chips" id="filter-date-chips">
+        <button type="button" class="filter-chip active" data-date="week">This week</button>
+        <button type="button" class="filter-chip" data-date="month">This month</button>
+        <button type="button" class="filter-chip" data-date="all">All</button>
+      </div>
+
+      <div class="filter-label">Where</div>
+      <select class="filter-select" id="filter-venue-sel">
+        <option value="">All venues</option>
+      </select>
+      <div class="filter-exclude-row" id="filter-exclude-row">
+        <input type="checkbox" id="filter-exclude-check">
+        <label for="filter-exclude-check">Skip <span id="filter-exclude-venue-name">this venue</span> instead</label>
+      </div>
+
+      <div class="filter-fav-row">
+        <span class="flabel">Favorite artists only</span>
+        <label class="filter-fav-toggle">
+          <input type="checkbox" id="filter-fav-check">
+          <span class="filter-fav-track" id="filter-fav-track"></span>
+          <span class="filter-fav-thumb" id="filter-fav-thumb"></span>
+        </label>
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" class="filter-btn-clear" id="filter-clear-btn">Clear</button>
+        <button type="button" class="filter-btn-apply" id="filter-apply-btn">Show me</button>
+      </div>
+    </div>
+    <div class="active-filter-tags" id="active-filter-tags"></div>
+  </div>
+
   <section class="block" id="recently-added-section" style="display:none;">
     <div class="section-title teal">Added This Week</div>
     <div id="recent-list"></div>
   </section>
 
   <section class="block">
-    <div class="section-title gold">Favorites</div>
+    <div class="section-title gold">My Shows</div>
     <div id="watch-list"></div>
   </section>
 
@@ -347,7 +449,7 @@
       <button type="button" id="fav-add-btn" class="fav-add-btn">Add</button>
     </div>
     <div id="fav-chips" class="fav-chips"></div>
-    <div class="fav-hint">Favoriting a show also favorites the artist — any of their other shows get the same ★ treatment and join this list automatically. Removing a single show here won't un-favorite the artist; manage that here instead.</div>
+    <div class="fav-hint">Favorited artists always show up in My Shows — any of their upcoming shows join that list automatically. Favoriting a single show here won't add the artist to this list; add them here if you want that.</div>
   </section>
 
   <section class="block" id="suggest-venue-section">
@@ -376,7 +478,7 @@
   &nbsp;·&nbsp;
   <button type="button" class="link-btn" id="privacy-toggle-btn">Privacy</button>
   <div id="privacy-details" class="privacy-details" style="display:none;">
-    <p>If you sign in, we store your email address, watchlist, and favorite artists so they sync across your devices and power the weekly digest email. Venue suggestions you submit are stored along with your email so we can follow up if needed.</p>
+    <p>If you sign in, we store your email address, My Shows list, and Favorite Artists so they sync across your devices and power the weekly digest email. Venue suggestions you submit are stored along with your email so we can follow up if needed.</p>
     <p>Digest emails include open and click tracking (via our email provider, Resend) so we can see whether emails are opened and which links get clicked — this is to understand what's actually useful, not to build profiles on anyone. We don't sell or share your information with advertisers or any other third party.</p>
     <p>Site hosting, backend storage, and email delivery are handled by GitHub Pages, Cloudflare, and Resend respectively, each under their own privacy practices.</p>
     <p>Unsubscribe from emails anytime via the link in any digest — once you do, signing back in won't automatically re-subscribe you; use the "Subscribe to email updates" link above if you change your mind. To ask us to delete your data entirely, email <a href="mailto:admin@gigalertchs.com">admin@gigalertchs.com</a>.</p>
@@ -424,13 +526,42 @@ function showId(s){
   return [s.v, s.d, s.b].join("|").toLowerCase().replace(/\s+/g,'_');
 }
 
-let WATCHLIST = new Set();
+let MY_SHOWS = new Set();
 let FAVORITES = []; // array of artist name strings, as entered by the user
-let AUTO_WATCHED = new Set(); // show ids already auto-added to the watchlist via a favorite match —
+let AUTO_ADDED_SHOWS = new Set(); // show ids already auto-added to My Shows via a favorite match —
                                 // tracked separately so a manual un-watch later doesn't get overridden
 let INITIALIZED = false; // storage is loaded into memory once; after that, in-memory state is authoritative
 
-// --- Account sync (Cloudflare Worker + KV backend) ---
+// Filter bar (Filter and sort pill) — applies only to the browse views (Added This
+// Week + the main day-grouped list), not to My Shows or Favorite Artists, which are
+// personal curated lists rather than the calendar you're browsing. Not persisted
+// across visits — every fresh page load starts back at the default below.
+let FILTER_STATE = { date: 'week', venue: '', exclude: false, favOnly: false };
+let FILTER_VENUE_OPTIONS_POPULATED = false;
+
+function computeDateCutoff(range){
+  const now = new Date();
+  if(range === 'week') return new Date(now.getTime() + 7*24*60*60*1000).toISOString().slice(0,10);
+  if(range === 'month') return new Date(now.getTime() + 30*24*60*60*1000).toISOString().slice(0,10);
+  return null; // 'all' — no upper bound
+}
+
+function applyBrowseFilters(list){
+  let out = list;
+  const cutoff = computeDateCutoff(FILTER_STATE.date);
+  if(cutoff) out = out.filter(s => s.d <= cutoff);
+  if(FILTER_STATE.venue){
+    out = FILTER_STATE.exclude
+      ? out.filter(s => s.v !== FILTER_STATE.venue)
+      : out.filter(s => s.v === FILTER_STATE.venue);
+  }
+  if(FILTER_STATE.favOnly){
+    out = out.filter(s => matchesFavorite(extractArtistName(s.b)));
+  }
+  return out;
+}
+
+
 const WORKER_BASE_URL = 'https://api.gigalertchs.com';
 const TURNSTILE_SITE_KEY = '0x4AAAAAAEkfZ3ATboand-06';
 let SIGNIN_TURNSTILE_WIDGET_ID = null;
@@ -521,18 +652,19 @@ function priceOrTicketsHTML(s, venue){
   return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">Tickets</a>` : '';
 }
 
-function cardHTML(s, isNew, flatDate, isFavoriteNew){
+function cardHTML(s, isNew, flatDate){
   const id = showId(s);
   const venue = VENUES[s.v];
   const bandLink = s.u
     ? `<a href="${s.u}" target="_blank" rel="noopener">${s.b}</a>`
     : s.b;
 
-  let opener = '';
+  let openerInline = '';
   let lineup = '';
   if (s.o) {
     // Multiple comma-separated names -> render as individual chips, placed lower.
-    // A single name (no comma) -> keep as a plain "w/ opener" line near the band name.
+    // A single name (no comma) -> inline "w/ opener" right after the band name,
+    // wrapping to its own line naturally when the combined text doesn't fit.
     const parts = s.o.split(',').map(p=>p.trim()).filter(Boolean);
     const looksLikeList = parts.length > 1 && parts.every(p => p.length <= 60);
     if (looksLikeList) {
@@ -542,11 +674,11 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
       }).join('');
       lineup = `<div class="lineup-chips">${chips}</div>`;
     } else {
-      opener = `<div class="opener">w/ ${s.o}</div>`;
+      openerInline = ` <span class="opener">w/ ${s.o}</span>`;
     }
   }
 
-  const watched = WATCHLIST.has(id);
+  const watched = MY_SHOWS.has(id);
   const dateLine = flatDate ? `<div class="flat-date">${fmtDayDate(s.d)}${s.e?(' – '+fmtDayDate(s.e)):''}</div>` : '';
   // Stage name gets its own line below the venue name rather than appended inline —
   // inline caused the stage name to wrap awkwardly mid-line on narrow phone screens
@@ -560,10 +692,9 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
       ${isNew ? '<div class="new-badge">New</div>' : ''}
       ${timeBlockHTML(s)}
       <div class="main">
-        <button class="star-btn${watched?' active':''}" data-toggle="${id}" data-band="${extractArtistName(s.b)}" title="${watched?'Remove from Favorites':'Add to Favorites'}">${watched?'★':'☆'}</button>
+        <button class="star-btn${watched?' active':''}" data-toggle="${id}" title="${watched?'Remove from My Shows':'Add to My Shows'}">${watched?'★':'☆'}</button>
         ${dateLine}
-        <div class="band">${bandLink}</div>
-        ${opener}
+        <div class="band">${bandLink}${openerInline}</div>
         ${venueLine}
         ${stageLine}
         ${lineup}
@@ -574,7 +705,9 @@ function cardHTML(s, isNew, flatDate, isFavoriteNew){
 // --- Storage abstraction ---
 // Uses localStorage — persists per-browser, per-device, no account needed.
 // Each user who opens this page on their own device gets their own independent
-// watchlist/favorites, automatically, with zero setup.
+// My Shows list and Favorite Artists, automatically, with zero setup. Storage keys
+// are 'my-shows' and 'favorite-artists' — renamed from the old 'watchlist' key
+// while usage was still low, so there was no meaningful data to migrate.
 async function getMap(key){
   try{
     const raw = localStorage.getItem(key);
@@ -585,7 +718,7 @@ async function saveMap(key, obj){
   try{ localStorage.setItem(key, JSON.stringify(obj)); }catch(e){}
   // Local save above always happens regardless of sign-in state or network status —
   // the site keeps working offline/signed-out exactly as it always has.
-  if(SESSION_TOKEN && (key === 'watchlist' || key === 'favorite-artists')){
+  if(SESSION_TOKEN && (key === 'my-shows' || key === 'favorite-artists')){
     pushToServer(); // fire-and-forget; a failure here doesn't affect the local save
   }
 }
@@ -598,7 +731,7 @@ async function pushToServer(){
     await fetch(`${WORKER_BASE_URL}/api/user/data`, {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${SESSION_TOKEN}` },
-      body: JSON.stringify({ watchlist: Array.from(WATCHLIST), favorites: FAVORITES })
+      body: JSON.stringify({ myShows: Array.from(MY_SHOWS), favorites: FAVORITES })
     });
   }catch(e){ /* offline or the Worker is unreachable — local data is unaffected, will retry on next change */ }
 }
@@ -617,19 +750,19 @@ async function syncWithServer(){
     if(res.status === 401){ signOut(); return; } // session expired or invalid — drop it locally
     const data = await res.json();
     if(!data.ok) return;
-    const remote = data.data || {watchlist:[], favorites:[]};
+    const remote = data.data || {myShows:[], favorites:[]};
 
-    const watchObj = await getMap('watchlist');
-    const mergedWatch = Array.from(new Set([...Object.keys(watchObj), ...remote.watchlist]));
+    const watchObj = await getMap('my-shows');
+    const mergedWatch = Array.from(new Set([...Object.keys(watchObj), ...remote.myShows]));
     const favObj = await getMap('favorite-artists');
     const mergedFavs = Array.from(new Set([...Object.keys(favObj), ...remote.favorites]));
 
-    WATCHLIST = new Set(mergedWatch);
+    MY_SHOWS = new Set(mergedWatch);
     FAVORITES = mergedFavs;
     INITIALIZED = true; // we've now loaded state ourselves; render() shouldn't reload from storage
 
     const newWatchObj = {}; mergedWatch.forEach(id=>newWatchObj[id]=true);
-    localStorage.setItem('watchlist', JSON.stringify(newWatchObj));
+    localStorage.setItem('my-shows', JSON.stringify(newWatchObj));
     const newFavObj = {}; mergedFavs.forEach(f=>newFavObj[f]=true);
     localStorage.setItem('favorite-artists', JSON.stringify(newFavObj));
 
@@ -746,13 +879,13 @@ async function handleIncomingSession(){
     // Why not always pull, like before: pulling and merging on every single page load
     // meant that if you changed something and reloaded quickly, the pull could win a
     // race against the still-in-flight push of that change, silently bringing back
-    // the old value — that was the cause of "I unfavorited a show and it came back
-    // after reloading." Trusting local state on a device that already has data avoids
+    // the old value — that was the cause of "I removed a show from My Shows and it
+    // came back after reloading." Trusting local state on a device that already has data avoids
     // that, at the cost of a real, known tradeoff: changes made on another device won't
     // show up here automatically anymore — you'd need to click a fresh sign-in link on
     // this device again to pull them in. A proper two-way sync would need per-item
     // timestamps to do better than that; this is a deliberate simpler v1 tradeoff.
-    const watchObj = await getMap('watchlist');
+    const watchObj = await getMap('my-shows');
     const favObj = await getMap('favorite-artists');
     const hasLocalData = Object.keys(watchObj).length > 0 || Object.keys(favObj).length > 0;
     if(!hasLocalData){
@@ -765,41 +898,29 @@ function attachWatchHandlers(){
   document.querySelectorAll('[data-toggle]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       const id = btn.getAttribute('data-toggle');
-      const band = btn.getAttribute('data-band');
-      const turningOn = !WATCHLIST.has(id);
-      if(turningOn) WATCHLIST.add(id); else WATCHLIST.delete(id);
+      const turningOn = !MY_SHOWS.has(id);
+      if(turningOn) MY_SHOWS.add(id); else MY_SHOWS.delete(id);
 
-      if(turningOn){
-        if(band && !FAVORITES.some(f=>normalizeName(f)===normalizeName(band))){
-          FAVORITES.push(band);
-        }
-      } else {
-        // Unstarring fully un-favorites the artist too — note this affects ALL of that
-        // artist's shows, not just the one clicked, since the favorite border is per-artist.
-        if(band){
-          FAVORITES = FAVORITES.filter(f=>normalizeName(f)!==normalizeName(band));
-        }
-      }
+      // Favoriting a show is fully independent of Favorite Artists — starring or
+      // unstarring one show never adds or removes anything from that list. Only the
+      // Favorite Artists section itself (fav-input / fav-chips remove) touches FAVORITES.
 
-      render(); // reflect immediately, regardless of whether the saves below succeed
+      render(); // reflect immediately, regardless of whether the save below succeeds
       const wObj = {};
-      WATCHLIST.forEach(k=>wObj[k]=true);
-      await saveMap('watchlist', wObj);
-      const fObj = {};
-      FAVORITES.forEach(f=>fObj[f]=true);
-      await saveMap('favorite-artists', fObj); // save on both directions now, not just turning on
+      MY_SHOWS.forEach(k=>wObj[k]=true);
+      await saveMap('my-shows', wObj);
     });
   });
 }
 
 async function render(){
   if(!INITIALIZED){
-    const watchObj = await getMap('watchlist');
-    WATCHLIST = new Set(Object.keys(watchObj));
+    const watchObj = await getMap('my-shows');
+    MY_SHOWS = new Set(Object.keys(watchObj));
     const favObj = await getMap('favorite-artists');
     FAVORITES = Object.keys(favObj);
-    const autoObj = await getMap('auto-watched');
-    AUTO_WATCHED = new Set(Object.keys(autoObj));
+    const autoObj = await getMap('auto-added-shows');
+    AUTO_ADDED_SHOWS = new Set(Object.keys(autoObj));
     INITIALIZED = true;
   }
 
@@ -820,26 +941,26 @@ async function render(){
 
   const favHit = (s) => matchesFavorite(extractArtistName(s.b));
 
-  // Auto-add favorite-matching shows to the watchlist — once per show only,
+  // Auto-add favorite-matching shows to My Shows — once per show only,
   // so a later manual un-watch sticks instead of being re-added next render.
   let autoWatchChanged = false;
   sorted.forEach(s=>{
     if(favHit(s)){
       const id = showId(s);
-      if(!AUTO_WATCHED.has(id)){
-        AUTO_WATCHED.add(id);
-        WATCHLIST.add(id);
+      if(!AUTO_ADDED_SHOWS.has(id)){
+        AUTO_ADDED_SHOWS.add(id);
+        MY_SHOWS.add(id);
         autoWatchChanged = true;
       }
     }
   });
   if(autoWatchChanged){
     const watchObj = {};
-    WATCHLIST.forEach(k=>watchObj[k]=true);
+    MY_SHOWS.forEach(k=>watchObj[k]=true);
     const autoObj = {};
-    AUTO_WATCHED.forEach(k=>autoObj[k]=true);
-    await saveMap('watchlist', watchObj);
-    await saveMap('auto-watched', autoObj);
+    AUTO_ADDED_SHOWS.forEach(k=>autoObj[k]=true);
+    await saveMap('my-shows', watchObj);
+    await saveMap('auto-added-shows', autoObj);
   }
 
   // "Added This Week": based on each show's own 'added' field (a real, shared date
@@ -847,13 +968,13 @@ async function render(){
   // seen this yet" heuristic — so everyone sees the same "recently added" list,
   // regardless of when they personally first opened the site.
   const recentCutoff = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const recentShows = sorted.filter(s => s.added && s.added >= recentCutoff);
+  const recentShows = applyBrowseFilters(sorted.filter(s => s.added && s.added >= recentCutoff));
   const recentSectionEl = document.getElementById('recently-added-section');
   const recentListEl = document.getElementById('recent-list');
   if(recentSectionEl && recentListEl){
     if(recentShows.length){
       recentSectionEl.style.display = '';
-      recentListEl.innerHTML = recentShows.map(s=>cardHTML(s, false, true, favHit(s))).join('');
+      recentListEl.innerHTML = recentShows.map(s=>cardHTML(s, false, true)).join('');
     } else {
       recentSectionEl.style.display = 'none';
     }
@@ -875,17 +996,20 @@ async function render(){
     });
   });
 
-  // Watchlist — flat, sorted by date
+  // My Shows — flat, sorted by date
   const watchListEl = document.getElementById('watch-list');
-  const watched = sorted.filter(s => WATCHLIST.has(showId(s)));
+  const watched = sorted.filter(s => MY_SHOWS.has(showId(s)));
   watchListEl.innerHTML = watched.length
-    ? watched.map(s=>cardHTML(s, false, true, favHit(s))).join('')
-    : '<div class="empty">Nothing favorited yet — click ★ on any show to add it.</div>';
+    ? watched.map(s=>cardHTML(s, false, true)).join('')
+    : '<div class="empty">No shows here yet — click ★ on any show to add it.</div>';
 
-  // main list grouped by day
+  // main list grouped by day — filtered by the Filter and sort bar; My Shows above
+  // is intentionally NOT filtered by this, since it's a personal list, not the
+  // calendar being browsed.
   const mainEl = document.getElementById('main-list');
+  const browseSorted = applyBrowseFilters(sorted);
   const groups = {};
-  sorted.forEach(s=>{
+  browseSorted.forEach(s=>{
     const key = s.d + (s.e ? "_" + s.e : "");
     if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
     groups[key].items.push(s);
@@ -901,11 +1025,13 @@ async function render(){
       return timeToMinutes(a.sh) - timeToMinutes(b.sh);
     });
   });
-  mainEl.innerHTML = Object.values(groups).map(g=>{
-    const head = fmtDate(g.d, g.e);
-    const cards = g.items.map(s=>cardHTML(s, false, false, favHit(s))).join('');
-    return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
-  }).join('');
+  mainEl.innerHTML = Object.values(groups).length
+    ? Object.values(groups).map(g=>{
+        const head = fmtDate(g.d, g.e);
+        const cards = g.items.map(s=>cardHTML(s, false, false)).join('');
+        return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
+      }).join('')
+    : '<div class="empty">Nothing on the calendar for this combination of filters.</div>';
 
   // venue chips, colored per venue, grouped: standing venues row, then festivals row
   const venueLinksEl = document.getElementById('venue-links');
@@ -927,6 +1053,38 @@ async function render(){
       });
     });
   });
+
+  // Filter bar's venue dropdown — populated once (not every render) so an in-progress
+  // selection in the open sheet isn't wiped out by an unrelated render elsewhere in
+  // the app (e.g. a sign-in or watch-list change firing while the sheet is open).
+  if(!FILTER_VENUE_OPTIONS_POPULATED){
+    const filterVenueSel = document.getElementById('filter-venue-sel');
+    venueEntries.forEach(([code,v])=>{
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = v.name;
+      filterVenueSel.appendChild(opt);
+    });
+    FILTER_VENUE_OPTIONS_POPULATED = true;
+  }
+
+  // Active filter tags — reflect the applied FILTER_STATE, not whatever's staged
+  // (but not yet applied) in the open sheet.
+  const tagsEl = document.getElementById('active-filter-tags');
+  const tags = [];
+  if(FILTER_STATE.date !== 'week') tags.push(FILTER_STATE.date === 'month' ? 'This month' : 'All dates');
+  if(FILTER_STATE.venue){
+    const vName = (VENUES[FILTER_STATE.venue] && VENUES[FILTER_STATE.venue].name) || FILTER_STATE.venue;
+    tags.push((FILTER_STATE.exclude ? 'Excluding ' : '') + vName);
+  }
+  if(FILTER_STATE.favOnly) tags.push('Favorite artists only');
+  if(tags.length){
+    tagsEl.classList.add('show');
+    tagsEl.innerHTML = tags.map(t=>`<span class="tag-chip">${t}</span>`).join('');
+  } else {
+    tagsEl.classList.remove('show');
+    tagsEl.innerHTML = '';
+  }
 
   // last-updated stamp — reflects DATA_UPDATED_AT, not page-load or button-click time
   const lastUpdatedEl = document.getElementById('last-updated');
@@ -953,7 +1111,7 @@ function showVenueView(code, sorted){
     Object.values(groups).forEach(g => g.items.sort((a, b) => timeToMinutes(a.sh) - timeToMinutes(b.sh)));
     return Object.values(groups).map(g=>{
       const head = fmtDate(g.d, g.e);
-      const cards = g.items.map(s=>cardHTML(s, false, false, matchesFavorite(extractArtistName(s.b)))).join('');
+      const cards = g.items.map(s=>cardHTML(s, false, false)).join('');
       return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
     }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
   }
@@ -1098,6 +1256,69 @@ async function submitVenueSuggestion(){
 }
 document.getElementById('suggest-venue-submit-btn').addEventListener('click', submitVenueSuggestion);
 document.getElementById('signin-submit-btn').addEventListener('click', submitSignIn);
+
+// --- Filter bar ---
+const filterPillBtn = document.getElementById('filter-pill-btn');
+const filterSheet = document.getElementById('filter-sheet');
+filterPillBtn.addEventListener('click', ()=>{
+  const nowOpen = !filterSheet.classList.contains('open');
+  filterSheet.classList.toggle('open', nowOpen);
+  filterPillBtn.classList.toggle('open', nowOpen);
+});
+
+document.querySelectorAll('#filter-date-chips .filter-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#filter-date-chips .filter-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+const filterVenueSel = document.getElementById('filter-venue-sel');
+const filterExcludeRow = document.getElementById('filter-exclude-row');
+const filterExcludeCheck = document.getElementById('filter-exclude-check');
+filterVenueSel.addEventListener('change', ()=>{
+  if(filterVenueSel.value){
+    filterExcludeRow.classList.add('show');
+    document.getElementById('filter-exclude-venue-name').textContent =
+      (VENUES[filterVenueSel.value] && VENUES[filterVenueSel.value].name) || filterVenueSel.value;
+    filterExcludeCheck.checked = false;
+  } else {
+    filterExcludeRow.classList.remove('show');
+  }
+});
+
+const filterFavCheck = document.getElementById('filter-fav-check');
+const filterFavTrack = document.getElementById('filter-fav-track');
+const filterFavThumb = document.getElementById('filter-fav-thumb');
+filterFavCheck.addEventListener('change', ()=>{
+  filterFavTrack.classList.toggle('on', filterFavCheck.checked);
+  filterFavThumb.classList.toggle('on', filterFavCheck.checked);
+});
+
+document.getElementById('filter-clear-btn').addEventListener('click', ()=>{
+  document.querySelectorAll('#filter-date-chips .filter-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector('#filter-date-chips .filter-chip[data-date="week"]').classList.add('active');
+  filterVenueSel.value = '';
+  filterExcludeRow.classList.remove('show');
+  filterFavCheck.checked = false;
+  filterFavTrack.classList.remove('on');
+  filterFavThumb.classList.remove('on');
+  FILTER_STATE = { date: 'week', venue: '', exclude: false, favOnly: false };
+  render();
+});
+
+document.getElementById('filter-apply-btn').addEventListener('click', ()=>{
+  const activeDateChip = document.querySelector('#filter-date-chips .filter-chip.active');
+  FILTER_STATE = {
+    date: activeDateChip ? activeDateChip.getAttribute('data-date') : 'week',
+    venue: filterVenueSel.value,
+    exclude: filterExcludeCheck.checked,
+    favOnly: filterFavCheck.checked
+  };
+  filterSheet.classList.remove('open');
+  filterPillBtn.classList.remove('open');
+  render();
+});
 
 (async function init(){
   await loadShowData(); // fetch shows.json before anything that reads SHOWS/VENUES
