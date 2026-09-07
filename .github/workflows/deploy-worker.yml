@@ -1,0 +1,27 @@
+name: Deploy Cloudflare Worker
+
+# Runs automatically whenever worker.js changes on main -- this is what removes
+# the manual "paste into Cloudflare's Edit Code UI" step. It does NOT touch
+# index.html/shows.json/admin.html; those are already served directly from the
+# repo via GitHub Pages and need no separate deploy step.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker.js'
+  workflow_dispatch: {} # lets you also trigger a manual redeploy from the Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # No wrangler.toml in this repo yet -- command-line flags stand in for one.
+          # Once a wrangler.toml exists, this can simplify to just `command: deploy`.
+          command: deploy worker.js --name show-tracker-api --compatibility-date 2026-01-01
