@@ -1,5 +1,5 @@
 {
-  "dataUpdatedAt": "2026-09-02",
+  "dataUpdatedAt": "2026-09-07",
   "venues": {
     "PH": {
       "name": "Charleston Pour House",
@@ -2136,7 +2136,7 @@
       "d": "2026-10-27",
       "b": "Rumours of Fleetwood Mac (Tribute)",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
+      "dr": "6:30 PM",
       "sh": "7:30 PM",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D0064D0F7556BD8"
@@ -2145,17 +2145,18 @@
       "d": "2026-10-28",
       "b": "Sonic Live in Concert",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
+      "dr": "6:30 PM",
       "sh": "7:30 PM",
       "v": "NCC",
-      "u": "https://www.ticketmaster.com/north-charleston-performing-arts-center-tickets-north-charleston/venue/369120"
+      "u": "https://www.ticketmaster.com/north-charleston-performing-arts-center-tickets-north-charleston/venue/369120",
+      "flag": "Ambiguous: billed as a full symphony orchestra performing video-game music; not listed under the venue's own Concerts or POPS! categories. May fall under the classical/orchestral exclusion despite non-classical repertoire — flagging rather than removing."
     },
     {
       "d": "2026-11-07",
       "b": "Wynonna Judd — The Hard Truth Tour",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "6:00 PM",
+      "sh": "7:00 PM",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D0064FCEEC7B5A3"
     },
@@ -2163,8 +2164,8 @@
       "d": "2026-11-24",
       "b": "Mannheim Steamroller",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "6:30 PM",
+      "sh": "7:30 PM",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D0064E611E9D772"
     },
@@ -2172,8 +2173,8 @@
       "d": "2026-11-28",
       "b": "Lindsey Stirling — The Snow Waltz Tour",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "6:00 PM",
+      "sh": "7:00 PM",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D0065122A76372E"
     },
@@ -2181,8 +2182,8 @@
       "d": "2026-12-02",
       "b": "A Motown Christmas",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "6:00 PM",
+      "sh": "7:00 PM",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D00646CAE94F131"
     },
@@ -2190,18 +2191,17 @@
       "d": "2026-12-03",
       "b": "Christmas with Chris Tomlin",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "6:00 PM",
+      "sh": "7:00 PM",
       "v": "NCC",
-      "u": "https://www.ticketmaster.com/event/2D0065182AFC5CFD",
-      "flag": "Tickets not yet on sale as of this pull"
+      "u": "https://www.ticketmaster.com/event/2D0065182AFC5CFD"
     },
     {
       "d": "2027-03-11",
       "b": "Joe Bonamassa",
       "s": "Performing Arts Center",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "dr": "7:00 PM",
+      "sh": "8:00 PM",
       "v": "NCC",
       "u": "https://www.ticketmaster.com/event/2D0064D095D3B4DB"
     },
@@ -2550,7 +2550,7 @@
     {
       "d": "2026-11-07",
       "b": "Tyrie",
-      "o": "Slim S.O.U.L., JT Rawww",
+      "o": "Slim S.O.U.L., DJ DollaMenu, JT Rawww",
       "dr": "9:00 PM",
       "sh": "—",
       "p": 10.0,
@@ -2644,6 +2644,15 @@
       "p": 10.0,
       "v": "RA",
       "u": "http://www.theroyalamerican.com/schedule/carls-12-11-26"
+    },
+    {
+      "d": "2026-12-13",
+      "b": "14th Annual Royal American Biker Oyster Roast",
+      "dr": "1:00 PM",
+      "sh": "—",
+      "v": "RA",
+      "flag": "Venue copy lists bikes, booze, oysters, games, live music, burn barrels, vendors, tattoos, and the prison bus with no band/act named — genuinely ambiguous whether this is a live-music show; included per the ambiguous-case rule rather than excluded",
+      "added": "2026-09-07"
     },
     {
       "d": "2026-12-19",
