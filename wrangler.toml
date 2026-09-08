@@ -22,6 +22,10 @@ id = "d6ce7eeb579342ddaab94ae9560ddfc2"
 # at them, which silently broke magic-link email and turned off Turnstile bot
 # protection (worker.js deliberately "fails open" when TURNSTILE_SECRET_KEY is absent).
 # The secret VALUES are never in this file -- only references to them. Safe to commit.
+# NOTE: `binding` is the name worker.js reads off `env` (uppercase, matching the code).
+# `secret_name` must match the name in the Secrets Store EXACTLY, including case --
+# a mismatch here doesn't error loudly, the binding just silently fails to attach.
+# Two of these are lowercase in the store; that asymmetry is intentional, not a typo.
 [[secrets_store_secrets]]
 binding = "RESEND_API_KEY"
 store_id = "30c772729ee04e95b2d1ee57b4be87fd"
@@ -30,12 +34,12 @@ secret_name = "RESEND_API_KEY"
 [[secrets_store_secrets]]
 binding = "TURNSTILE_SECRET_KEY"
 store_id = "30c772729ee04e95b2d1ee57b4be87fd"
-secret_name = "TURNSTILE_SECRET_KEY"
+secret_name = "turnstile_secret_key"
 
 [[secrets_store_secrets]]
 binding = "COWORK_API_SECRET"
 store_id = "30c772729ee04e95b2d1ee57b4be87fd"
-secret_name = "COWORK_API_SECRET"
+secret_name = "cowork_api_secret"
 
 # --- Cron: weekly digest email, Wednesdays 18:00 UTC ---
 # Confirmed working in production; must be declared here or the deploy removes it.

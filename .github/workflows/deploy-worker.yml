@@ -23,7 +23,11 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Reads wrangler.toml for KV bindings, cron triggers, routes, and vars.
-          # Deploying WITHOUT that config (bare flags) can strip those from the live
-          # Worker -- breaking auth, stored user data, and the weekly digest at once.
+          # Must be Wrangler 4+. The action defaults to a 3.x release, which does not
+          # understand the `secrets_store_secrets` key in wrangler.toml -- it rejects
+          # the whole config and exits 1 before deploying anything.
+          wranglerVersion: '4'
+          # Reads wrangler.toml for KV bindings, Secrets Store bindings, cron triggers,
+          # routes, and vars. Deploying WITHOUT that config (bare flags) strips those
+          # from the live Worker -- that is what broke sign-in and email once already.
           command: deploy
