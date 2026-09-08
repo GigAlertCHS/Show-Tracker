@@ -2,6 +2,10 @@ name = "show-tracker-api"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
+# The remote has workers_dev enabled; declaring it prevents a deploy from silently
+# disabling the *.workers.dev fallback URL. Must be top-level, not inside [[routes]].
+workers_dev = true
+
 # CRITICAL: Wrangler treats this file as the source of truth on deploy. Anything a
 # deploy needs that ISN'T declared here can be dropped from the live Worker --
 # which is exactly how an automated deploy silently breaks auth, user data, and
@@ -23,9 +27,9 @@ id = "d6ce7eeb579342ddaab94ae9560ddfc2"
 # protection (worker.js deliberately "fails open" when TURNSTILE_SECRET_KEY is absent).
 # The secret VALUES are never in this file -- only references to them. Safe to commit.
 # NOTE: `binding` is the name worker.js reads off `env` (uppercase, matching the code).
-# `secret_name` must match the name in the Secrets Store EXACTLY, including case --
-# a mismatch here doesn't error loudly, the binding just silently fails to attach.
-# Two of these are lowercase in the store; that asymmetry is intentional, not a typo.
+# `secret_name` must match the name in the Secrets Store EXACTLY. Two of these are
+# lowercase AND hyphenated in the store, unlike the binding names -- that asymmetry
+# is real, not a typo. (Confirmed from wrangler's own remote-vs-local config diff.)
 [[secrets_store_secrets]]
 binding = "RESEND_API_KEY"
 store_id = "30c772729ee04e95b2d1ee57b4be87fd"
@@ -34,24 +38,28 @@ secret_name = "RESEND_API_KEY"
 [[secrets_store_secrets]]
 binding = "TURNSTILE_SECRET_KEY"
 store_id = "30c772729ee04e95b2d1ee57b4be87fd"
-secret_name = "turnstile_secret_key"
+secret_name = "turnstile-secret-key"
 
 [[secrets_store_secrets]]
 binding = "COWORK_API_SECRET"
 store_id = "30c772729ee04e95b2d1ee57b4be87fd"
-secret_name = "cowork_api_secret"
+secret_name = "cowork-api-secret"
 
-# --- Cron: weekly digest email, Wednesdays 18:00 UTC ---
-# Confirmed working in production; must be declared here or the deploy removes it.
+# --- Cron: weekly digest email ---
+# This must match what's live, or a deploy silently reschedules the digest. The
+# remote is "0 19 * * wed" (19:00 UTC Wednesdays) -- an earlier version of this file
+# said "0 18 * * 3", which would have shifted the send an hour earlier.
 [triggers]
-crons = ["0 18 * * 3"]
+crons = ["0 19 * * wed"]
 
 # --- Custom domain route ---
 # The site calls https://api.gigalertchs.com; without this the Worker is only
 # reachable at its *.workers.dev URL and every frontend API call breaks.
+# zone_name is included to match the live remote config exactly.
 [[routes]]
 pattern = "api.gigalertchs.com"
 custom_domain = true
+zone_name = "gigalertchs.com"
 
 # --- Plain (non-secret) vars ---
 # Secrets (RESEND_API_KEY, TURNSTILE_SECRET_KEY, COWORK_API_SECRET) are deliberately
