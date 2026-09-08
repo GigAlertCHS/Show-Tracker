@@ -18,16 +18,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate config (surfaces the real error if the deploy fails)
+        run: npx --yes wrangler@4 deploy --dry-run
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Must be Wrangler 4+. The action defaults to a 3.x release, which does not
-          # understand the `secrets_store_secrets` key in wrangler.toml -- it rejects
-          # the whole config and exits 1 before deploying anything.
-          wranglerVersion: '4'
-          # Reads wrangler.toml for KV bindings, Secrets Store bindings, cron triggers,
-          # routes, and vars. Deploying WITHOUT that config (bare flags) strips those
-          # from the live Worker -- that is what broke sign-in and email once already.
-          command: deploy
+        # Calling wrangler directly rather than through wrangler-action: the action
+        # swallows Wrangler's stdout/stderr and only reports "exit code 1", which made
+        # two separate failures impossible to diagnose. Running it as a plain step
+        # prints the actual error.
+        run: npx --yes wrangler@4 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
