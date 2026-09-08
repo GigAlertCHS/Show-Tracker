@@ -567,6 +567,21 @@ window.onTurnstileLoad = function(){
 let SESSION_TOKEN = localStorage.getItem('sessionToken') || null;
 let SESSION_EMAIL = localStorage.getItem('sessionEmail') || null;
 
+// Everything rendered into innerHTML below comes from one of two places that are no
+// longer fully trusted: artist names the user typed (Favorite Artists), and shows.json
+// -- which is now written by an automated weekly agent scraping venue websites, so a
+// malformed venue listing is a plausible injection path. Escape on output, always.
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Only http(s) URLs are allowed into href attributes. Without this a `javascript:`
+// URL landing in a show's `u` field (or a venue's `site`) would execute on click.
+function safeUrl(url){
+  const s = String(url || '').trim();
+  return /^https?:\/\//i.test(s) ? s : '';
+}
+
 function normalizeName(s){
   return s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 }
@@ -601,8 +616,11 @@ function timeToMinutes(t){
   return hours * 60 + minutes;
 }
 function formatTimeValue(t){
-  const m = t.match(/^(\d{1,2}:\d{2})\s*([AP]M)$/i);
-  return m ? `${m[1]}<span class="ampm">${m[2].toUpperCase()}</span>` : t;
+  const m = String(t).match(/^(\d{1,2}:\d{2})\s*([AP]M)$/i);
+  // The matched branch is safe by construction (regex only admits digits/colon/AM/PM),
+  // but the fallback returns the raw field, so it has to be escaped -- times like
+  // "see ticket link" or anything malformed land here.
+  return m ? `${m[1]}<span class="ampm">${m[2].toUpperCase()}</span>` : escapeHtml(t);
 }
 function timeBlockHTML(s){
   const showKnown = !isUnknownTime(s.sh);
@@ -633,7 +651,7 @@ function priceOrTicketsHTML(s, venue){
   // sold-out event page has nothing useful to click through to (no waitlist support
   // on any of the venues' platforms currently).
   if(s.soldOut) return `<span class="sold-out-label">Sold Out</span>`;
-  const url = s.u || (venue && venue.site) || '';
+  const url = escapeHtml(safeUrl(s.u || (venue && venue.site) || ''));
   // Low Tix is a real status some venues surface (still purchasable, just running low)
   // -- distinct from Sold Out, so it stays a working link rather than plain text.
   if(s.lowTix){
@@ -656,9 +674,10 @@ function priceOrTicketsHTML(s, venue){
 function cardHTML(s, isNew, flatDate){
   const id = showId(s);
   const venue = VENUES[s.v];
-  const bandLink = s.u
-    ? `<a href="${s.u}" target="_blank" rel="noopener">${s.b}</a>`
-    : s.b;
+  const bandUrl = safeUrl(s.u);
+  const bandLink = bandUrl
+    ? `<a href="${escapeHtml(bandUrl)}" target="_blank" rel="noopener">${escapeHtml(s.b)}</a>`
+    : escapeHtml(s.b);
 
   let openerInline = '';
   let lineup = '';
@@ -671,11 +690,11 @@ function cardHTML(s, isNew, flatDate){
     if (looksLikeList) {
       const chips = parts.map(p=>{
         const isMore = /& more$/i.test(p);
-        return `<span class="artist-chip${isMore?' more':''}">${p}</span>`;
+        return `<span class="artist-chip${isMore?' more':''}">${escapeHtml(p)}</span>`;
       }).join('');
       lineup = `<div class="lineup-chips">${chips}</div>`;
     } else {
-      openerInline = ` <span class="opener">w/ ${s.o}</span>`;
+      openerInline = ` <span class="opener">w/ ${escapeHtml(s.o)}</span>`;
     }
   }
 
@@ -684,9 +703,13 @@ function cardHTML(s, isNew, flatDate){
   // Stage name gets its own line below the venue name rather than appended inline —
   // inline caused the stage name to wrap awkwardly mid-line on narrow phone screens
   // when the venue name + stage name together didn't fit on one line.
-  const stageLine = s.s ? `<div class="stage-line"><span class="price-col"></span><span class="venue-col">${s.s}</span></div>` : '';
+  const stageLine = s.s ? `<div class="stage-line"><span class="price-col"></span><span class="venue-col">${escapeHtml(s.s)}</span></div>` : '';
   const priceOrTix = priceOrTicketsHTML(s, venue);
-  const venueLine = `<div class="venue-line"><span class="price-col">${priceOrTix ? priceOrTix + ' &middot;' : ''}</span><span class="venue-col"><a class="venue-name-link" href="${venue.site}" target="_blank" rel="noopener">${venue.name}</a></span></div>`;
+  const venueSite = safeUrl(venue.site);
+  const venueNameHtml = venueSite
+    ? `<a class="venue-name-link" href="${escapeHtml(venueSite)}" target="_blank" rel="noopener">${escapeHtml(venue.name)}</a>`
+    : escapeHtml(venue.name);
+  const venueLine = `<div class="venue-line"><span class="price-col">${priceOrTix ? priceOrTix + ' &middot;' : ''}</span><span class="venue-col">${venueNameHtml}</span></div>`;
 
   return `
     <div class="card${isNew?' is-new':''}${watched?' is-watched':''}" data-id="${id}">
@@ -998,7 +1021,7 @@ async function render(){
   // Favorite Artists chips
   const favChipsEl = document.getElementById('fav-chips');
   favChipsEl.innerHTML = FAVORITES.length
-    ? FAVORITES.map(name=>`<span class="fav-chip">${name}<button type="button" data-remove-fav="${name}">×</button></span>`).join('')
+    ? FAVORITES.map(name=>`<span class="fav-chip">${escapeHtml(name)}<button type="button" data-remove-fav="${escapeHtml(name)}">×</button></span>`).join('')
     : '<span class="empty">No favorite artists added yet.</span>';
   favChipsEl.querySelectorAll('[data-remove-fav]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
@@ -1055,10 +1078,10 @@ async function render(){
   const festivalEntries = Object.entries(VENUES).filter(([,v])=>v.type==='festival').sort((a,b)=> a[1].name.localeCompare(b[1].name));
 
   venueLinksEl.innerHTML = venueEntries.map(([code,v])=>
-    `<button type="button" class="venue-chip" style="--c:${v.color}" data-venue="${code}">${v.name}</button>`
+    `<button type="button" class="venue-chip" style="--c:${escapeHtml(v.color)}" data-venue="${escapeHtml(code)}">${escapeHtml(v.name)}</button>`
   ).join('');
   festivalLinksEl.innerHTML = festivalEntries.map(([code,v])=>
-    `<button type="button" class="fest-chip" style="--c:${v.color}" data-venue="${code}">${v.name}</button>`
+    `<button type="button" class="fest-chip" style="--c:${escapeHtml(v.color)}" data-venue="${escapeHtml(code)}">${escapeHtml(v.name)}</button>`
   ).join('');
 
   [venueLinksEl, festivalLinksEl].forEach(el=>{
@@ -1136,14 +1159,18 @@ function showVenueView(code, sorted){
 
   const viewEl = document.getElementById('venue-view');
   const addressLine = venue.address
-    ? `<div class="venue-address"><a href="https://maps.apple.com/?q=${encodeURIComponent(venue.address)}" target="_blank" rel="noopener">${venue.address}</a></div>`
+    ? `<div class="venue-address"><a href="https://maps.apple.com/?q=${encodeURIComponent(venue.address)}" target="_blank" rel="noopener">${escapeHtml(venue.address)}</a></div>`
+    : '';
+  const venueSite = escapeHtml(safeUrl(venue.site));
+  const siteLine = venueSite
+    ? `<span class="venue-site-link"><a href="${venueSite}" target="_blank" rel="noopener">${venueSite} ↗</a></span>`
     : '';
 
   viewEl.innerHTML = `
     <button type="button" class="back-link" id="back-to-all">← Back to full tracker</button>
-    <h2>${venue.name}</h2>
+    <h2>${escapeHtml(venue.name)}</h2>
     ${addressLine}
-    <span class="venue-site-link"><a href="${venue.site}" target="_blank" rel="noopener">${venue.site} ↗</a></span>
+    ${siteLine}
     <div id="venue-shows-body"></div>
   `;
   renderVenueShowsBody();
@@ -1166,6 +1193,14 @@ async function addFavorite(){
   const input = document.getElementById('fav-input');
   const name = input.value.trim();
   if(!name) return;
+  // Mirrors the Worker's own isSafeFavorite check. The Worker is the real gate (it
+  // rejects these on save), but without the same check here the value still renders
+  // locally and persists in localStorage before any round-trip -- so it needs to be
+  // caught on both sides, not just server-side.
+  if(name.length > 100 || /[<>]/.test(name)){
+    alert('Artist names must be under 100 characters and cannot contain < or >.');
+    return;
+  }
   input.value = '';
   if(!FAVORITES.some(f=>normalizeName(f)===normalizeName(name))){
     FAVORITES.push(name);

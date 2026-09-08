@@ -153,6 +153,14 @@ async function handleRequestLink(request, env, headers) {
   // but doesn't stop someone scripting requests across many different strangers'
   // addresses. Cap total requests per source IP too — 10 per hour is generous for any
   // real person signing up themselves or inviting a few friends, but blocks a script.
+  // KNOWN LIMITATION: this read-then-write is not atomic, and KV is eventually
+  // consistent, so a burst of simultaneous requests can all read the same count
+  // before any write lands and collectively overshoot the cap. KV has no native
+  // atomic increment; a hard guarantee would need Durable Objects. The per-email
+  // limit below is the tighter control (one address can't be spammed regardless),
+  // and Turnstile blocks scripted abuse ahead of this, so this is treated as a
+  // best-effort volume brake rather than a strict cap. Revisit with a Durable
+  // Object if this endpoint ever gets abused in practice.
   const ipRateLimitKey = `ratelimit-ip:${clientIp}`;
   const ipRequestCountRaw = await env.SHOW_TRACKER_KV.get(ipRateLimitKey);
   const ipRequestCount = ipRequestCountRaw ? parseInt(ipRequestCountRaw, 10) : 0;
@@ -472,7 +480,11 @@ function buildDigestEmailHTML({ shows, venues, unsubscribeLink, siteUrl }) {
     }
 
     let priceOrTix;
-    const ticketUrl = s.u || venue.site || '';
+    // shows.json is now written by an automated agent scraping venue sites, so URLs
+    // from it are no longer fully trusted: restrict to http(s) and escape before
+    // putting them in an href, same as the site itself does.
+    const rawTicketUrl = String(s.u || venue.site || '').trim();
+    const ticketUrl = /^https?:\/\//i.test(rawTicketUrl) ? escapeHtml(rawTicketUrl) : '';
     // Mirrors the site's own logic in index.html: `p` is the advance price, `dop` is
     // the optional day-of price, and day-of only applies once the show's actual date
     // has arrived (relevant if a digest happens to send on the same day as a show).
@@ -799,6 +811,14 @@ async function handleSuggestVenue(request, env, headers) {
   }
   if (venueName.length > 200 || notes.length > 2000) {
     return json({ error: 'That input is too long' }, 400, headers);
+  }
+
+  // Defense in depth against stored XSS in admin.html, which displays these values.
+  // admin.html now escapes on output (the real fix), but rejecting angle brackets at
+  // the door too means a future template change there can't silently reintroduce the
+  // hole. Mirrors the same restriction already applied to favorite artist names.
+  if (/[<>]/.test(venueName) || /[<>]/.test(notes)) {
+    return json({ error: 'Please remove < and > characters from your submission' }, 400, headers);
   }
 
   const turnstileSecretKey = await getTurnstileSecretKey(env);

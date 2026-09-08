@@ -1,0 +1,60 @@
+name = "show-tracker-api"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# CRITICAL: Wrangler treats this file as the source of truth on deploy. Anything a
+# deploy needs that ISN'T declared here can be dropped from the live Worker --
+# which is exactly how an automated deploy silently breaks auth, user data, and
+# the weekly digest all at once. Every binding, trigger, and route the Worker
+# depends on must be listed below.
+
+# --- KV: user accounts, sessions, subscribers, venue suggestions, rate limits ---
+# This binding was stripped once by a deploy that ran without this config file --
+# sign-in broke immediately because every auth path reads from KV. Declaring it here
+# is what prevents that from recurring.
+[[kv_namespaces]]
+binding = "SHOW_TRACKER_KV"
+id = "d6ce7eeb579342ddaab94ae9560ddfc2"
+
+# --- Secrets Store bindings ---
+# These were ALSO stripped by the deploy that ran without this config -- the secrets
+# themselves survived in the Secrets Store, but the Worker lost the bindings pointing
+# at them, which silently broke magic-link email and turned off Turnstile bot
+# protection (worker.js deliberately "fails open" when TURNSTILE_SECRET_KEY is absent).
+# The secret VALUES are never in this file -- only references to them. Safe to commit.
+[[secrets_store_secrets]]
+binding = "RESEND_API_KEY"
+store_id = "30c772729ee04e95b2d1ee57b4be87fd"
+secret_name = "RESEND_API_KEY"
+
+[[secrets_store_secrets]]
+binding = "TURNSTILE_SECRET_KEY"
+store_id = "30c772729ee04e95b2d1ee57b4be87fd"
+secret_name = "TURNSTILE_SECRET_KEY"
+
+[[secrets_store_secrets]]
+binding = "COWORK_API_SECRET"
+store_id = "30c772729ee04e95b2d1ee57b4be87fd"
+secret_name = "COWORK_API_SECRET"
+
+# --- Cron: weekly digest email, Wednesdays 18:00 UTC ---
+# Confirmed working in production; must be declared here or the deploy removes it.
+[triggers]
+crons = ["0 18 * * 3"]
+
+# --- Custom domain route ---
+# The site calls https://api.gigalertchs.com; without this the Worker is only
+# reachable at its *.workers.dev URL and every frontend API call breaks.
+[[routes]]
+pattern = "api.gigalertchs.com"
+custom_domain = true
+
+# --- Plain (non-secret) vars ---
+# Secrets (RESEND_API_KEY, TURNSTILE_SECRET_KEY, COWORK_API_SECRET) are deliberately
+# NOT here -- they stay as dashboard-managed secrets / Secrets Store bindings and are
+# not affected by a wrangler deploy. Never put secret values in this file; it's public.
+[vars]
+RESEND_FROM_ADDRESS = "Lowcountry Show Tracker <shows@gigalertchs.com>"
+SITE_URL = "https://gigalertchs.com/"
+WORKER_BASE_URL = "https://api.gigalertchs.com"
+OWNER_EMAIL = "gigalertchs@gmail.com"
