@@ -1,5 +1,5 @@
 {
-  "dataUpdatedAt": "2026-09-07",
+  "dataUpdatedAt": "2026-09-09",
   "venues": {
     "PH": {
       "name": "Charleston Pour House",
@@ -510,6 +510,36 @@
       "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85065"
     },
     {
+      "d": "2026-09-17",
+      "b": "Reverse Cowgirl",
+      "s": "Inside Stage",
+      "dr": "—",
+      "sh": "9:00 PM",
+      "v": "WJ",
+      "u": "",
+      "added": "2026-09-09"
+    },
+    {
+      "d": "2026-09-18",
+      "b": "Macelyn Batten",
+      "s": "Inside Stage",
+      "dr": "—",
+      "sh": "9:30 PM",
+      "v": "WJ",
+      "u": "",
+      "added": "2026-09-09"
+    },
+    {
+      "d": "2026-09-19",
+      "b": "Purple Magnolia",
+      "s": "Inside Stage",
+      "dr": "—",
+      "sh": "9:30 PM",
+      "v": "WJ",
+      "u": "https://the-windjammer.com/event/purple-magnolia-on-the-inside-stage-3/",
+      "added": "2026-09-09"
+    },
+    {
       "d": "2026-09-13",
       "b": "Motown Throwdown",
       "s": "Deck Stage",
@@ -569,7 +599,7 @@
     {
       "d": "2026-09-17",
       "b": "Goodnight, Texas",
-      "o": "Ari Z",
+      "o": "Jarrod Dickenson & Ari Z",
       "s": "Deck Stage",
       "dr": "5:00 PM",
       "sh": "6:00 PM",
@@ -782,13 +812,13 @@
       "u": "https://www.ticketmaster.com/charlton-singletons-new-jack-swing-charleston-south-carolina-09-26-2026/event/2D0064E79D689A8F"
     },
     {
-      "d": "2026-09-26",
+      "d": "2026-09-19",
       "b": "George Birge",
       "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85080"
+      "u": "https://the-windjammer.com/event/george-birge-on-the-nutrl-beach-stage/"
     },
     {
       "d": "2026-09-27",
@@ -811,13 +841,13 @@
       "p": 30
     },
     {
-      "d": "2026-09-27",
+      "d": "2026-09-26",
       "b": "Five Way Friday",
       "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85071"
+      "u": "https://the-windjammer.com/event/five-way-friday-on-the-nutrl-beach-stage/"
     },
     {
       "d": "2026-09-29",
@@ -879,13 +909,13 @@
       "u": "https://www.ticketweb.com/event/ashley-mcbryde-the-refinery-tickets/14910213"
     },
     {
-      "d": "2026-10-01",
+      "d": "2026-09-27",
       "b": "SUSTO Stringband",
       "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85054"
+      "u": "https://the-windjammer.com/event/susto-stringband-on-the-nutrl-beach-stage/"
     },
     {
       "d": "2026-10-02",
@@ -1157,7 +1187,7 @@
     {
       "d": "2026-10-16",
       "b": "Maggie Rose — Half Moon Tour 2026",
-      "o": "Support TBA",
+      "o": "MP Gannon",
       "s": "Main Stage",
       "dr": "7:30 PM",
       "sh": "8:30 PM",
@@ -1191,13 +1221,13 @@
       "u": "https://charlestonjazz.com/event/2026-what-a-wonderful-world-5pm/"
     },
     {
-      "d": "2026-10-17",
+      "d": "2026-10-10",
       "b": "14th Annual CCC Cornhole Tournament & Live Music",
       "o": "Palmetalhead + others",
       "dr": "6:00 PM",
       "sh": "7:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85091",
+      "u": "https://the-windjammer.com/event/14th-annual-ccc-cornhole-tournament-live-music/",
       "p": 15
     },
     {
@@ -1228,10 +1258,12 @@
     {
       "d": "2026-10-22",
       "b": "LaMP",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "s": "Main Stage",
+      "dr": "8:00 PM",
+      "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://www.jambase.com/show/lamp-the-charleston-pour-house-20261022"
+      "u": "https://charlestonpourhouse.com/event/lamp/",
+      "p": 25
     },
     {
       "d": "2026-10-23",
@@ -1245,20 +1277,34 @@
     {
       "d": "2026-10-23",
       "b": "The Greyboy Allstars",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "s": "Main Stage",
+      "dr": "8:00 PM",
+      "sh": "9:00 PM",
       "v": "PH",
-      "u": "https://www.jambase.com/show/the-greyboy-allstars-the-charleston-pour-house-20261023"
+      "u": "https://charlestonpourhouse.com/event/the-greyboy-allstars/",
+      "p": 35
     },
     {
       "d": "2026-10-23",
+      "b": "Hotel Hugo",
+      "o": "Sawyer Norman, Nick Matthews",
+      "s": "Deck Stage",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "u": "https://charlestonpourhouse.com/event/hotel-hugo/",
+      "p": 10,
+      "added": "2026-09-09"
+    },
+    {
+      "d": "2026-10-17",
       "b": "Ax and The Hatchetmen",
       "o": "The Hails",
       "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/e/Hatchetmen26iop"
+      "u": "https://the-windjammer.com/event/ax/"
     },
     {
       "d": "2026-10-23",
@@ -1277,24 +1323,61 @@
       "u": "https://charlestonpourhouse.com/event/karina-rykman-3/",
       "p": 25,
       "o": "Wax Monkey",
-      "s": "Main Stage"
+      "s": "Deck Stage"
     },
     {
       "d": "2026-10-24",
+      "b": "TenMileRide",
+      "s": "Deck Stage",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "u": "https://charlestonpourhouse.com/event/tenmileride-2/",
+      "p": 10,
+      "added": "2026-09-09"
+    },
+    {
+      "d": "2026-10-23",
       "b": "TopHouse",
       "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85025"
+      "u": "https://the-windjammer.com/event/tophouse-on-the-nutrl-beach-stage/"
     },
     {
       "d": "2026-10-25",
       "b": "Porch Light",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "o": "Hotel Fiction",
+      "s": "Main Stage",
+      "dr": "7:30 PM",
+      "sh": "8:30 PM",
       "v": "PH",
-      "u": "https://www.jambase.com/show/porch-light-the-charleston-pour-house-20261025"
+      "u": "https://charlestonpourhouse.com/event/porch-light/",
+      "p": 20
+    },
+    {
+      "d": "2026-10-16",
+      "b": "Be Weir Now",
+      "o": "A Bobby Weir Birthday Celebration",
+      "s": "Deck Stage",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "u": "https://charlestonpourhouse.com/event/be-weir-now/",
+      "p": 15,
+      "added": "2026-09-09"
+    },
+    {
+      "d": "2026-10-29",
+      "b": "Jacoozy",
+      "s": "Deck Stage",
+      "dr": "5:00 PM",
+      "sh": "6:00 PM",
+      "v": "PH",
+      "u": "https://charlestonpourhouse.com/event/jacoozy-3/",
+      "p": 15,
+      "added": "2026-09-09"
     },
     {
       "d": "2026-10-30",
@@ -1348,13 +1431,13 @@
       "u": "https://www.ticketmaster.com/bitch-cabal-feat-wednesday-mannequin-pussy-charleston-south-carolina-11-05-2026/event/2D0064D0DC63D961"
     },
     {
-      "d": "2026-11-05",
+      "d": "2026-10-24",
       "b": "Josh Meloy",
       "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/e/joshmeloyjammer"
+      "u": "https://the-windjammer.com/event/joshmeloy26oct/"
     },
     {
       "d": "2026-11-06",
@@ -1374,13 +1457,13 @@
       "u": "https://www.jambase.com/show/satsang-the-charleston-pour-house-20261107"
     },
     {
-      "d": "2026-11-07",
+      "d": "2026-11-05",
       "b": "Drake Milligan",
-      "s": "Inside Stage",
+      "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85074"
+      "u": "https://the-windjammer.com/event/drake-milligan-on-the-nutrl-beach-stage/"
     },
     {
       "d": "2026-11-08",
@@ -1499,13 +1582,23 @@
       "u": "https://www.ticketmaster.com/big-head-todd-the-monsters-winter-charleston-south-carolina-11-19-2026/event/2D006479DD73B364"
     },
     {
-      "d": "2026-11-19",
+      "d": "2026-11-07",
       "b": "Nightrain: The Guns N' Roses Experience",
-      "s": "Inside Stage",
+      "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "6:00 PM",
       "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85095"
+      "u": "https://the-windjammer.com/event/nightrain-the-guns-n-roses-experience-on-the-nutrl-beach-stage/"
+    },
+    {
+      "d": "2026-11-19",
+      "b": "Hunter Flynn — Back To My Roots Tour",
+      "s": "NÜTRL Beach Stage",
+      "dr": "—",
+      "sh": "6:00 PM",
+      "v": "WJ",
+      "u": "https://the-windjammer.com/event/hunter-flynn-back-to-my-roots-tour-on-the-nutrl-beach-stage/",
+      "added": "2026-09-09"
     },
     {
       "d": "2026-11-20",
@@ -1549,20 +1642,20 @@
     },
     {
       "d": "2026-12-03",
+      "b": "FILMORE",
+      "s": "NÜTRL Beach Stage",
+      "dr": "—",
+      "sh": "6:00 PM",
+      "v": "WJ",
+      "u": "https://the-windjammer.com/event/filmore-on-the-nutrl-beach-stage/"
+    },
+    {
+      "d": "2026-12-03",
       "b": "Tommy Emmanuel, CGP — Living In The Light Tour",
       "dr": "7:00 PM",
       "sh": "8:00 PM",
       "v": "CMH",
       "u": "https://www.ticketmaster.com/tommy-emmanuel-cpg-living-in-the-charleston-south-carolina-12-03-2026/event/2D00649EA0C22797"
-    },
-    {
-      "d": "2026-12-03",
-      "b": "Hunter Flynn — Back To My Roots Tour",
-      "s": "Inside Stage",
-      "dr": "—",
-      "sh": "6:00 PM",
-      "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85112"
     },
     {
       "d": "2026-12-04",
@@ -1588,15 +1681,6 @@
       "sh": "see ticket link",
       "v": "CMH",
       "u": "https://charlestonjazz.com/event/2026-holiday-swing-5pm/"
-    },
-    {
-      "d": "2026-12-05",
-      "b": "FILMORE",
-      "s": "Inside Stage",
-      "dr": "—",
-      "sh": "6:00 PM",
-      "v": "WJ",
-      "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85124"
     },
     {
       "d": "2026-12-05",
@@ -2092,6 +2176,15 @@
       "u": "https://www.ticketmaster.com/the-bends-charleston-south-carolina-11-22-2026/event/2D0064B5D884F63D"
     },
     {
+      "d": "2027-01-30",
+      "b": "Jupiter Coyote",
+      "dr": "6:00 PM",
+      "sh": "7:00 PM",
+      "v": "MF",
+      "u": "",
+      "added": "2026-09-09"
+    },
+    {
       "d": "2027-04-11",
       "e": "2027-04-18",
       "b": "Charleston Jazz Festival",
@@ -2100,6 +2193,16 @@
       "sh": "TBA",
       "v": "CJF",
       "u": "https://charlestonjazz.com/performance/charleston-jazz-festival/"
+    },
+    {
+      "d": "2026-09-24",
+      "b": "Becky Robinson — The Beasts In Me Tour",
+      "s": "Performing Arts Center",
+      "dr": "7:00 PM",
+      "sh": "8:00 PM",
+      "v": "NCC",
+      "u": "https://www.northcharlestoncoliseumpac.com/events/detail/becky-robinson",
+      "added": "2026-09-09"
     },
     {
       "d": "2026-09-26",
@@ -2717,18 +2820,20 @@
     {
       "d": "2026-09-12",
       "b": "High 5",
+      "s": "Inside Stage",
       "dr": "—",
-      "sh": "9:00 PM",
+      "sh": "9:30 PM",
       "v": "WJ",
-      "u": "https://www.bandsintown.com/e/1039927626-high-5-at-windjammer"
+      "u": "https://the-windjammer.com/event/high-5-on-the-inside-stage-9/"
     },
     {
       "d": "2026-12-05",
-      "b": "Wim Tapley & The Cannons",
+      "b": "Tobacco Road + Wim Tapley & The Cannons",
+      "s": "NÜTRL Beach Stage",
       "dr": "—",
       "sh": "7:00 PM",
       "v": "WJ",
-      "u": "https://www.bandsintown.com/e/1040043272-wim-tapley-and-the-cannons-at-windjammer"
+      "u": "https://the-windjammer.com/event/tobacco-road-wim-tapley-the-cannons-on-the-nutrl-beach-stage/"
     },
     {
       "d": "2027-01-01",
