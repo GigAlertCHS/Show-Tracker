@@ -525,6 +525,34 @@ let FAVORITES = []; // array of artist name strings, as entered by the user
 let AUTO_ADDED_SHOWS = new Set(); // show ids already auto-added to My Shows via a favorite match —
                                 // tracked separately so a manual un-watch later doesn't get overridden
 let INITIALIZED = false; // storage is loaded into memory once; after that, in-memory state is authoritative
+let STORAGE_READY = null; // memoized load-from-storage promise -- see loadStorageOnce()
+let STORAGE_WRITE_WARNED = false; // saveMap() warns about a blocked localStorage write once per page load, not every save
+
+// The #fav-input/#fav-add-btn (and other storage-touching) listeners are wired up
+// immediately at script parse time, but MY_SHOWS/FAVORITES aren't populated from
+// localStorage until render()'s first call, deep inside the async init() sequence
+// below (behind a shows.json fetch). On a slow connection a user can add a favorite
+// artist before that initial load finishes; without this guard, addFavorite() would
+// push into the in-memory array, then the still-in-flight initial load would
+// overwrite it with the pre-addition snapshot it already read from storage --
+// silently losing the addition from memory (and from what render() shows) even
+// though nothing was technically broken. Memoizing the load into a single shared
+// promise means every caller -- the real init() render() and any early user action
+// alike -- awaits the exact same load rather than racing separate ones.
+function loadStorageOnce(){
+  if(!STORAGE_READY){
+    STORAGE_READY = (async () => {
+      const watchObj = await getMap('my-shows');
+      MY_SHOWS = new Set(Object.keys(watchObj));
+      const favObj = await getMap('favorite-artists');
+      FAVORITES = Object.keys(favObj);
+      const autoObj = await getMap('auto-added-shows');
+      AUTO_ADDED_SHOWS = new Set(Object.keys(autoObj));
+      INITIALIZED = true;
+    })();
+  }
+  return STORAGE_READY;
+}
 
 // Filter bar (Filter and sort pill) — applies only to the browse views (Added This
 // Week + the main day-grouped list), not to My Shows or Favorite Artists, which are
@@ -760,12 +788,28 @@ async function getMap(key){
   }catch(e){ return {}; }
 }
 async function saveMap(key, obj){
-  try{ localStorage.setItem(key, JSON.stringify(obj)); }catch(e){}
+  let savedLocally = true;
+  try{ localStorage.setItem(key, JSON.stringify(obj)); }
+  catch(e){
+    savedLocally = false;
+    // Some browser contexts -- Safari Private Browsing chief among them -- silently
+    // reject every localStorage write. This used to fail with no signal at all: the
+    // UI already reflects the change (render() runs off the in-memory array before
+    // this save even starts), so a signed-out visitor -- who has no other
+    // persistence layer -- would see their favorite/show appear, then lose it the
+    // moment they left the page, with nothing telling them why. Warn once per page
+    // load rather than every single save.
+    if(!STORAGE_WRITE_WARNED){
+      STORAGE_WRITE_WARNED = true;
+      alert("This browser is blocking Show Tracker from saving anything locally (common in Private Browsing mode), so changes like favorite artists and My Shows won't be remembered after you leave this page. Sign in to save them to your account instead, or turn off Private Browsing for this site.");
+    }
+  }
   // Local save above always happens regardless of sign-in state or network status —
   // the site keeps working offline/signed-out exactly as it always has.
   if(SESSION_TOKEN && (key === 'my-shows' || key === 'favorite-artists')){
     pushToServer(); // fire-and-forget; a failure here doesn't affect the local save
   }
+  return savedLocally;
 }
 
 // --- Account sync: sign-in flow + KV read/write against the Worker ---
@@ -974,13 +1018,7 @@ function attachWatchHandlers(){
 
 async function render(){
   if(!INITIALIZED){
-    const watchObj = await getMap('my-shows');
-    MY_SHOWS = new Set(Object.keys(watchObj));
-    const favObj = await getMap('favorite-artists');
-    FAVORITES = Object.keys(favObj);
-    const autoObj = await getMap('auto-added-shows');
-    AUTO_ADDED_SHOWS = new Set(Object.keys(autoObj));
-    INITIALIZED = true;
+    await loadStorageOnce();
   }
 
   const currentIds = new Set();
@@ -1214,6 +1252,9 @@ async function addFavorite(){
   const input = document.getElementById('fav-input');
   const name = input.value.trim();
   if(!name) return;
+  // Make sure FAVORITES has actually been loaded from storage before mutating it --
+  // see loadStorageOnce()'s comment for the race this avoids.
+  await loadStorageOnce();
   // Mirrors the Worker's own isSafeFavorite check. The Worker is the real gate (it
   // rejects these on save), but without the same check here the value still renders
   // locally and persists in localStorage before any round-trip -- so it needs to be
