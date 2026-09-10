@@ -74,7 +74,7 @@
   }
   .nav-chip-row{
     display:flex;flex-wrap:nowrap;justify-content:center;gap:8px;
-    margin-top:18px;
+    margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
     overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
   }
   .nav-chip-row::-webkit-scrollbar{display:none;}
@@ -1473,7 +1473,7 @@ function showVenueView(code, sorted){
 
   viewEl.innerHTML = `
     <button type="button" class="back-link" id="back-to-all">← Back to full tracker</button>
-    <h2>${escapeHtml(venue.name)}</h2>
+    <div class="sticky-head"><h2>${escapeHtml(venue.name)}</h2></div>
     ${addressLine}
     ${siteLine}
     <div id="venue-shows-body"></div>
