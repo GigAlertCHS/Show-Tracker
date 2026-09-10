@@ -183,11 +183,22 @@
     font-size:20px;
     letter-spacing:0.05em;
     color:var(--text);
-    background:linear-gradient(90deg,var(--panel),transparent);
+    background-color:var(--ink);
+    background-image:linear-gradient(90deg,var(--panel),transparent);
     border-left:4px solid var(--amber);
     padding:4px 10px;
     margin-bottom:10px;
+    position:sticky;
+    z-index:4;
   }
+  /* Pin each day's date below the still-pinned banner + section header, in whichever
+     of the two day-grouped lists it's rendering in -- All Shows and a venue's own
+     show page are the only places shows are grouped under a date heading at all
+     (My Shows/Added This Week are flat lists with an inline date on each card, so
+     they have no .day-head to stick). --all-shows-head-h/--venue-head-h are each
+     that context's own .sticky-head height, kept in sync in the script below. */
+  #all-shows-section .day-head{top:calc(var(--banner-h, 0px) + var(--all-shows-head-h, 0px));}
+  #venue-shows-body .day-head{top:calc(var(--banner-h, 0px) + var(--venue-head-h, 0px));}
   .flat-date{
     font-size:11px;
     letter-spacing:0.06em;
@@ -1485,6 +1496,9 @@ function showVenueView(code, sorted){
 
   document.getElementById('all-view').style.display = 'none';
   viewEl.style.display = 'block';
+  // Must come after the display:block above -- offsetHeight reads 0 on anything
+  // still inside a display:none ancestor, which viewEl was until this line.
+  updateVenueHeadHeight();
   window.scrollTo(0,0);
 }
 
@@ -1683,10 +1697,31 @@ function updateBannerHeight(){
     document.documentElement.style.setProperty('--banner-h', banner.offsetHeight + 'px');
   }
 }
+// Same idea as updateBannerHeight(), for the All Shows section's own sticky-head --
+// its height (title + back-to-top/next-section links) is what each day-head inside
+// it needs added on top of --banner-h so the date pins directly below the section
+// title instead of underneath/overlapping it. That sticky-head is present in the
+// static HTML from page load, so this doesn't need to wait on render().
+function updateAllShowsHeadHeight(){
+  const head = document.querySelector('#all-shows-section .sticky-head');
+  if(head){
+    document.documentElement.style.setProperty('--all-shows-head-h', head.offsetHeight + 'px');
+  }
+}
+// Same again for a venue-specific show page's sticky-head (just the venue name) --
+// unlike the two above, this markup is rebuilt fresh every time showVenueView() runs
+// (not present at page load), so it's called from there directly rather than here.
+function updateVenueHeadHeight(){
+  const head = document.querySelector('#venue-view .sticky-head');
+  if(head){
+    document.documentElement.style.setProperty('--venue-head-h', head.offsetHeight + 'px');
+  }
+}
 updateBannerHeight();
-window.addEventListener('resize', updateBannerHeight);
+updateAllShowsHeadHeight();
+window.addEventListener('resize', ()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateVenueHeadHeight(); });
 if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(updateBannerHeight);
+  document.fonts.ready.then(()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateVenueHeadHeight(); });
 }
 
 (async function init(){
