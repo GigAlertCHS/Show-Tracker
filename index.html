@@ -304,6 +304,9 @@
     border-radius:12px;padding:1.1rem;max-width:360px;width:100%;
   }
   .modal-message{margin:0 0 16px;font-size:14px;color:var(--text);line-height:1.5;}
+  .artist-picker-list{max-height:240px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:10px;}
+  .artist-picker-row{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--text);cursor:pointer;}
+  .artist-picker-row input[type=checkbox]{width:16px;height:16px;flex:0 0 auto;accent-color:var(--amber);cursor:pointer;}
   .tag-chip{
     display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:4px 10px;
     border-radius:999px;background:rgba(240,168,60,0.12);color:var(--amber);border:1px solid var(--amber);
@@ -518,6 +521,17 @@
     <p id="alert-message" class="modal-message"></p>
     <div class="filter-actions">
       <button type="button" class="filter-btn-apply" id="alert-ok-btn">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="artist-picker-overlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <p class="modal-message">This show has multiple artists. Pick any to add to your Favorite Artists:</p>
+    <div id="artist-picker-list" class="artist-picker-list"></div>
+    <div class="filter-actions">
+      <button type="button" class="filter-btn-clear" id="artist-picker-skip-btn">Skip</button>
+      <button type="button" class="filter-btn-apply" id="artist-picker-add-btn">Add Selected</button>
     </div>
   </div>
 </div>
@@ -807,7 +821,7 @@ function cardHTML(s, isNew, flatDate){
       ${isNew ? '<div class="new-badge">New</div>' : ''}
       ${timeBlockHTML(s)}
       <div class="main">
-        <button class="star-btn${watched?' active':''}" data-toggle="${id}" data-band="${escapeHtml(extractArtistName(s.b))}" title="${watched?'Remove from My Shows':'Add to My Shows'}">${watched?'★':'☆'}</button>
+        <button class="star-btn${watched?' active':''}" data-toggle="${id}" data-band="${escapeHtml(extractArtistName(s.b))}" data-lineup="${escapeHtml(s.o||'')}" title="${watched?'Remove from My Shows':'Add to My Shows'}">${watched?'★':'☆'}</button>
         ${dateLine}
         <div class="band">${bandLink}${openerInline}</div>
         ${venueLine}
@@ -843,7 +857,7 @@ async function saveMap(key, obj){
     // load rather than every single save.
     if(!STORAGE_WRITE_WARNED){
       STORAGE_WRITE_WARNED = true;
-      alert("This browser is blocking Show Tracker from saving anything locally (common in Private Browsing mode), so changes like favorite artists and My Shows won't be remembered after you leave this page. Sign in to save them to your account instead, or turn off Private Browsing for this site.");
+      await showAlert("This browser is blocking Show Tracker from saving anything locally (common in Private Browsing mode), so changes like favorite artists and My Shows won't be remembered after you leave this page. Sign in to save them to your account instead, or turn off Private Browsing for this site.");
     }
   }
   // Local save above always happens regardless of sign-in state or network status —
@@ -1072,6 +1086,43 @@ function showAlert(message){
   });
 }
 
+// Multi-select counterpart for multi-artist shows (festivals) -- candidates is an
+// array of artist name strings, all pre-checked so a one-tap "Add Selected" favorites
+// the whole lineup, with individual boxes to uncheck anyone not wanted. Resolves with
+// the array of names that were checked when submitted, or [] on Skip/backdrop-dismiss.
+function pickArtistsToFavorite(candidates){
+  return new Promise(resolve=>{
+    const overlay = document.getElementById('artist-picker-overlay');
+    const listEl = document.getElementById('artist-picker-list');
+    const addBtn = document.getElementById('artist-picker-add-btn');
+    const skipBtn = document.getElementById('artist-picker-skip-btn');
+    listEl.innerHTML = candidates.map((name, i)=>`
+      <label class="artist-picker-row">
+        <input type="checkbox" data-artist-idx="${i}" checked>
+        <span>${escapeHtml(name)}</span>
+      </label>
+    `).join('');
+    overlay.style.display = 'flex';
+    function cleanup(result){
+      overlay.style.display = 'none';
+      addBtn.removeEventListener('click', onAdd);
+      skipBtn.removeEventListener('click', onSkip);
+      overlay.removeEventListener('click', onOverlayClick);
+      resolve(result);
+    }
+    function onAdd(){
+      const selected = Array.from(listEl.querySelectorAll('input[type=checkbox]:checked'))
+        .map(cb => candidates[Number(cb.getAttribute('data-artist-idx'))]);
+      cleanup(selected);
+    }
+    function onSkip(){ cleanup([]); }
+    function onOverlayClick(e){ if(e.target === overlay) cleanup([]); }
+    addBtn.addEventListener('click', onAdd);
+    skipBtn.addEventListener('click', onSkip);
+    overlay.addEventListener('click', onOverlayClick);
+  });
+}
+
 // Attached exactly once (called from init, not from render or showVenueView) --
 // star buttons are created and destroyed constantly as cards re-render, so binding
 // a fresh listener to each one every render caused listeners to pile up on any
@@ -1089,15 +1140,42 @@ function attachWatchHandlers(){
 
     // Starring a show still doesn't touch Favorite Artists by itself -- but when a
     // show is starred ON (never on un-star), offer a one-tap way to also favorite
-    // that artist, so their other upcoming shows get auto-added too. Purely opt-in
-    // (the dialog defaults to No / dismissing it), and skipped entirely if the
-    // artist already matches an existing favorite so a user isn't asked the same
-    // thing repeatedly.
+    // the artist(s), so their other upcoming shows get auto-added too. Purely
+    // opt-in (every dialog below defaults to declining), and any artist that
+    // already matches an existing favorite is left out so a user isn't asked the
+    // same thing repeatedly.
     if(turningOn){
       await loadStorageOnce();
+      const isSafeName = n => !!n && n.length <= 100 && !/[<>]/.test(n);
       const bandName = btn.getAttribute('data-band') || '';
-      const isSafe = bandName && bandName.length <= 100 && !/[<>]/.test(bandName);
-      if(isSafe && !matchesFavorite(bandName)){
+      const lineupRaw = btn.getAttribute('data-lineup') || '';
+      // Same "is this actually a list of separate artists" check cardHTML uses to
+      // decide between rendering opener chips vs. a single inline "w/ opener" --
+      // festival-style shows (Riverfront Revival, Low Tide Festival, etc.) put the
+      // event name in `b` and the real lineup in `o` as this comma-separated list.
+      const lineupParts = lineupRaw.split(',').map(p=>p.trim()).filter(Boolean);
+      const isMultiArtist = lineupParts.length > 1 && lineupParts.every(p => p.length <= 60);
+
+      if(isMultiArtist){
+        const candidates = [];
+        if(isSafeName(bandName) && !matchesFavorite(bandName)) candidates.push(bandName);
+        lineupParts.forEach(p=>{
+          if(/& more$/i.test(p)) return; // not a real artist name -- matches cardHTML's "more" chip
+          const artist = extractArtistName(p);
+          if(isSafeName(artist) && !matchesFavorite(artist) && !candidates.includes(artist)) candidates.push(artist);
+        });
+        if(candidates.length){
+          const selected = await pickArtistsToFavorite(candidates);
+          if(selected.length){
+            selected.forEach(name=>{
+              if(!FAVORITES.some(f=>normalizeName(f)===normalizeName(name))) FAVORITES.push(name);
+            });
+            const favObj = {};
+            FAVORITES.forEach(f=>favObj[f]=true);
+            await saveMap('favorite-artists', favObj);
+          }
+        }
+      } else if(isSafeName(bandName) && !matchesFavorite(bandName)){
         if(await confirmYesNo(`Also add "${bandName}" to your Favorite Artists? Their upcoming shows will be added to My Shows automatically.`)){
           FAVORITES.push(bandName);
           const favObj = {};
@@ -1365,7 +1443,7 @@ async function addFavorite(){
   // locally and persists in localStorage before any round-trip -- so it needs to be
   // caught on both sides, not just server-side.
   if(name.length > 100 || /[<>]/.test(name)){
-    alert('Artist names must be under 100 characters and cannot contain < or >.');
+    await showAlert('Artist names must be under 100 characters and cannot contain < or >.');
     return;
   }
   input.value = '';
@@ -1417,7 +1495,7 @@ document.getElementById('privacy-toggle-btn').addEventListener('click', ()=>{
 
 document.getElementById('subscribe-btn').addEventListener('click', async ()=>{
   if(!SESSION_TOKEN){
-    alert('Sign in first, then you can subscribe to email updates.');
+    await showAlert('Sign in first, then you can subscribe to email updates.');
     toggleSignInSection();
     return;
   }
@@ -1427,10 +1505,10 @@ document.getElementById('subscribe-btn').addEventListener('click', async ()=>{
       headers: { 'Authorization': `Bearer ${SESSION_TOKEN}` }
     });
     const data = await res.json();
-    if(data.error){ alert(data.error); return; }
-    alert(data.message || "You're subscribed!");
+    if(data.error){ await showAlert(data.error); return; }
+    await showAlert(data.message || "You're subscribed!");
   }catch(e){
-    alert('Something went wrong. Please try again.');
+    await showAlert('Something went wrong. Please try again.');
   }
 });
 
@@ -1444,7 +1522,7 @@ async function submitVenueSuggestion(){
   const venueName = nameInput.value.trim();
   const notes = notesInput.value.trim();
   if(!venueName){
-    alert('Please enter a venue name.');
+    await showAlert('Please enter a venue name.');
     return;
   }
   const turnstileToken = (window.turnstile && SUGGEST_VENUE_TURNSTILE_WIDGET_ID !== null)
@@ -1462,15 +1540,15 @@ async function submitVenueSuggestion(){
     const data = await res.json();
     if(window.turnstile && SUGGEST_VENUE_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SUGGEST_VENUE_TURNSTILE_WIDGET_ID);
     if(data.error){
-      alert(data.error);
+      await showAlert(data.error);
       return;
     }
-    alert(data.message || 'Thanks for the suggestion!');
+    await showAlert(data.message || 'Thanks for the suggestion!');
     nameInput.value = '';
     notesInput.value = '';
   }catch(e){
     if(window.turnstile && SUGGEST_VENUE_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SUGGEST_VENUE_TURNSTILE_WIDGET_ID);
-    alert('Something went wrong sending your suggestion. Please try again.');
+    await showAlert('Something went wrong sending your suggestion. Please try again.');
   }
 }
 document.getElementById('suggest-venue-submit-btn').addEventListener('click', submitVenueSuggestion);
