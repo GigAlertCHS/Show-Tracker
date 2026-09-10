@@ -17,6 +17,14 @@ const DEFAULT_WORKER_BASE_URL = 'https://api.gigalertchs.com';
 const DEFAULT_SITE_URL = 'https://gigalertchs.com/';
 const ALLOWED_ORIGIN = 'https://gigalertchs.com';
 
+// Real show ids (`showId()` below) are `venue|date|band-slug` — comfortably under 150
+// chars even for the longest real band/event names currently in shows.json (~85 chars).
+// Bounding both the length of an id and how many a user can accumulate keeps
+// /api/star-show (which takes the id straight from an unauthenticated-by-anything-but-
+// a-token query string) from being usable to grow one user's KV record without bound.
+const MAX_SHOW_ID_LENGTH = 150;
+const MAX_MY_SHOWS = 300;
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -323,6 +331,7 @@ async function handleSubscribe(request, env, headers) {
 async function handleUnsubscribe(request, env, headers) {
   const url = new URL(request.url);
   const token = url.searchParams.get('token');
+  const confirmed = url.searchParams.get('confirm') === '1';
   const htmlHeaders = { 'Content-Type': 'text/html' };
 
   if (!token) {
@@ -332,6 +341,24 @@ async function handleUnsubscribe(request, env, headers) {
   const email = await env.SHOW_TRACKER_KV.get(`unsubtoken:${token}`);
   if (!email) {
     return new Response('<p>This unsubscribe link is invalid or has already been used.</p>', { status: 400, headers: htmlHeaders });
+  }
+
+  // Require an explicit click past a summary page rather than unsubscribing on a bare
+  // GET — same reasoning as /api/star-show's confirm step: mail-security scanners and
+  // link-prefetching clients auto-GET links straight out of an email body, which would
+  // otherwise silently unsubscribe someone before they ever open the message.
+  if (!confirmed) {
+    const confirmUrl = `${url.origin}/api/unsubscribe?token=${encodeURIComponent(token)}&confirm=1`;
+    return new Response(
+      `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+      <body style="margin:0; padding:0; background-color:#0d0f16; font-family:Arial, Helvetica, sans-serif; color:#eee9db;">
+      <div style="max-width:480px; margin:60px auto; text-align:center; padding:24px;">
+        <div style="font-size:15px; line-height:1.5; margin-bottom:20px;">Unsubscribe <strong>${escapeHtml(maskEmail(email))}</strong> from the Lowcountry Show Tracker digest?</div>
+        <a href="${confirmUrl}" style="display:inline-block; padding:12px 28px; font-size:14px; font-weight:bold; color:#12141c; background-color:#f0a83c; border-radius:6px; text-decoration:none;">Yes, unsubscribe</a>
+      </div>
+      </body></html>`,
+      { status: 200, headers: htmlHeaders }
+    );
   }
 
   await env.SHOW_TRACKER_KV.delete(`subscriber:${email}`);
@@ -375,6 +402,9 @@ async function handleStarShow(request, env, headers) {
   if (!token || !showIdParam) {
     return new Response('<p>This link is missing required information.</p>', { status: 400, headers: htmlHeaders });
   }
+  if (showIdParam.length > MAX_SHOW_ID_LENGTH) {
+    return new Response('<p>That link is malformed.</p>', { status: 400, headers: htmlHeaders });
+  }
 
   const email = await env.SHOW_TRACKER_KV.get(`unsubtoken:${token}`);
   if (!email) {
@@ -399,7 +429,7 @@ async function handleStarShow(request, env, headers) {
   const raw = await env.SHOW_TRACKER_KV.get(`user:${email}`);
   const data = raw ? JSON.parse(raw) : { myShows: [], favorites: [] };
   if (!Array.isArray(data.myShows)) data.myShows = [];
-  if (!data.myShows.includes(showIdParam)) {
+  if (!data.myShows.includes(showIdParam) && data.myShows.length < MAX_MY_SHOWS) {
     data.myShows.push(showIdParam);
     await env.SHOW_TRACKER_KV.put(`user:${email}`, JSON.stringify(data));
   }
@@ -451,10 +481,13 @@ async function handleSaveUserData(request, env, headers) {
   // is part of what made the stored-XSS issue in admin.html exploitable via this
   // endpoint. Cap length and reject HTML-unsafe characters as defense in depth,
   // even though the real fix is escaping on display (already done in admin.html).
+  // myShows gets the same length cap (real ids are well under it, see MAX_SHOW_ID_LENGTH)
+  // plus an array-size cap, so a client can't grow one user's KV record without bound.
   const isSafeFavorite = (f) => typeof f === 'string' && f.trim().length > 0 && f.length <= 100 && !/[<>]/.test(f);
+  const isSafeShowId = (id) => typeof id === 'string' && id.length > 0 && id.length <= MAX_SHOW_ID_LENGTH;
   const data = {
-    myShows: Array.isArray(body.myShows) ? body.myShows.filter(id => typeof id === 'string') : [],
-    favorites: Array.isArray(body.favorites) ? body.favorites.filter(isSafeFavorite) : []
+    myShows: Array.isArray(body.myShows) ? body.myShows.filter(isSafeShowId).slice(0, MAX_MY_SHOWS) : [],
+    favorites: Array.isArray(body.favorites) ? body.favorites.filter(isSafeFavorite).slice(0, MAX_MY_SHOWS) : []
   };
   await env.SHOW_TRACKER_KV.put(`user:${email}`, JSON.stringify(data));
   return json({ ok: true }, 200, headers);
@@ -562,17 +595,27 @@ function buildDigestEmailHTML({ shows, venues, unsubscribeLink, siteUrl, baseUrl
     // putting them in an href, same as the site itself does.
     const rawTicketUrl = String(s.u || venue.site || '').trim();
     const ticketUrl = /^https?:\/\//i.test(rawTicketUrl) ? escapeHtml(rawTicketUrl) : '';
-    // Mirrors the site's own logic in index.html: `p` is the advance price, `dop` is
-    // the optional day-of price, and day-of only applies once the show's actual date
-    // has arrived (relevant if a digest happens to send on the same day as a show).
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const isShowDay = todayStr === s.d;
-    const effectivePrice = (isShowDay && typeof s.dop === 'number') ? s.dop : s.p;
-    if (typeof effectivePrice === 'number') {
-      const label = effectivePrice === 0 ? 'Free' : `$${Math.round(effectivePrice)}`;
-      priceOrTix = ticketUrl ? `<a href="${ticketUrl}" style="color:#4fd1b0; text-decoration:none;">${label}</a>` : label;
+    // Mirrors the site's own logic in index.html's priceOrTicketsHTML: Sold Out always
+    // wins over price/tickets (nothing to buy, so a link would be misleading — and,
+    // like the site, not a link since none of the venues' platforms have waitlist
+    // support); Low Tix stays a working link since it's still purchasable.
+    if (s.soldOut) {
+      priceOrTix = '<span style="color:#c96a6a; font-weight:bold;">Sold Out</span>';
+    } else if (s.lowTix) {
+      priceOrTix = ticketUrl ? `<a href="${ticketUrl}" style="color:#e0c46a; font-weight:bold; text-decoration:none;">Low Tix</a>` : '<span style="color:#e0c46a; font-weight:bold;">Low Tix</span>';
     } else {
-      priceOrTix = ticketUrl ? `<a href="${ticketUrl}" style="color:#4fd1b0; text-decoration:none;">Tickets</a>` : '';
+      // `p` is the advance price, `dop` is the optional day-of price, and day-of only
+      // applies once the show's actual date has arrived (relevant if a digest happens
+      // to send on the same day as a show).
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const isShowDay = todayStr === s.d;
+      const effectivePrice = (isShowDay && typeof s.dop === 'number') ? s.dop : s.p;
+      if (typeof effectivePrice === 'number') {
+        const label = effectivePrice === 0 ? 'Free' : `$${Math.round(effectivePrice)}`;
+        priceOrTix = ticketUrl ? `<a href="${ticketUrl}" style="color:#4fd1b0; text-decoration:none;">${label}</a>` : label;
+      } else {
+        priceOrTix = ticketUrl ? `<a href="${ticketUrl}" style="color:#4fd1b0; text-decoration:none;">Tickets</a>` : '';
+      }
     }
 
     const openerLine = s.o ? `<div style="font-size:12px; color:#9599ad; margin-top:3px;">w/ ${escapeHtml(s.o)}</div>` : '';
@@ -711,6 +754,21 @@ async function sendDigestEmail(email, html, env, resendApiKey) {
   }
 }
 
+// KV's list() caps at 1000 keys per call and truncates silently past that — no error,
+// just a `list_complete: false` and a `cursor` you're expected to page through. Every
+// call site in this file wants "every key with this prefix," so that paging lives here
+// once instead of being (or, more likely, NOT being) repeated at each call site.
+async function listAllKeys(env, prefix) {
+  const keys = [];
+  let cursor;
+  for (;;) {
+    const page = await env.SHOW_TRACKER_KV.list({ prefix, cursor });
+    keys.push(...page.keys);
+    if (page.list_complete) return keys;
+    cursor = page.cursor;
+  }
+}
+
 // Called by the scheduled() Cron handler. Sends one personalized email per subscriber.
 // A failure sending to one person doesn't stop the rest of the batch — logged and moved on.
 async function sendDigestToAllSubscribers(env) {
@@ -724,8 +782,8 @@ async function sendDigestToAllSubscribers(env) {
   const siteUrl = env.SITE_URL || DEFAULT_SITE_URL;
   const baseUrl = env.WORKER_BASE_URL || DEFAULT_WORKER_BASE_URL;
 
-  const list = await env.SHOW_TRACKER_KV.list({ prefix: 'subscriber:' });
-  for (const key of list.keys) {
+  const keys = await listAllKeys(env, 'subscriber:');
+  for (const key of keys) {
     const email = key.name.slice('subscriber:'.length);
     try {
       const subRaw = await env.SHOW_TRACKER_KV.get(key.name);
@@ -843,8 +901,12 @@ async function handleReportConflicts(request, env, headers) {
   }
 
   const body = await request.json().catch(() => null);
+  // Length- and count-capped as defense in depth, same reasoning as the other
+  // user/caller-supplied inputs in this file — this endpoint is behind a shared
+  // secret, not a signed-in user, but a leaked/compromised secret shouldn't be able to
+  // turn one Cowork report into an arbitrarily large outbound email.
   const conflicts = (body && Array.isArray(body.conflicts))
-    ? body.conflicts.filter(c => typeof c === 'string' && c.trim().length > 0)
+    ? body.conflicts.filter(c => typeof c === 'string' && c.trim().length > 0 && c.length <= 500).slice(0, 200)
     : [];
 
   if (conflicts.length === 0) {
@@ -1020,14 +1082,14 @@ async function handleAdminStats(request, env, headers) {
     return json({ error: 'Not authorized' }, 403, headers);
   }
 
-  const [subscriberList, userList, suggestionList] = await Promise.all([
-    env.SHOW_TRACKER_KV.list({ prefix: 'subscriber:' }),
-    env.SHOW_TRACKER_KV.list({ prefix: 'user:' }),
-    env.SHOW_TRACKER_KV.list({ prefix: 'suggestion:' })
+  const [subscriberKeys, userKeys, suggestionKeys] = await Promise.all([
+    listAllKeys(env, 'subscriber:'),
+    listAllKeys(env, 'user:'),
+    listAllKeys(env, 'suggestion:')
   ]);
 
   const subscribers = [];
-  for (const key of subscriberList.keys) {
+  for (const key of subscriberKeys) {
     const raw = await env.SHOW_TRACKER_KV.get(key.name);
     if (!raw) continue;
     const data = JSON.parse(raw);
@@ -1037,7 +1099,7 @@ async function handleAdminStats(request, env, headers) {
 
   const artistCounts = {};
   const users = [];
-  for (const key of userList.keys) {
+  for (const key of userKeys) {
     const raw = await env.SHOW_TRACKER_KV.get(key.name);
     if (!raw) continue;
     const data = JSON.parse(raw);
@@ -1057,7 +1119,7 @@ async function handleAdminStats(request, env, headers) {
     .slice(0, 20);
 
   const suggestions = [];
-  for (const key of suggestionList.keys) {
+  for (const key of suggestionKeys) {
     const raw = await env.SHOW_TRACKER_KV.get(key.name);
     if (!raw) continue;
     suggestions.push(JSON.parse(raw));
