@@ -356,7 +356,7 @@
   .venue-view{margin-bottom:20px;}
   .back-link{
     display:inline-block;
-    margin-bottom:18px;
+    flex:0 0 auto;
     font-size:13px;
     color:var(--amber);
     text-decoration:none;
@@ -1487,8 +1487,12 @@ function showVenueView(code, sorted){
     : '';
 
   viewEl.innerHTML = `
-    <button type="button" class="back-link" id="back-to-all">← Back to full tracker</button>
-    <div class="sticky-head"><h2>${escapeHtml(venue.name)}</h2></div>
+    <div class="sticky-head">
+      <div class="section-title-row">
+        <h2>${escapeHtml(venue.name)}</h2>
+        <button type="button" class="back-link" id="back-to-all">← Back</button>
+      </div>
+    </div>
     ${addressLine}
     ${siteLine}
     <div id="venue-shows-body"></div>
