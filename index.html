@@ -192,18 +192,15 @@
     z-index:4;
   }
   /* Pin each day's date below the still-pinned banner + section header, in whichever
-     of the two day-grouped lists it's rendering in -- All Shows and a venue's own
-     show page are the only places shows are grouped under a date heading at all
-     (My Shows/Added This Week are flat lists with an inline date on each card, so
-     they have no .day-head to stick). --all-shows-head-h/--venue-head-h are each
-     that context's own .sticky-head height, kept in sync in the script below. */
+     of the four day-grouped lists it's rendering in -- Added This Week, My Shows,
+     All Shows, and a venue's own show page are all grouped under a date heading.
+     --added-this-week-head-h/--my-shows-head-h/--all-shows-head-h/--venue-head-h
+     are each that context's own .sticky-head height, kept in sync in the script
+     below. */
+  #recently-added-section .day-head{top:calc(var(--banner-h, 0px) + var(--added-this-week-head-h, 0px));}
+  #my-shows-section .day-head{top:calc(var(--banner-h, 0px) + var(--my-shows-head-h, 0px));}
   #all-shows-section .day-head{top:calc(var(--banner-h, 0px) + var(--all-shows-head-h, 0px));}
   #venue-shows-body .day-head{top:calc(var(--banner-h, 0px) + var(--venue-head-h, 0px));}
-  .flat-date{
-    font-size:11px;
-    letter-spacing:0.06em;
-    color:var(--muted);
-  }
   .card{
     background:var(--panel);
     border:1px solid var(--line);
@@ -359,7 +356,7 @@
   .venue-view{margin-bottom:20px;}
   .back-link{
     display:inline-block;
-    margin-bottom:18px;
+    flex:0 0 auto;
     font-size:13px;
     color:var(--amber);
     text-decoration:none;
@@ -847,7 +844,7 @@ function priceOrTicketsHTML(s, venue){
   return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">Tickets</a>` : '';
 }
 
-function cardHTML(s, isNew, flatDate){
+function cardHTML(s, isNew){
   const id = showId(s);
   // shows.json is written weekly by an automated scraping agent, so a venue code
   // that's missing from VENUES (typo, new venue added out of order) is a real
@@ -879,7 +876,6 @@ function cardHTML(s, isNew, flatDate){
   }
 
   const watched = MY_SHOWS.has(id);
-  const dateLine = flatDate ? `<div class="flat-date">${fmtDayDate(s.d)}${s.e?(' – '+fmtDayDate(s.e)):''}</div>` : '';
   // Stage name gets its own line below the venue name rather than appended inline —
   // inline caused the stage name to wrap awkwardly mid-line on narrow phone screens
   // when the venue name + stage name together didn't fit on one line.
@@ -897,7 +893,6 @@ function cardHTML(s, isNew, flatDate){
       ${timeBlockHTML(s)}
       <div class="main">
         <button class="star-btn${watched?' active':''}" data-toggle="${id}" data-band="${escapeHtml(extractArtistName(s.b))}" data-lineup="${escapeHtml(s.o||'')}" title="${watched?'Remove from My Shows':'Add to My Shows'}">${watched?'★':'☆'}</button>
-        ${dateLine}
         <div class="band">${bandLink}${openerInline}</div>
         ${venueLine}
         ${stageLine}
@@ -1329,7 +1324,8 @@ async function render(){
   if(recentSectionEl && recentListEl){
     if(recentShows.length){
       recentSectionEl.style.display = '';
-      recentListEl.innerHTML = recentShows.map(s=>cardHTML(s, false, true)).join('');
+      recentListEl.innerHTML = groupByDayHTML(recentShows);
+      updateAddedThisWeekHeadHeight(); // after display flip above -- see that function's own comment
     } else {
       recentSectionEl.style.display = 'none';
     }
@@ -1351,11 +1347,39 @@ async function render(){
     });
   });
 
-  // My Shows — flat, sorted by date
+  // Groups a list of shows into the same day-group/day-head structure used by both
+  // All Shows and a venue's own page, so My Shows can share their sticky-date
+  // behavior instead of drifting into a third bespoke layout. Within a given day,
+  // shows are clustered by venue and ordered by show time ascending, so a day with
+  // multiple shows at the same venue reads as one clear block instead of being
+  // scattered based on data-entry order.
+  function groupByDayHTML(list){
+    const groups = {};
+    list.forEach(s=>{
+      const key = s.d + (s.e ? "_" + s.e : "");
+      if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
+      groups[key].items.push(s);
+    });
+    Object.values(groups).forEach(g => {
+      g.items.sort((a, b) => {
+        const venueA = (VENUES[a.v] && VENUES[a.v].name) || a.v;
+        const venueB = (VENUES[b.v] && VENUES[b.v].name) || b.v;
+        if(venueA !== venueB) return venueA.localeCompare(venueB);
+        return timeToMinutes(a.sh) - timeToMinutes(b.sh);
+      });
+    });
+    return Object.values(groups).map(g=>{
+      const head = fmtDate(g.d, g.e);
+      const cards = g.items.map(s=>cardHTML(s, false)).join('');
+      return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
+    }).join('');
+  }
+
+  // My Shows — grouped by day, same as All Shows, so its dates stay sticky too.
   const watchListEl = document.getElementById('watch-list');
   const watched = sorted.filter(s => MY_SHOWS.has(showId(s)));
   watchListEl.innerHTML = watched.length
-    ? watched.map(s=>cardHTML(s, false, true)).join('')
+    ? groupByDayHTML(watched)
     : '<div class="empty">No shows here yet — click ★ on any show to add it.</div>';
 
   // main list grouped by day — filtered by the Filter and sort bar; My Shows above
@@ -1363,29 +1387,8 @@ async function render(){
   // calendar being browsed.
   const mainEl = document.getElementById('main-list');
   const browseSorted = applyBrowseFilters(sorted);
-  const groups = {};
-  browseSorted.forEach(s=>{
-    const key = s.d + (s.e ? "_" + s.e : "");
-    if(!groups[key]) groups[key] = { d:s.d, e:s.e, items:[] };
-    groups[key].items.push(s);
-  });
-  // Within a given day, cluster shows by venue, and order each venue's shows by
-  // show time ascending — so a day with multiple shows at the same venue reads as
-  // one clear block instead of being scattered based on data-entry order.
-  Object.values(groups).forEach(g => {
-    g.items.sort((a, b) => {
-      const venueA = (VENUES[a.v] && VENUES[a.v].name) || a.v;
-      const venueB = (VENUES[b.v] && VENUES[b.v].name) || b.v;
-      if(venueA !== venueB) return venueA.localeCompare(venueB);
-      return timeToMinutes(a.sh) - timeToMinutes(b.sh);
-    });
-  });
-  mainEl.innerHTML = Object.values(groups).length
-    ? Object.values(groups).map(g=>{
-        const head = fmtDate(g.d, g.e);
-        const cards = g.items.map(s=>cardHTML(s, false, false)).join('');
-        return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
-      }).join('')
+  mainEl.innerHTML = browseSorted.length
+    ? groupByDayHTML(browseSorted)
     : '<div class="empty">Nothing on the calendar for this combination of filters.</div>';
 
   // venue chips, colored per venue, grouped: standing venues row, then festivals row
@@ -1464,7 +1467,7 @@ function renderVenueShowsBody(){
   Object.values(groups).forEach(g => g.items.sort((a, b) => timeToMinutes(a.sh) - timeToMinutes(b.sh)));
   bodyEl.innerHTML = Object.values(groups).map(g=>{
     const head = fmtDate(g.d, g.e);
-    const cards = g.items.map(s=>cardHTML(s, false, false)).join('');
+    const cards = g.items.map(s=>cardHTML(s, false)).join('');
     return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
   }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
 }
@@ -1484,8 +1487,12 @@ function showVenueView(code, sorted){
     : '';
 
   viewEl.innerHTML = `
-    <button type="button" class="back-link" id="back-to-all">← Back to full tracker</button>
-    <div class="sticky-head"><h2>${escapeHtml(venue.name)}</h2></div>
+    <div class="sticky-head">
+      <div class="section-title-row">
+        <h2>${escapeHtml(venue.name)}</h2>
+        <button type="button" class="back-link" id="back-to-all">← Back</button>
+      </div>
+    </div>
     ${addressLine}
     ${siteLine}
     <div id="venue-shows-body"></div>
@@ -1718,11 +1725,32 @@ function updateVenueHeadHeight(){
     document.documentElement.style.setProperty('--venue-head-h', head.offsetHeight + 'px');
   }
 }
+// Same again for the My Shows section's sticky-head -- present in static HTML from
+// page load, like All Shows', so it's grouped with that one below.
+function updateMyShowsHeadHeight(){
+  const head = document.querySelector('#my-shows-section .sticky-head');
+  if(head){
+    document.documentElement.style.setProperty('--my-shows-head-h', head.offsetHeight + 'px');
+  }
+}
+// Same again for the Added This Week section's sticky-head -- unlike the two above,
+// this section starts display:none (style="display:none" in the HTML) and is only
+// switched on inside render() when there's anything to show, so this must be called
+// from there, after that display flip, not here -- measuring while an ancestor is
+// display:none reads back an offsetHeight of 0 regardless of the element's own size
+// (this exact bug already bit updateVenueHeadHeight() once, see showVenueView()).
+function updateAddedThisWeekHeadHeight(){
+  const head = document.querySelector('#recently-added-section .sticky-head');
+  if(head){
+    document.documentElement.style.setProperty('--added-this-week-head-h', head.offsetHeight + 'px');
+  }
+}
 updateBannerHeight();
 updateAllShowsHeadHeight();
-window.addEventListener('resize', ()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateVenueHeadHeight(); });
+updateMyShowsHeadHeight();
+window.addEventListener('resize', ()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateMyShowsHeadHeight(); updateVenueHeadHeight(); updateAddedThisWeekHeadHeight(); });
 if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateVenueHeadHeight(); });
+  document.fonts.ready.then(()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateMyShowsHeadHeight(); updateVenueHeadHeight(); updateAddedThisWeekHeadHeight(); });
 }
 
 (async function init(){
