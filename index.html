@@ -513,6 +513,15 @@
   </div>
 </div>
 
+<div id="alert-overlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <p id="alert-message" class="modal-message"></p>
+    <div class="filter-actions">
+      <button type="button" class="filter-btn-apply" id="alert-ok-btn">OK</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let VENUES = {};
 let DATA_UPDATED_AT = "";
@@ -904,7 +913,7 @@ function toggleSignInSection(){
 async function submitSignIn(){
   const emailInput = document.getElementById('signin-email');
   const email = emailInput.value.trim();
-  if(!email){ alert('Please enter your email.'); return; }
+  if(!email){ await showAlert('Please enter your email.'); return; }
 
   const turnstileToken = (window.turnstile && SIGNIN_TURNSTILE_WIDGET_ID !== null)
     ? turnstile.getResponse(SIGNIN_TURNSTILE_WIDGET_ID)
@@ -918,17 +927,17 @@ async function submitSignIn(){
     });
     const data = await res.json();
     if(window.turnstile && SIGNIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SIGNIN_TURNSTILE_WIDGET_ID);
-    if(data.error){ alert(data.error); return; }
+    if(data.error){ await showAlert(data.error); return; }
     if(data.testMode){
       // No email service connected yet — surface the link directly so sign-in is still testable.
-      alert('Email sending isn\'t connected yet, so here\'s your link directly:\n\n' + data.magicLink);
+      await showAlert('Email sending isn\'t connected yet, so here\'s your link directly:\n\n' + data.magicLink);
     } else {
-      alert('Check your email for a sign-in link.');
+      await showAlert('Check your email for a sign-in link.');
     }
     emailInput.value = '';
   }catch(e){
     if(window.turnstile && SIGNIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(SIGNIN_TURNSTILE_WIDGET_ID);
-    alert('Something went wrong requesting a sign-in link. Please try again.');
+    await showAlert('Something went wrong requesting a sign-in link. Please try again.');
   }
 }
 
@@ -988,7 +997,7 @@ async function handleIncomingSession(){
   }
 
   if(authError){
-    alert('That sign-in link is invalid or has expired. Please request a new one.');
+    await showAlert('That sign-in link is invalid or has expired. Please request a new one.');
   }
 
   if(incomingSession){
@@ -1038,6 +1047,27 @@ function confirmYesNo(message){
     function onOverlayClick(e){ if(e.target === overlay) cleanup(false); }
     yesBtn.addEventListener('click', onYes);
     noBtn.addEventListener('click', onNo);
+    overlay.addEventListener('click', onOverlayClick);
+  });
+}
+
+// Single-button counterpart to confirmYesNo() -- same styling, for messages that
+// just need acknowledging (sign-in flow feedback) rather than a yes/no choice.
+function showAlert(message){
+  return new Promise(resolve=>{
+    const overlay = document.getElementById('alert-overlay');
+    const okBtn = document.getElementById('alert-ok-btn');
+    document.getElementById('alert-message').textContent = message;
+    overlay.style.display = 'flex';
+    function cleanup(){
+      overlay.style.display = 'none';
+      okBtn.removeEventListener('click', onOk);
+      overlay.removeEventListener('click', onOverlayClick);
+      resolve();
+    }
+    function onOk(){ cleanup(); }
+    function onOverlayClick(e){ if(e.target === overlay) cleanup(); }
+    okBtn.addEventListener('click', onOk);
     overlay.addEventListener('click', onOverlayClick);
   });
 }
