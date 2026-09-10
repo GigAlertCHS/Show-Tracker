@@ -50,13 +50,6 @@
       "color": "#7ed67a",
       "address": "32 Ann St, Charleston, SC 29403"
     },
-    "RFR": {
-      "name": "Riverfront Revival",
-      "site": "https://www.riverfrontrevival.com/",
-      "type": "festival",
-      "color": "#e8c94a",
-      "address": "1061 Everglades Ave, North Charleston, SC 29405"
-    },
     "CJF": {
       "name": "Charleston Jazz Festival",
       "site": "https://charlestonjazz.com/performance/charleston-jazz-festival/",
@@ -1079,7 +1072,7 @@
       "o": "Gavin Adcock, BigXthaPlug, Charles Wesley Godwin, Darius Rucker, Old Dominion, Nelly, Chase Matthew, Trombone Shorty & Orleans Avenue, Daniel Donato's Cosmic Country, Austin Williams, Atlus, Dani Rucker, Gullah Collective, Karley Scott Collins, Saluda Shoals, Mel Washington, Whiskey Run, AC Scar",
       "dr": "TBA",
       "sh": "TBA",
-      "v": "RFR",
+      "v": "RFP",
       "u": "https://riverfrontrevival.frontgatetickets.com/",
       "flag": "2-day festival; Fri/Sat artist split per AXS is partial (10 of 17 acts), not independently confirmed on the official site",
       "added": "2026-09-10"
