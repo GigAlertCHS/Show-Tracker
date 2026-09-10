@@ -779,7 +779,7 @@ function cardHTML(s, isNew, flatDate){
       ${isNew ? '<div class="new-badge">New</div>' : ''}
       ${timeBlockHTML(s)}
       <div class="main">
-        <button class="star-btn${watched?' active':''}" data-toggle="${id}" title="${watched?'Remove from My Shows':'Add to My Shows'}">${watched?'★':'☆'}</button>
+        <button class="star-btn${watched?' active':''}" data-toggle="${id}" data-band="${escapeHtml(extractArtistName(s.b))}" title="${watched?'Remove from My Shows':'Add to My Shows'}">${watched?'★':'☆'}</button>
         ${dateLine}
         <div class="band">${bandLink}${openerInline}</div>
         ${venueLine}
@@ -1012,9 +1012,24 @@ function attachWatchHandlers(){
     const turningOn = !MY_SHOWS.has(id);
     if(turningOn) MY_SHOWS.add(id); else MY_SHOWS.delete(id);
 
-    // Favoriting a show is fully independent of Favorite Artists — starring or
-    // unstarring one show never adds or removes anything from that list. Only the
-    // Favorite Artists section itself (fav-input / fav-chips remove) touches FAVORITES.
+    // Starring a show still doesn't touch Favorite Artists by itself -- but when a
+    // show is starred ON (never on un-star), offer a one-tap way to also favorite
+    // that artist, so their other upcoming shows get auto-added too. Purely opt-in
+    // (confirm() defaults to cancel), and skipped entirely if the artist already
+    // matches an existing favorite so a user isn't asked the same thing repeatedly.
+    if(turningOn){
+      await loadStorageOnce();
+      const bandName = btn.getAttribute('data-band') || '';
+      const isSafe = bandName && bandName.length <= 100 && !/[<>]/.test(bandName);
+      if(isSafe && !matchesFavorite(bandName)){
+        if(confirm(`Also add "${bandName}" to your Favorite Artists? Their upcoming shows will be added to My Shows automatically.`)){
+          FAVORITES.push(bandName);
+          const favObj = {};
+          FAVORITES.forEach(f=>favObj[f]=true);
+          await saveMap('favorite-artists', favObj);
+        }
+      }
+    }
 
     // Refresh whichever view is actually on screen -- a toggle clicked from inside
     // a venue page needs that page's own body refreshed (the global render() below
