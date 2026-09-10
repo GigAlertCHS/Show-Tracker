@@ -71,6 +71,7 @@
     margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
     font-size:11.5px;color:var(--muted);
   }
+  .utility-cols{display:flex;flex-direction:column;gap:14px;}
   .utility-col{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
   .link-btn{color:var(--teal);text-decoration:none;font-weight:600;background:none;border:none;padding:0;font:inherit;cursor:pointer;}
   .link-btn:hover{color:#6fe0c2;}
@@ -100,6 +101,9 @@
   }
   .section-title.gold{color:var(--gold);border-color:var(--gold);}
   .section-title.teal{color:var(--teal);border-color:var(--teal);}
+  .section-title-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .section-title-row .section-title{margin-bottom:0;}
+  .back-to-top-link{font-size:11.5px;white-space:nowrap;}
   .fav-input-row{display:flex;gap:8px;margin-bottom:10px;}
   .fav-input{
     flex:1;
@@ -349,7 +353,7 @@
     .venue-view h2{font-size:22px;}
   }
   @media (min-width: 641px){
-    .utility-row{flex-direction:row;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+    .utility-cols{flex-direction:row;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
   }
 </style>
 </head>
@@ -366,14 +370,18 @@
     <div class="chip-row" id="festival-links"></div>
 
     <div class="utility-row">
-      <div class="utility-col">
-        <span class="last-updated" id="last-updated"></span>
-        <button type="button" class="link-btn" id="account-btn">Sign in to sync across devices</button>
+      <div class="utility-cols">
+        <div class="utility-col">
+          <button type="button" class="link-btn" id="jump-to-my-shows">My Shows ↓</button>
+          <button type="button" class="link-btn" id="jump-to-full-list">Full List ↓</button>
+        </div>
+        <div class="utility-col">
+          <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
+          <button type="button" class="link-btn" id="jump-to-suggest-venue">Suggest a venue ↓</button>
+        </div>
       </div>
-      <div class="utility-col">
-        <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
-        <button type="button" class="link-btn" id="jump-to-suggest-venue">Suggest a venue ↓</button>
-      </div>
+      <button type="button" class="link-btn" id="account-btn">Sign in to sync across devices</button>
+      <span class="last-updated" id="last-updated"></span>
     </div>
   </header>
 
@@ -429,7 +437,7 @@
     <div id="recent-list"></div>
   </section>
 
-  <section class="block">
+  <section class="block" id="my-shows-section">
     <div class="section-title gold">My Shows</div>
     <div id="watch-list"></div>
   </section>
@@ -437,7 +445,10 @@
   <div id="main-list"></div>
 
   <section class="block" id="favorite-artists-mgmt">
-    <div class="section-title teal">Favorite Artists</div>
+    <div class="section-title-row">
+      <div class="section-title teal">Favorite Artists</div>
+      <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+    </div>
     <div class="fav-input-row">
       <input type="text" id="fav-input" class="fav-input" placeholder="Add an artist name...">
       <button type="button" id="fav-add-btn" class="fav-add-btn">Add</button>
@@ -447,7 +458,10 @@
   </section>
 
   <section class="block" id="suggest-venue-section">
-    <div class="section-title teal">Suggest a Venue</div>
+    <div class="section-title-row">
+      <div class="section-title teal">Suggest a Venue</div>
+      <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+    </div>
     <div id="suggest-venue-signedout" class="fav-hint">
       <button type="button" class="link-btn" id="suggest-venue-signin-btn">Sign in</button> to suggest a venue we should add.
     </div>
@@ -1285,6 +1299,22 @@ document.getElementById('jump-to-artists').addEventListener('click', ()=>{
 document.getElementById('jump-to-suggest-venue').addEventListener('click', ()=>{
   showAllView();
   document.getElementById('suggest-venue-section').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('jump-to-my-shows').addEventListener('click', ()=>{
+  showAllView();
+  document.getElementById('my-shows-section').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('jump-to-full-list').addEventListener('click', ()=>{
+  showAllView();
+  document.getElementById('main-list').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.querySelectorAll('.back-to-top-link').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
 });
 
 document.getElementById('suggest-venue-signin-btn').addEventListener('click', toggleSignInSection);
