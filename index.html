@@ -38,7 +38,13 @@
     -webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:880px;margin:0 auto;padding:28px 18px 80px;}
-  header.top{text-align:center;padding:20px 0 22px;border-bottom:1px solid var(--line);margin-bottom:22px;}
+  .banner-sticky{
+    position:sticky;top:0;z-index:20;
+    background:var(--ink);
+    padding:20px 0 10px;
+    text-align:center;
+  }
+  header.top{text-align:center;padding:0 0 22px;border-bottom:1px solid var(--line);margin-bottom:22px;}
   .b2-frame{
     display:inline-block;padding:15.4px 26.4px;position:relative;
     border:1px solid var(--amber);
@@ -66,17 +72,29 @@
     background:transparent;
     border:1px dashed var(--c,var(--line));color:var(--c,var(--muted));
   }
-  .utility-row{
-    display:flex;flex-direction:column;gap:14px;
-    margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
+  .nav-chip-row{
+    display:flex;flex-wrap:nowrap;justify-content:center;gap:8px;
+    margin-top:18px;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .nav-chip-row::-webkit-scrollbar{display:none;}
+  .nav-chip{
+    font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;
+    background:rgba(79,209,176,0.07);
+    border:1px solid var(--teal);color:var(--teal);
+    font-family:inherit;
+    flex:0 0 auto;white-space:nowrap;
+  }
+  .nav-chip:hover{background:rgba(79,209,176,0.16);color:#6fe0c2;}
+  .status-row{
+    display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:10px;
+    padding-top:12px;border-top:1px solid var(--line);
     font-size:11.5px;color:var(--muted);
   }
-  .utility-cols{display:flex;flex-direction:row;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
-  .utility-col{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
   .link-btn{color:var(--teal);text-decoration:none;font-weight:600;background:none;border:none;padding:0;font:inherit;cursor:pointer;}
   .link-btn:hover{color:#6fe0c2;}
-  .last-updated{font-size:11.5px;color:var(--muted);align-self:flex-start;}
-  .utility-row #account-btn{align-self:flex-start;}
+  .last-updated{font-size:11.5px;color:var(--muted);}
   .last-updated b{color:var(--text);font-weight:600;}
   .meta-note{
     background:var(--panel);
@@ -104,7 +122,16 @@
   .section-title.teal{color:var(--teal);border-color:var(--teal);}
   .section-title-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .section-title-row .section-title{margin-bottom:0;}
+  .section-title-links{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .sticky-head{
+    position:sticky;
+    top:var(--banner-h, 0px);
+    z-index:5;
+    background:var(--ink);
+    padding-top:8px;
+  }
   .back-to-top-link{font-size:11.5px;white-space:nowrap;}
+  .jump-next-link{font-size:11.5px;white-space:nowrap;}
   .fav-input-row{display:flex;gap:8px;margin-bottom:10px;}
   .fav-input{
     flex:1;
@@ -351,6 +378,7 @@
     .wrap{padding:18px 12px 60px;}
     .b2-title{font-size:27px;}
     .b2-frame{padding:12px 18px;}
+    .nav-chip-row{justify-content:flex-start;}
     .venue-chip, .fest-chip{font-size:11px;padding:4px 10px;}
     .section-title{font-size:19px;}
     .day-head{font-size:17px;padding:4px 8px;}
@@ -372,26 +400,25 @@
 <body>
 <div class="wrap">
 
-  <header class="top">
+  <div class="banner-sticky" id="banner-sticky">
     <div class="b2-frame">
       <div class="b2-title">LOWCOUNTRY SHOW TRACKER</div>
     </div>
     <div class="tagline">Live music across Charleston</div>
+  </div>
 
+  <header class="top">
     <div class="chip-row" id="venue-links"></div>
     <div class="chip-row" id="festival-links"></div>
 
-    <div class="utility-row">
-      <div class="utility-cols">
-        <div class="utility-col">
-          <button type="button" class="link-btn" id="jump-to-my-shows">My Shows ↓</button>
-          <button type="button" class="link-btn" id="jump-to-full-list">Full List ↓</button>
-        </div>
-        <div class="utility-col">
-          <button type="button" class="link-btn" id="jump-to-artists">Manage favorite artists ↓</button>
-          <button type="button" class="link-btn" id="jump-to-suggest-venue">Suggest a venue ↓</button>
-        </div>
-      </div>
+    <div class="nav-chip-row" id="nav-chip-row">
+      <button type="button" class="nav-chip" id="jump-to-my-shows">My Shows ↓</button>
+      <button type="button" class="nav-chip" id="jump-to-all-shows">All Shows ↓</button>
+      <button type="button" class="nav-chip" id="jump-to-artists">Favorite Artists ↓</button>
+      <button type="button" class="nav-chip" id="jump-to-suggest-venue">Suggest a Venue ↓</button>
+    </div>
+
+    <div class="status-row">
       <button type="button" class="link-btn" id="account-btn">Sign in to sync across devices</button>
       <span class="last-updated" id="last-updated"></span>
     </div>
@@ -445,21 +472,53 @@
   </div>
 
   <section class="block" id="recently-added-section" style="display:none;">
-    <div class="section-title teal">Added This Week</div>
+    <div class="sticky-head">
+      <div class="section-title-row">
+        <div class="section-title teal">Added This Week</div>
+        <div class="section-title-links">
+          <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+          <button type="button" class="link-btn jump-next-link" data-jump-next="my-shows-section">My Shows ↓</button>
+        </div>
+      </div>
+    </div>
     <div id="recent-list"></div>
   </section>
 
   <section class="block" id="my-shows-section">
-    <div class="section-title gold">My Shows</div>
+    <div class="sticky-head">
+      <div class="section-title-row">
+        <div class="section-title gold">My Shows</div>
+        <div class="section-title-links">
+          <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+          <button type="button" class="link-btn jump-next-link" data-jump-next="all-shows-section">All Shows ↓</button>
+        </div>
+      </div>
+    </div>
     <div id="watch-list"></div>
   </section>
 
-  <div id="main-list"></div>
+  <section class="block" id="all-shows-section">
+    <div class="sticky-head">
+      <div class="section-title-row">
+        <div class="section-title teal">All Shows</div>
+        <div class="section-title-links">
+          <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+          <button type="button" class="link-btn jump-next-link" data-jump-next="favorite-artists-mgmt">Favorite Artists ↓</button>
+        </div>
+      </div>
+    </div>
+    <div id="main-list"></div>
+  </section>
 
   <section class="block" id="favorite-artists-mgmt">
-    <div class="section-title-row">
-      <div class="section-title teal">Favorite Artists</div>
-      <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+    <div class="sticky-head">
+      <div class="section-title-row">
+        <div class="section-title teal">Favorite Artists</div>
+        <div class="section-title-links">
+          <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+          <button type="button" class="link-btn jump-next-link" data-jump-next="suggest-venue-section">Suggest a Venue ↓</button>
+        </div>
+      </div>
     </div>
     <div class="fav-input-row">
       <input type="text" id="fav-input" class="fav-input" placeholder="Add an artist name...">
@@ -470,9 +529,13 @@
   </section>
 
   <section class="block" id="suggest-venue-section">
-    <div class="section-title-row">
-      <div class="section-title teal">Suggest a Venue</div>
-      <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+    <div class="sticky-head">
+      <div class="section-title-row">
+        <div class="section-title teal">Suggest a Venue</div>
+        <div class="section-title-links">
+          <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
+        </div>
+      </div>
     </div>
     <div id="suggest-venue-signedout" class="fav-hint">
       <button type="button" class="link-btn" id="suggest-venue-signin-btn">Sign in</button> to suggest a venue we should add.
@@ -1475,14 +1538,21 @@ document.getElementById('jump-to-my-shows').addEventListener('click', ()=>{
   document.getElementById('my-shows-section').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
-document.getElementById('jump-to-full-list').addEventListener('click', ()=>{
+document.getElementById('jump-to-all-shows').addEventListener('click', ()=>{
   showAllView();
-  document.getElementById('main-list').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('all-shows-section').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 document.querySelectorAll('.back-to-top-link').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+document.querySelectorAll('[data-jump-next]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const targetEl = document.getElementById(btn.getAttribute('data-jump-next'));
+    if(targetEl) targetEl.scrollIntoView({behavior:'smooth', block:'start'});
   });
 });
 
@@ -1602,6 +1672,22 @@ document.getElementById('filter-apply-btn').addEventListener('click', ()=>{
   filterPillBtn.classList.remove('open');
   render();
 });
+
+// Keeps --banner-h in sync with the sticky title banner's actual rendered height, so
+// each section's .sticky-head (top:var(--banner-h)) pins directly below it instead of
+// overlapping or leaving a gap. Re-measured on resize and once webfonts finish loading
+// (Bebas Neue loads async and can shift the banner's height slightly after first paint).
+function updateBannerHeight(){
+  const banner = document.getElementById('banner-sticky');
+  if(banner){
+    document.documentElement.style.setProperty('--banner-h', banner.offsetHeight + 'px');
+  }
+}
+updateBannerHeight();
+window.addEventListener('resize', updateBannerHeight);
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(updateBannerHeight);
+}
 
 (async function init(){
   attachWatchHandlers(); // one-time delegated listener -- see its own comment for why
