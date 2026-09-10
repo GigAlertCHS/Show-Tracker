@@ -18,6 +18,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Catches the exact failure mode that once got past this workflow: PRs #3/#4
+      # committed esbuild-bundled output over the hand-written source, twice, so every
+      # function in the file was declared two times back to back (only the second,
+      # later copy of each ever ran, since JS lets a later top-level function
+      # declaration silently shadow an earlier one — `wrangler deploy --dry-run` below
+      # doesn't catch this, since the duplicated file was still syntactically valid).
+      - name: Sanity-check worker.js (syntax + no duplicate top-level functions)
+        run: |
+          node --check worker.js
+          node -e "
+            const fs = require('fs');
+            const src = fs.readFileSync('worker.js', 'utf8');
+            const names = [...src.matchAll(/^(?:async function|function) ([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
+            const seen = new Set();
+            const dupes = new Set();
+            for (const n of names) { if (seen.has(n)) dupes.add(n); seen.add(n); }
+            if (dupes.size) {
+              console.error('Duplicate top-level function declaration(s):', [...dupes].join(', '));
+              process.exit(1);
+            }
+          "
+
       - name: Validate config (surfaces the real error if the deploy fails)
         run: npx --yes wrangler@4 deploy --dry-run
         env:

@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- A magic-link sign-in briefly puts the session token in this page's own URL
+     (?session=...) before handleIncomingSession() strips it via history.replaceState.
+     Suppressing the referrer entirely for the third-party loads below (Google Fonts,
+     Turnstile) means that token can't leak to them via the Referer header in that
+     window, even though none of those loads need referrer info to function anyway. -->
+<meta name="referrer" content="same-origin">
 <title>Lowcountry Show Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
@@ -673,7 +679,11 @@ function priceOrTicketsHTML(s, venue){
 
 function cardHTML(s, isNew, flatDate){
   const id = showId(s);
-  const venue = VENUES[s.v];
+  // shows.json is written weekly by an automated scraping agent, so a venue code
+  // that's missing from VENUES (typo, new venue added out of order) is a real
+  // possibility, not just a hypothetical -- fall back to the raw code rather than
+  // letting `venue.site`/`venue.name` below throw and break the whole render() pass.
+  const venue = VENUES[s.v] || { name: s.v };
   const bandUrl = safeUrl(s.u);
   const bandLink = bandUrl
     ? `<a href="${escapeHtml(bandUrl)}" target="_blank" rel="noopener">${escapeHtml(s.b)}</a>`
