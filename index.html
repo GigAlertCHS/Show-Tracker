@@ -546,7 +546,7 @@ function applyBrowseFilters(list){
   if(cutoff) out = out.filter(s => s.d <= cutoff);
   if(FILTER_STATE.venue) out = out.filter(s => s.v === FILTER_STATE.venue);
   if(FILTER_STATE.favOnly){
-    out = out.filter(s => matchesFavorite(extractArtistName(s.b)));
+    out = out.filter(showMatchesFavorite);
   }
   return out;
 }
@@ -602,6 +602,17 @@ function matchesFavorite(bandName){
     const favNorm = normalizeName(fav);
     return favNorm.length > 0 && norm.includes(favNorm);
   });
+}
+// Multi-artist shows (festivals especially, e.g. Riverfront Revival) put the full
+// lineup in `o` as a comma-separated list, with just the event name in `b` -- a
+// favorited artist appearing only in that list wouldn't otherwise match anything,
+// since `b` alone is what favorite-matching normally checks. Check every opener
+// individually (same split convention cardHTML uses to render them) in addition to `b`.
+function showMatchesFavorite(s){
+  if(matchesFavorite(extractArtistName(s.b))) return true;
+  if(!s.o) return false;
+  return s.o.split(',').map(p=>p.trim()).filter(Boolean)
+    .some(name => matchesFavorite(extractArtistName(name)));
 }
 
 function isUnknownTime(t){
@@ -987,7 +998,7 @@ async function render(){
 
   sorted.forEach(s=> currentIds.add(showId(s)));
 
-  const favHit = (s) => matchesFavorite(extractArtistName(s.b));
+  const favHit = showMatchesFavorite;
 
   // Auto-add favorite-matching shows to My Shows — once per show only,
   // so a later manual un-watch sticks instead of being re-added next render.
