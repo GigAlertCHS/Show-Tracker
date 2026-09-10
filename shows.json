@@ -1,5 +1,5 @@
 {
-  "dataUpdatedAt": "2026-09-09",
+  "dataUpdatedAt": "2026-09-10",
   "venues": {
     "PH": {
       "name": "Charleston Pour House",
@@ -508,6 +508,16 @@
       "sh": "6:00 PM",
       "v": "WJ",
       "u": "https://whollyticket.com/paymentpage/payment.php?event_id=85065"
+    },
+    {
+      "d": "2026-09-12",
+      "b": "Low Tide Festival",
+      "o": "Sidepiece, TOKiMONSTA, Nikita, The Wicked, 9B49, Name Unknown, Monzy",
+      "v": "RFP",
+      "sh": "3:00 PM",
+      "dr": "3:00 PM",
+      "u": "https://hightidefestival.com/products/low-tide-2026-pass",
+      "added": "2026-09-10"
     },
     {
       "d": "2026-09-17",
@@ -1064,12 +1074,15 @@
     },
     {
       "d": "2026-10-09",
-      "b": "Riverfront Revival — Day 1",
-      "o": "Gavin Adcock, BigXthaPlug, Charles Wesley Godwin, Chase Matthew, Daniel Donato's Cosmic Country, Austin Williams, Atlus, Karley Scott Collins, Whiskey Run & more",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
+      "e": "2026-10-10",
+      "b": "Riverfront Revival",
+      "o": "Gavin Adcock, BigXthaPlug, Charles Wesley Godwin, Darius Rucker, Old Dominion, Nelly, Chase Matthew, Trombone Shorty & Orleans Avenue, Daniel Donato's Cosmic Country, Austin Williams, Atlus, Dani Rucker, Gullah Collective, Karley Scott Collins, Saluda Shoals, Mel Washington, Whiskey Run, AC Scar",
+      "dr": "TBA",
+      "sh": "TBA",
       "v": "RFR",
-      "u": "https://www.riverfrontrevival.com/lineup"
+      "u": "https://riverfrontrevival.frontgatetickets.com/",
+      "flag": "2-day festival; Fri/Sat artist split per AXS is partial (10 of 17 acts), not independently confirmed on the official site",
+      "added": "2026-09-10"
     },
     {
       "d": "2026-10-09",
@@ -1090,15 +1103,6 @@
       "v": "PH",
       "u": "https://aftontickets.com/event/buyticket/nvjqo22pxo/preview",
       "p": 30
-    },
-    {
-      "d": "2026-10-10",
-      "b": "Riverfront Revival — Day 2: Darius Rucker",
-      "o": "Old Dominion, Nelly, Trombone Shorty & Orleans Avenue, Gullah Collective, Mel Washington, Saluda Shoals, AC Scar, Dani Rucker & more",
-      "dr": "see ticket link",
-      "sh": "see ticket link",
-      "v": "RFR",
-      "u": "https://www.riverfrontrevival.com/lineup"
     },
     {
       "d": "2026-10-10",
