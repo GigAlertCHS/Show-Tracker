@@ -104,17 +104,36 @@ function renderStats(data){
     ? data.topFavoriteArtists.map(a => `<span class="chip">${escapeHtml(a.artist)} (${escapeHtml(a.count)})</span>`).join('')
     : '<div class="empty">No favorite artists tracked yet.</div>';
 
+  const venuesHtml = data.topVenues.length
+    ? data.topVenues.map(v => `<span class="chip">${escapeHtml(v.venue)} (${escapeHtml(v.count)})</span>`).join('')
+    : '<div class="empty">No starred upcoming shows yet.</div>';
+
+  const starredShowsHtml = data.topStarredShows.length
+    ? data.topStarredShows.map(s => `<div class="stat-row"><span><strong>${escapeHtml(s.band)}</strong> <span class="muted">— ${escapeHtml(s.venue)} &middot; ${escapeHtml(fmtDate(new Date(s.date + 'T12:00:00').getTime()))}</span></span><span class="muted">${escapeHtml(s.count)}&nbsp;starred</span></div>`).join('')
+    : '<div class="empty">No starred upcoming shows yet.</div>';
+
+  const d = data.digestStats;
+  const pct = (n, of) => of ? Math.round((n / of) * 100) + '%' : '—';
+  const digestHtml = `
+    <div class="stat-row"><span>Delivered</span><span class="muted">${escapeHtml(d.delivered)}</span></div>
+    <div class="stat-row"><span>Opened</span><span class="muted">${escapeHtml(d.opened)} (${pct(d.opened, d.delivered)})</span></div>
+    <div class="stat-row"><span>Clicked</span><span class="muted">${escapeHtml(d.clicked)} (${pct(d.clicked, d.delivered)})</span></div>
+  `;
+
   const suggestionsHtml = data.suggestions.list.length
     ? data.suggestions.list.map(s => `<div class="stat-row" style="display:block;"><div><strong>${escapeHtml(s.venueName)}</strong> <span class="muted">— ${escapeHtml(s.submitterEmail)} &middot; ${escapeHtml(fmtDate(s.submittedAt))}</span></div>${s.notes ? `<div class="muted" style="margin-top:4px;">${escapeHtml(s.notes)}</div>` : ''}</div>`).join('')
     : '<div class="empty">No suggestions yet.</div>';
 
   el.innerHTML = `
-    <div class="block"><h2>Subscribers (${data.subscribers.count})</h2>${subsHtml}</div>
+    <div class="block"><h2>Subscribers (${data.subscribers.count})</h2><div class="stat-row"><span class="muted">Unsubscribed</span><span class="muted">${escapeHtml(data.unsubscribedCount)}</span></div>${subsHtml}</div>
     <div class="block"><h2>Accounts (${data.users.count})</h2>${usersHtml}</div>
+    <div class="block"><h2>Digest email engagement</h2>${digestHtml}</div>
     <div class="block"><h2>Top favorited artists</h2>${artistsHtml}</div>
+    <div class="block"><h2>Top favorited venues</h2>${venuesHtml}</div>
+    <div class="block"><h2>Most-starred upcoming shows</h2>${starredShowsHtml}</div>
     <div class="block"><h2>Venue suggestions (${data.suggestions.count})</h2>${suggestionsHtml}</div>
     <button class="refresh-btn" id="refresh-btn">Refresh</button>
-    <p class="muted" style="font-size:11px;margin-top:16px;">Not tracked here yet: email opens/clicks (needs a separate Resend API integration) and site pageviews (no analytics currently installed).</p>
+    <p class="muted" style="font-size:11px;margin-top:16px;">Not tracked here yet: site pageviews (Cloudflare Web Analytics isn't enabled for this domain).</p>
   `;
   document.getElementById('refresh-btn').addEventListener('click', loadStats);
 }

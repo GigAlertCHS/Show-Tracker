@@ -72,6 +72,11 @@ export default {
       if (path === '/api/subscribe' && request.method === 'POST') {
         return await handleSubscribe(request, env, headers);
       }
+      // Called by Resend's servers directly, not a browser -- no CORS headers needed,
+      // and the response body/shape doesn't matter to Resend beyond the status code.
+      if (path === '/api/webhooks/resend' && request.method === 'POST') {
+        return await handleResendWebhook(request, env);
+      }
       return json({ error: 'Not found' }, 404, headers);
     } catch (err) {
       // Logged in full for our own debugging via Cloudflare's logs, but this catch-all
@@ -230,6 +235,93 @@ async function getResendApiKey(env) {
     return await env.RESEND_API_KEY.get();
   }
   return env.RESEND_API_KEY;
+}
+
+// ---- Resend webhooks (digest email delivered/opened/clicked -> admin stats) ----
+// Fails open (skips verification) if RESEND_WEBHOOK_SECRET isn't configured yet, same
+// bootstrapping pattern as Turnstile above -- lets this endpoint exist and be pointed
+// at from Resend's dashboard before the signing secret is wired up on this side, without
+// silently accepting anything once it IS configured.
+async function getResendWebhookSecret(env) {
+  if (!env.RESEND_WEBHOOK_SECRET) return null;
+  if (typeof env.RESEND_WEBHOOK_SECRET.get === 'function') {
+    return await env.RESEND_WEBHOOK_SECRET.get();
+  }
+  return env.RESEND_WEBHOOK_SECRET;
+}
+
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function bytesToBase64(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+// timingSafeEqual() is defined once, further down this file (shared with
+// handleReportConflicts' token check).
+
+// Resend delivers webhooks via Svix, signed the same way Svix signs for every one of
+// its customers: HMAC-SHA256 over "{svix-id}.{svix-timestamp}.{raw body}", keyed by the
+// base64 portion of the whsec_... signing secret Resend's dashboard shows when you
+// create the webhook endpoint. svix-signature can carry several space-separated
+// "v1,<sig>" candidates (e.g. during secret rotation) -- valid if any match.
+async function verifyResendWebhookSignature(rawBody, headers, secret) {
+  const svixId = headers.get('svix-id');
+  const svixTimestamp = headers.get('svix-timestamp');
+  const svixSignature = headers.get('svix-signature');
+  if (!svixId || !svixTimestamp || !svixSignature) return false;
+
+  const secretBytes = base64ToBytes(secret.replace(/^whsec_/, ''));
+  const signedContent = `${svixId}.${svixTimestamp}.${rawBody}`;
+  const key = await crypto.subtle.importKey('raw', secretBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sigBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedContent));
+  const expectedSig = bytesToBase64(new Uint8Array(sigBuffer));
+
+  const candidates = svixSignature.split(' ').map(part => part.split(',')[1]).filter(Boolean);
+  return candidates.some(sig => timingSafeEqual(sig, expectedSig));
+}
+
+// Same read-then-write caveat as the IP rate limiter elsewhere in this file: KV has no
+// atomic increment, so concurrent webhook deliveries can race and undercount slightly.
+// Treated as a best-effort approximate counter, not an exact one -- fine for "roughly
+// how many opens/clicks," not something billing or alerting should depend on.
+async function incrementCounter(env, key) {
+  const current = await env.SHOW_TRACKER_KV.get(key);
+  const next = (current ? parseInt(current, 10) : 0) + 1;
+  await env.SHOW_TRACKER_KV.put(key, String(next));
+}
+
+async function handleResendWebhook(request, env) {
+  const rawBody = await request.text();
+
+  const secret = await getResendWebhookSecret(env);
+  if (secret) {
+    const valid = await verifyResendWebhookSignature(rawBody, request.headers, secret);
+    if (!valid) return new Response('Invalid signature', { status: 401 });
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(rawBody);
+  } catch (err) {
+    return new Response('Bad payload', { status: 400 });
+  }
+
+  const tags = (payload.data && payload.data.tags) || [];
+  const isDigest = tags.some(t => t.name === 'type' && t.value === 'digest');
+  if (isDigest) {
+    if (payload.type === 'email.delivered') await incrementCounter(env, 'digest-stats:delivered');
+    else if (payload.type === 'email.opened') await incrementCounter(env, 'digest-stats:opened');
+    else if (payload.type === 'email.clicked') await incrementCounter(env, 'digest-stats:clicked');
+  }
+
+  return new Response('ok', { status: 200 });
 }
 
 async function sendMagicLinkEmail(email, link, env, resendApiKey) {
@@ -754,7 +846,10 @@ async function sendDigestEmail(email, html, env, resendApiKey) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to: email, subject: 'This Week in Charleston Live Music', html })
+    // The 'type':'digest' tag is what the Resend webhook handler (handleResendWebhook,
+    // below) uses to tell digest opens/clicks apart from sign-in-link email events --
+    // both go through this same Resend account.
+    body: JSON.stringify({ from, to: email, subject: 'This Week in Charleston Live Music', html, tags: [{ name: 'type', value: 'digest' }] })
   });
   if (!res.ok) {
     const errBody = await res.text().catch(() => '');
@@ -1090,11 +1185,26 @@ async function handleAdminStats(request, env, headers) {
     return json({ error: 'Not authorized' }, 403, headers);
   }
 
-  const [subscriberKeys, userKeys, suggestionKeys] = await Promise.all([
+  const [subscriberKeys, userKeys, suggestionKeys, unsubscribedKeys] = await Promise.all([
     listAllKeys(env, 'subscriber:'),
     listAllKeys(env, 'user:'),
-    listAllKeys(env, 'suggestion:')
+    listAllKeys(env, 'suggestion:'),
+    listAllKeys(env, 'unsubscribed:')
   ]);
+
+  // Best-effort: stats for everything else here come straight from KV, but "which
+  // upcoming shows/venues are getting starred" needs the show catalog too, to turn a
+  // starred show id back into a real venue/band/date and to know which starred ids are
+  // even still upcoming. A hiccup fetching it shouldn't take down the rest of this page.
+  let upcomingShowById = new Map();
+  let venueNames = {};
+  try {
+    const showData = await fetchShowData(env);
+    venueNames = showData.venues || {};
+    upcomingShows(showData.shows || []).forEach(s => upcomingShowById.set(showId(s), s));
+  } catch (err) {
+    console.error('handleAdminStats: fetchShowData failed:', err);
+  }
 
   const subscribers = [];
   for (const key of subscriberKeys) {
@@ -1106,6 +1216,7 @@ async function handleAdminStats(request, env, headers) {
   subscribers.sort((a, b) => (b.subscribedAt || 0) - (a.subscribedAt || 0));
 
   const artistCounts = {};
+  const showStarCounts = {}; // showId -> number of users with it in myShows
   const users = [];
   for (const key of userKeys) {
     const raw = await env.SHOW_TRACKER_KV.get(key.name);
@@ -1119,10 +1230,32 @@ async function handleAdminStats(request, env, headers) {
       if (!norm) return;
       artistCounts[norm] = (artistCounts[norm] || 0) + 1;
     });
+    myShows.forEach(id => {
+      if (!upcomingShowById.has(id)) return; // past show, or one no longer in the catalog
+      showStarCounts[id] = (showStarCounts[id] || 0) + 1;
+    });
   }
 
   const topFavoriteArtists = Object.entries(artistCounts)
     .map(([artist, count]) => ({ artist, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 20);
+
+  const venueCounts = {};
+  Object.entries(showStarCounts).forEach(([id, count]) => {
+    const v = upcomingShowById.get(id).v;
+    venueCounts[v] = (venueCounts[v] || 0) + count;
+  });
+  const topVenues = Object.entries(venueCounts)
+    .map(([code, count]) => ({ venue: (venueNames[code] && venueNames[code].name) || code, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 20);
+
+  const topStarredShows = Object.entries(showStarCounts)
+    .map(([id, count]) => {
+      const s = upcomingShowById.get(id);
+      return { band: s.b, venue: (venueNames[s.v] && venueNames[s.v].name) || s.v, date: s.d, count };
+    })
     .sort((a, b) => b.count - a.count)
     .slice(0, 20);
 
@@ -1134,11 +1267,25 @@ async function handleAdminStats(request, env, headers) {
   }
   suggestions.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
 
+  const [digestDelivered, digestOpened, digestClicked] = await Promise.all([
+    env.SHOW_TRACKER_KV.get('digest-stats:delivered'),
+    env.SHOW_TRACKER_KV.get('digest-stats:opened'),
+    env.SHOW_TRACKER_KV.get('digest-stats:clicked')
+  ]);
+
   return json({
     ok: true,
     subscribers: { count: subscribers.length, list: subscribers },
+    unsubscribedCount: unsubscribedKeys.length,
     users: { count: users.length, list: users },
     topFavoriteArtists,
+    topVenues,
+    topStarredShows,
+    digestStats: {
+      delivered: digestDelivered ? parseInt(digestDelivered, 10) : 0,
+      opened: digestOpened ? parseInt(digestOpened, 10) : 0,
+      clicked: digestClicked ? parseInt(digestClicked, 10) : 0
+    },
     suggestions: { count: suggestions.length, list: suggestions }
   }, 200, headers);
 }
