@@ -147,6 +147,14 @@ function renderStats(data){
 
   const suggestionsWindowHtml = windowTableHtml([{ label: 'Suggestions', w: data.suggestions.window }]);
 
+  const cf = data.cloudflareStats;
+  const cloudflareHtml = cf.error
+    ? `<div class="error" style="text-align:left;padding:8px 0;">Couldn't load: ${escapeHtml(cf.error)}</div>`
+    : windowTableHtml([
+        { label: 'Requests', w: cf.requests },
+        { label: 'Page views', w: cf.pageViews }
+      ]) + '<p class="muted" style="font-size:11px;margin:8px 0 0;">Unique visitors aren\'t shown here (can\'t be summed accurately across days) -- see Cloudflare\'s own Web Analytics dashboard for that.</p>';
+
   const suggestionsHtml = data.suggestions.list.length
     ? data.suggestions.list.map(s => `<div class="stat-row" style="display:block;"><div><strong>${escapeHtml(s.venueName)}</strong> <span class="muted">— ${escapeHtml(s.submitterEmail)} &middot; ${escapeHtml(fmtDate(s.submittedAt))}</span></div>${s.notes ? `<div class="muted" style="margin-top:4px;">${escapeHtml(s.notes)}</div>` : ''}</div>`).join('')
     : '<div class="empty">No suggestions yet.</div>';
@@ -157,12 +165,13 @@ function renderStats(data){
     <div class="block"><h2>Accounts (${data.users.count})</h2>${usersWindowHtml}</div>
     <div class="block"><h2>Account list</h2>${usersHtml}</div>
     <div class="block"><h2>Digest email engagement</h2>${digestHtml}</div>
+    <div class="block"><h2>Site traffic (Cloudflare)</h2>${cloudflareHtml}</div>
     <div class="block"><h2>Top favorited artists</h2>${artistsHtml}</div>
     <div class="block"><h2>Top favorited venues</h2>${venuesHtml}</div>
     <div class="block"><h2>Most-starred upcoming shows</h2>${starredShowsHtml}</div>
     <div class="block"><h2>Venue suggestions (${data.suggestions.count})</h2>${suggestionsWindowHtml}${suggestionsHtml}</div>
     <button class="refresh-btn" id="refresh-btn">Refresh</button>
-    <p class="muted" style="font-size:11px;margin-top:16px;">Week/Month/Year columns are rolling windows (last 7/30/365 days), not calendar periods. Site traffic lives in Cloudflare's own Web Analytics dashboard, not pulled in here.</p>
+    <p class="muted" style="font-size:11px;margin-top:16px;">Week/Month/Year columns are rolling windows (last 7/30/365 days), not calendar periods.</p>
   `;
   document.getElementById('refresh-btn').addEventListener('click', loadStats);
 }
