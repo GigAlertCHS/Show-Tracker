@@ -9,7 +9,7 @@
      Turnstile) means that token can't leak to them via the Referer header in that
      window, even though none of those loads need referrer info to function anyway. -->
 <meta name="referrer" content="same-origin">
-<title>Lowcountry Show Tracker</title>
+<title>Lowcountry Show Notice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,7 +29,16 @@
     --beach:#4fb0d1;
   }
   *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{
+    scroll-behavior:smooth;
+    /* Without this, iOS Safari's automatic text-size adjustment can render the same
+       font-size value differently across devices (e.g. iPhone Pro vs. Pro Max), since
+       it boosts/shrinks text based on its own per-device heuristics rather than what's
+       actually declared here. Pinning it to 100% makes every declared font-size render
+       literally, the same on every device. */
+    -webkit-text-size-adjust:100%;
+    text-size-adjust:100%;
+  }
   body{
     margin:0;
     background:var(--ink);
@@ -411,7 +420,7 @@
 
   <div class="banner-sticky" id="banner-sticky">
     <div class="b2-frame">
-      <div class="b2-title">LOWCOUNTRY SHOW TRACKER</div>
+      <div class="b2-title">LOWCOUNTRY SHOW NOTICE</div>
     </div>
     <div class="tagline">Live music across Charleston</div>
   </div>
@@ -573,7 +582,7 @@
     <p>If you sign in, we store your email address, My Shows list, and Favorite Artists so they sync across your devices and power the weekly digest email. Venue suggestions you submit are stored along with your email so we can follow up if needed.</p>
     <p>Digest emails include open and click tracking (via our email provider, Resend) so we can see whether emails are opened and which links get clicked — this is to understand what's actually useful, not to build profiles on anyone. We don't sell or share your information with advertisers or any other third party.</p>
     <p>Site hosting, backend storage, and email delivery are handled by GitHub Pages, Cloudflare, and Resend respectively, each under their own privacy practices.</p>
-    <p>Unsubscribe from emails anytime via the link in any digest — once you do, signing back in won't automatically re-subscribe you; use the "Subscribe to email updates" link above if you change your mind. To ask us to delete your data entirely, email <a href="mailto:admin@gigalertchs.com">admin@gigalertchs.com</a>.</p>
+    <p>Unsubscribe from emails anytime via the link in any digest — once you do, signing back in won't automatically re-subscribe you; use the "Subscribe to email updates" link above if you change your mind. To ask us to delete your data entirely, email <a href="mailto:admin@ShowNotice.com">admin@ShowNotice.com</a>.</p>
   </div>
   <button type="button" class="link-btn back-to-top-btn" id="back-to-top-btn">↑ Back to top</button>
 </footer>
