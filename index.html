@@ -142,7 +142,7 @@
   .section-title.teal{color:var(--teal);border-color:var(--teal);}
   .section-title-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .section-title-row .section-title{margin-bottom:0;}
-  .section-title-links{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .section-title-links{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .sticky-head{
     position:sticky;
     top:var(--banner-h, 0px);
@@ -150,8 +150,14 @@
     background:var(--ink);
     padding-top:8px;
   }
-  .back-to-top-link{font-size:13.2px;white-space:nowrap;}
-  .jump-next-link{font-size:13.2px;white-space:nowrap;}
+  /* Same pill convention as the top .nav-chip-row links to the same destinations --
+     these are the in-section equivalent, so they read as the same kind of control. */
+  .back-to-top-link, .jump-next-link{
+    font-size:12.6px;font-weight:600;white-space:nowrap;
+    padding:5px 12px;border-radius:20px;
+    background:rgba(79,209,176,0.07);border:1px solid var(--teal);
+  }
+  .back-to-top-link:hover, .jump-next-link:hover{background:rgba(79,209,176,0.16);}
   .fav-input-row{display:flex;gap:8px;margin-bottom:10px;}
   .fav-input{
     flex:1;
@@ -192,7 +198,12 @@
   .fav-chip button:hover{color:#fff;}
   .fav-hint{font-size:12.6px;color:var(--muted);}
   .site-footer{max-width:640px;margin:32px auto 24px auto;padding:0 16px;text-align:center;}
-  .back-to-top-btn{display:block;margin:16px auto 0 auto;font-size:13.2px;}
+  .back-to-top-btn{
+    display:block;width:fit-content;margin:16px auto 0 auto;font-size:12.6px;font-weight:600;
+    padding:5px 12px;border-radius:20px;
+    background:rgba(79,209,176,0.07);border:1px solid var(--teal);
+  }
+  .back-to-top-btn:hover{background:rgba(79,209,176,0.16);}
   .site-footer .disclaimer{font-size:12.6px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
   .privacy-details{margin-top:10px;text-align:left;font-size:12.6px;color:var(--muted);line-height:1.6;}
   .privacy-details p{margin:0 0 10px 0;}
@@ -299,55 +310,6 @@
     color:var(--muted);
     font-style:italic;
   }
-  .filter-bar{margin-bottom:22px;}
-  .filter-pill{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:9px 16px;background:var(--panel);border:1px solid var(--amber);
-    border-radius:999px;color:var(--amber);font-size:14.9px;font-weight:700;
-    cursor:pointer;font-family:inherit;
-  }
-  .filter-pill .chev{display:inline-block;transition:transform .15s;font-size:12.6px;}
-  .filter-pill.open .chev{transform:rotate(180deg);}
-  .filter-sheet{
-    display:none;margin-top:12px;background:var(--panel);
-    border-top:2px solid var(--amber);border-left:1px solid var(--line);
-    border-right:1px solid var(--line);border-bottom:1px solid var(--line);
-    border-radius:12px;padding:1.1rem;max-width:480px;
-  }
-  .filter-sheet.open{display:block;}
-  .filter-label{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:14.4px;margin-bottom:8px;}
-  .filter-chips{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
-  .filter-chip{
-    padding:7px 15px;border-radius:999px;font-size:14.9px;background:var(--ink);
-    border:1px solid var(--line);color:#c9cddb;cursor:pointer;font-family:inherit;
-  }
-  .filter-chip.active{background:rgba(240,168,60,0.12);border-color:var(--amber);color:var(--amber);}
-  .filter-select{
-    width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text);
-    border-radius:8px;padding:9px 10px;font-size:16.1px;font-family:inherit;
-  }
-  .filter-fav-row{margin:22px 0 4px 0;display:flex;align-items:center;gap:8px;}
-  .filter-fav-row .flabel{font-size:15.5px;color:var(--text);flex:1;}
-  .filter-fav-toggle{position:relative;width:38px;height:22px;flex:0 0 auto;display:inline-block;}
-  .filter-fav-toggle input{opacity:0;width:0;height:0;position:absolute;}
-  .filter-fav-track{position:absolute;inset:0;background:var(--line);border-radius:11px;transition:background .15s;}
-  .filter-fav-track.on{background:var(--gold);}
-  .filter-fav-thumb{
-    position:absolute;top:2px;left:2px;width:18px;height:18px;background:var(--panel);
-    border-radius:50%;transition:transform .15s;
-  }
-  .filter-fav-thumb.on{transform:translateX(16px);}
-  .filter-actions{display:flex;gap:8px;margin-top:20px;}
-  .filter-btn-clear{
-    flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);
-    border-radius:8px;padding:10px;font-size:14.9px;cursor:pointer;font-family:inherit;
-  }
-  .filter-btn-apply{
-    flex:1;background:var(--amber);border:none;color:var(--ink);
-    border-radius:8px;padding:10px;font-size:14.9px;font-weight:700;cursor:pointer;font-family:inherit;
-  }
-  .active-filter-tags{display:none;gap:6px;flex-wrap:wrap;margin-top:10px;}
-  .active-filter-tags.show{display:flex;}
   .modal-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,0.6);
     display:flex;align-items:center;justify-content:center;
@@ -359,13 +321,18 @@
     border-radius:12px;padding:1.1rem;max-width:360px;width:100%;
   }
   .modal-message{margin:0 0 16px;font-size:16.1px;color:var(--text);line-height:1.5;}
+  .modal-actions{display:flex;gap:8px;margin-top:20px;}
+  .modal-btn-secondary{
+    flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);
+    border-radius:8px;padding:10px;font-size:14.9px;cursor:pointer;font-family:inherit;
+  }
+  .modal-btn-primary{
+    flex:1;background:var(--amber);border:none;color:var(--ink);
+    border-radius:8px;padding:10px;font-size:14.9px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
   .artist-picker-list{max-height:240px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:10px;}
   .artist-picker-row{display:flex;align-items:center;gap:9px;font-size:15.5px;color:var(--text);cursor:pointer;}
   .artist-picker-row input[type=checkbox]{width:16px;height:16px;flex:0 0 auto;accent-color:var(--amber);cursor:pointer;}
-  .tag-chip{
-    display:inline-flex;align-items:center;gap:4px;font-size:13.2px;padding:4px 10px;
-    border-radius:999px;background:rgba(240,168,60,0.12);color:var(--amber);border:1px solid var(--amber);
-  }
   .venue-list{list-style:none;padding:0;margin:0;display:grid;gap:8px;}
   .venue-list li{
     background:var(--panel);border:1px solid var(--line);border-radius:8px;
@@ -465,41 +432,6 @@
   <div id="venue-view" class="venue-view" style="display:none;"></div>
 
   <div id="all-view">
-  <div class="filter-bar">
-    <button type="button" class="filter-pill" id="filter-pill-btn">
-      <span>Filter and sort</span>
-      <span class="chev">⌄</span>
-    </button>
-    <div class="filter-sheet" id="filter-sheet">
-      <div class="filter-label">When</div>
-      <div class="filter-chips" id="filter-date-chips">
-        <button type="button" class="filter-chip" data-date="week">This week</button>
-        <button type="button" class="filter-chip" data-date="month">This month</button>
-        <button type="button" class="filter-chip active" data-date="all">All</button>
-      </div>
-
-      <div class="filter-label">Where</div>
-      <select class="filter-select" id="filter-venue-sel">
-        <option value="">All venues</option>
-      </select>
-
-      <div class="filter-fav-row">
-        <span class="flabel">Favorite artists only</span>
-        <label class="filter-fav-toggle">
-          <input type="checkbox" id="filter-fav-check">
-          <span class="filter-fav-track" id="filter-fav-track"></span>
-          <span class="filter-fav-thumb" id="filter-fav-thumb"></span>
-        </label>
-      </div>
-
-      <div class="filter-actions">
-        <button type="button" class="filter-btn-clear" id="filter-clear-btn">Clear</button>
-        <button type="button" class="filter-btn-apply" id="filter-apply-btn">Show me</button>
-      </div>
-    </div>
-    <div class="active-filter-tags" id="active-filter-tags"></div>
-  </div>
-
   <section class="block" id="recently-added-section" style="display:none;">
     <div class="sticky-head">
       <div class="section-title-row">
@@ -554,7 +486,7 @@
       <button type="button" id="fav-add-btn" class="fav-add-btn">Add</button>
     </div>
     <div id="fav-chips" class="fav-chips"></div>
-    <div class="fav-hint">Favorited artists always show up in My Shows — any of their upcoming shows join that list automatically. Favoriting a single show here won't add the artist to this list; add them here if you want that.</div>
+    <div class="fav-hint">Favorited artists always show up in My Shows — any of their upcoming shows join that list automatically. Starring an individual show doesn't add its artist here by itself, but you'll get a one-tap prompt to do that when you star it — or add artists directly below.</div>
   </section>
 
   <section class="block" id="suggest-venue-section">
@@ -601,9 +533,9 @@
 <div id="confirm-overlay" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <p id="confirm-message" class="modal-message"></p>
-    <div class="filter-actions">
-      <button type="button" class="filter-btn-clear" id="confirm-no-btn">No</button>
-      <button type="button" class="filter-btn-apply" id="confirm-yes-btn">Yes</button>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn-secondary" id="confirm-no-btn">No</button>
+      <button type="button" class="modal-btn-primary" id="confirm-yes-btn">Yes</button>
     </div>
   </div>
 </div>
@@ -611,8 +543,8 @@
 <div id="alert-overlay" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <p id="alert-message" class="modal-message"></p>
-    <div class="filter-actions">
-      <button type="button" class="filter-btn-apply" id="alert-ok-btn">OK</button>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn-primary" id="alert-ok-btn">OK</button>
     </div>
   </div>
 </div>
@@ -621,9 +553,9 @@
   <div class="modal-box">
     <p class="modal-message">This show has multiple artists. Pick any to add to your Favorite Artists:</p>
     <div id="artist-picker-list" class="artist-picker-list"></div>
-    <div class="filter-actions">
-      <button type="button" class="filter-btn-clear" id="artist-picker-skip-btn">Skip</button>
-      <button type="button" class="filter-btn-apply" id="artist-picker-add-btn">Add Selected</button>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn-secondary" id="artist-picker-skip-btn">Skip</button>
+      <button type="button" class="modal-btn-primary" id="artist-picker-add-btn">Add Selected</button>
     </div>
   </div>
 </div>
@@ -701,32 +633,6 @@ function loadStorageOnce(){
   }
   return STORAGE_READY;
 }
-
-// Filter bar (Filter and sort pill) — applies only to the browse views (Added This
-// Week + the main day-grouped list), not to My Shows or Favorite Artists, which are
-// personal curated lists rather than the calendar you're browsing. Not persisted
-// across visits — every fresh page load starts back at the default below.
-let FILTER_STATE = { date: 'all', venue: '', favOnly: false };
-let FILTER_VENUE_OPTIONS_POPULATED = false;
-
-function computeDateCutoff(range){
-  const now = new Date();
-  if(range === 'week') return new Date(now.getTime() + 7*24*60*60*1000).toISOString().slice(0,10);
-  if(range === 'month') return new Date(now.getTime() + 30*24*60*60*1000).toISOString().slice(0,10);
-  return null; // 'all' — no upper bound
-}
-
-function applyBrowseFilters(list){
-  let out = list;
-  const cutoff = computeDateCutoff(FILTER_STATE.date);
-  if(cutoff) out = out.filter(s => s.d <= cutoff);
-  if(FILTER_STATE.venue) out = out.filter(s => s.v === FILTER_STATE.venue);
-  if(FILTER_STATE.favOnly){
-    out = out.filter(showMatchesFavorite);
-  }
-  return out;
-}
-
 
 const WORKER_BASE_URL = 'https://api.chs.shownotice.com';
 const TURNSTILE_SITE_KEY = '0x4AAAAAAEkfZ3ATboand-06';
@@ -1129,9 +1035,9 @@ async function handleIncomingSession(){
   }
 }
 
-// Custom Yes/No confirmation dialog, styled to match the rest of the site (same
-// panel/button look as the filter sheet) -- used instead of the browser's native
-// confirm(), whose buttons are OK/Cancel and can't be relabeled.
+// Custom Yes/No confirmation dialog, styled to match the rest of the site -- used
+// instead of the browser's native confirm(), whose buttons are OK/Cancel and can't
+// be relabeled.
 function confirmYesNo(message){
   return new Promise(resolve=>{
     const overlay = document.getElementById('confirm-overlay');
@@ -1338,7 +1244,7 @@ async function render(){
   // seen this yet" heuristic — so everyone sees the same "recently added" list,
   // regardless of when they personally first opened the site.
   const recentCutoff = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const recentShows = applyBrowseFilters(sorted.filter(s => s.added && s.added >= recentCutoff));
+  const recentShows = sorted.filter(s => s.added && s.added >= recentCutoff);
   const recentSectionEl = document.getElementById('recently-added-section');
   const recentListEl = document.getElementById('recent-list');
   if(recentSectionEl && recentListEl){
@@ -1402,14 +1308,12 @@ async function render(){
     ? groupByDayHTML(watched)
     : '<div class="empty">No shows here yet — click ★ on any show to add it.</div>';
 
-  // main list grouped by day — filtered by the Filter and sort bar; My Shows above
-  // is intentionally NOT filtered by this, since it's a personal list, not the
-  // calendar being browsed.
+  // main list grouped by day — My Shows above is intentionally a separate personal
+  // list, not a filtered view of this calendar.
   const mainEl = document.getElementById('main-list');
-  const browseSorted = applyBrowseFilters(sorted);
-  mainEl.innerHTML = browseSorted.length
-    ? groupByDayHTML(browseSorted)
-    : '<div class="empty">Nothing on the calendar for this combination of filters.</div>';
+  mainEl.innerHTML = sorted.length
+    ? groupByDayHTML(sorted)
+    : '<div class="empty">No shows on the calendar yet.</div>';
 
   // venue chips, colored per venue, grouped: standing venues row, then festivals row
   const venueLinksEl = document.getElementById('venue-links');
@@ -1431,38 +1335,6 @@ async function render(){
       });
     });
   });
-
-  // Filter bar's venue dropdown — populated once (not every render) so an in-progress
-  // selection in the open sheet isn't wiped out by an unrelated render elsewhere in
-  // the app (e.g. a sign-in or watch-list change firing while the sheet is open).
-  if(!FILTER_VENUE_OPTIONS_POPULATED){
-    const filterVenueSel = document.getElementById('filter-venue-sel');
-    venueEntries.forEach(([code,v])=>{
-      const opt = document.createElement('option');
-      opt.value = code;
-      opt.textContent = v.name;
-      filterVenueSel.appendChild(opt);
-    });
-    FILTER_VENUE_OPTIONS_POPULATED = true;
-  }
-
-  // Active filter tags — reflect the applied FILTER_STATE, not whatever's staged
-  // (but not yet applied) in the open sheet.
-  const tagsEl = document.getElementById('active-filter-tags');
-  const tags = [];
-  if(FILTER_STATE.date !== 'all') tags.push(FILTER_STATE.date === 'month' ? 'This month' : 'This week');
-  if(FILTER_STATE.venue){
-    const vName = (VENUES[FILTER_STATE.venue] && VENUES[FILTER_STATE.venue].name) || FILTER_STATE.venue;
-    tags.push(vName);
-  }
-  if(FILTER_STATE.favOnly) tags.push('Favorite artists only');
-  if(tags.length){
-    tagsEl.classList.add('show');
-    tagsEl.innerHTML = tags.map(t=>`<span class="tag-chip">${t}</span>`).join('');
-  } else {
-    tagsEl.classList.remove('show');
-    tagsEl.innerHTML = '';
-  }
 
   // last-updated stamp — reflects DATA_UPDATED_AT, not page-load or button-click time
   const lastUpdatedEl = document.getElementById('last-updated');
@@ -1665,55 +1537,6 @@ async function submitVenueSuggestion(){
 }
 document.getElementById('suggest-venue-submit-btn').addEventListener('click', submitVenueSuggestion);
 document.getElementById('signin-submit-btn').addEventListener('click', submitSignIn);
-
-// --- Filter bar ---
-const filterPillBtn = document.getElementById('filter-pill-btn');
-const filterSheet = document.getElementById('filter-sheet');
-filterPillBtn.addEventListener('click', ()=>{
-  const nowOpen = !filterSheet.classList.contains('open');
-  filterSheet.classList.toggle('open', nowOpen);
-  filterPillBtn.classList.toggle('open', nowOpen);
-});
-
-document.querySelectorAll('#filter-date-chips .filter-chip').forEach(chip=>{
-  chip.addEventListener('click', ()=>{
-    document.querySelectorAll('#filter-date-chips .filter-chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-  });
-});
-
-const filterVenueSel = document.getElementById('filter-venue-sel');
-
-const filterFavCheck = document.getElementById('filter-fav-check');
-const filterFavTrack = document.getElementById('filter-fav-track');
-const filterFavThumb = document.getElementById('filter-fav-thumb');
-filterFavCheck.addEventListener('change', ()=>{
-  filterFavTrack.classList.toggle('on', filterFavCheck.checked);
-  filterFavThumb.classList.toggle('on', filterFavCheck.checked);
-});
-
-document.getElementById('filter-clear-btn').addEventListener('click', ()=>{
-  document.querySelectorAll('#filter-date-chips .filter-chip').forEach(c=>c.classList.remove('active'));
-  document.querySelector('#filter-date-chips .filter-chip[data-date="all"]').classList.add('active');
-  filterVenueSel.value = '';
-  filterFavCheck.checked = false;
-  filterFavTrack.classList.remove('on');
-  filterFavThumb.classList.remove('on');
-  FILTER_STATE = { date: 'all', venue: '', favOnly: false };
-  render();
-});
-
-document.getElementById('filter-apply-btn').addEventListener('click', ()=>{
-  const activeDateChip = document.querySelector('#filter-date-chips .filter-chip.active');
-  FILTER_STATE = {
-    date: activeDateChip ? activeDateChip.getAttribute('data-date') : 'all',
-    venue: filterVenueSel.value,
-    favOnly: filterFavCheck.checked
-  };
-  filterSheet.classList.remove('open');
-  filterPillBtn.classList.remove('open');
-  render();
-});
 
 // Keeps --banner-h in sync with the sticky title banner's actual rendered height, so
 // each section's .sticky-head (top:var(--banner-h)) pins directly below it instead of
