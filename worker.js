@@ -29,6 +29,17 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    // The bare apex domain doesn't have its own site -- it's routed to this same
+    // Worker (see wrangler.toml's [[routes]] entry for it) purely so it can bounce
+    // straight to the real site at chs.shownotice.com, path and query string intact.
+    // This has to come before everything else below: none of the API routes are
+    // meaningful on this hostname, and CORS/OPTIONS handling is irrelevant to a plain
+    // browser redirect.
+    if (url.hostname === 'shownotice.com') {
+      return Response.redirect(`https://chs.shownotice.com${url.pathname}${url.search}`, 301);
+    }
+
     const headers = corsHeaders();
 
     if (request.method === 'OPTIONS') {
