@@ -71,6 +71,16 @@ pattern = "api.chs.shownotice.com"
 custom_domain = true
 zone_name = "shownotice.com"
 
+# The bare apex domain has no site of its own -- routing it to this same Worker is
+# what lets the hostname check at the top of fetch() answer it at all (a Worker only
+# ever sees requests for hostnames it's been given a route for) and bounce it to
+# chs.shownotice.com. Cloudflare provisions the DNS record + TLS cert for a Custom
+# Domain automatically on deploy.
+[[routes]]
+pattern = "shownotice.com"
+custom_domain = true
+zone_name = "shownotice.com"
+
 # --- Observability: Workers Logs + Traces ---
 # Optional (nothing depends on this to function), but without it declared here the
 # same "wrangler is the source of truth" rule applies as everything else in this file:
