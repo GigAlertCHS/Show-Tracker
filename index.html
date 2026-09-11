@@ -117,6 +117,10 @@
   }
   .meta-note b{color:var(--text);}
   section.block{margin-bottom:34px;}
+  /* toggleSignInSection() scrollIntoView()s this on open; without scroll-margin-top
+     the browser aligns its top edge with the literal viewport top, which lands it
+     directly under (hidden behind) the sticky banner instead of below it. */
+  #sign-in-section{scroll-margin-top:var(--banner-h, 0px);}
   .section-title{
     font-family:'Bebas Neue',sans-serif;
     font-size:22px;
@@ -936,7 +940,7 @@ async function saveMap(key, obj){
     // load rather than every single save.
     if(!STORAGE_WRITE_WARNED){
       STORAGE_WRITE_WARNED = true;
-      await showAlert("This browser is blocking Show Tracker from saving anything locally (common in Private Browsing mode), so changes like favorite artists and My Shows won't be remembered after you leave this page. Sign in to save them to your account instead, or turn off Private Browsing for this site.");
+      await showAlert("This browser is blocking Show Notice from saving anything locally (common in Private Browsing mode), so changes like favorite artists and My Shows won't be remembered after you leave this page. Sign in to save them to your account instead, or turn off Private Browsing for this site.");
     }
   }
   // Local save above always happens regardless of sign-in state or network status —
