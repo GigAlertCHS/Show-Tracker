@@ -69,6 +69,9 @@ export default {
       if (path === '/api/admin/stats' && request.method === 'GET') {
         return await handleAdminStats(request, env, headers);
       }
+      if (path === '/api/admin/delete-account' && request.method === 'POST') {
+        return await handleAdminDeleteAccount(request, env, headers);
+      }
       if (path === '/api/subscribe' && request.method === 'POST') {
         return await handleSubscribe(request, env, headers);
       }
@@ -1531,4 +1534,37 @@ async function handleAdminStats(request, env, headers) {
       window: windowCounts(suggestions, s => s.submittedAt)
     }
   }, 200, headers);
+}
+
+// Owner-only: permanently removes one user's `user:` record (their My Shows and
+// Favorite Artists data, and the account itself as far as the admin panel's Accounts
+// list is concerned). Deliberately scoped to just that key -- subscriber status is a
+// separate concern (whether they get the digest email) and isn't touched here, so
+// deleting an account doesn't have the side effect of silently re-subscribing or
+// unsubscribing anyone.
+async function handleAdminDeleteAccount(request, env, headers) {
+  const email = await getEmailFromSession(request, env);
+  if (!email) return json({ error: 'Not signed in' }, 401, headers);
+
+  const ownerEmail = env.OWNER_EMAIL || 'gigalertchs@gmail.com';
+  if (email.toLowerCase() !== ownerEmail.toLowerCase()) {
+    return json({ error: 'Not authorized' }, 403, headers);
+  }
+
+  const body = await request.json().catch(() => null);
+  const targetEmail = body && typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  if (!isValidEmail(targetEmail)) return json({ error: 'Invalid email' }, 400, headers);
+  // The owner's own account is the one signed-in identity this endpoint itself
+  // requires -- deleting it out from under the active session would just lock the
+  // owner out of the admin panel with no way back in short of KV surgery.
+  if (targetEmail === ownerEmail.toLowerCase()) {
+    return json({ error: "Can't delete the owner account" }, 400, headers);
+  }
+
+  const key = `user:${targetEmail}`;
+  const existing = await env.SHOW_TRACKER_KV.get(key);
+  if (!existing) return json({ error: 'No account found for that email' }, 404, headers);
+
+  await env.SHOW_TRACKER_KV.delete(key);
+  return json({ ok: true }, 200, headers);
 }

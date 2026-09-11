@@ -51,6 +51,35 @@
   .window-table th:hover{color:var(--text);}
   .window-table td{border-bottom:1px solid var(--line);}
   .window-table tr:last-child td{border-bottom:none;}
+  /* Every window-table renders inside this wrapper (see windowTableHtml()) so a phone
+     narrow enough that even the mobile column widths below don't fit scrolls just the
+     table horizontally, instead of clipping digits via the th/td overflow:hidden above
+     or forcing the whole page wider than the viewport. */
+  .table-scroll{overflow-x:auto;}
+  .account-row{align-items:flex-start;flex-wrap:wrap;gap:8px 12px;}
+  .account-info{flex:1 1 auto;min-width:0;}
+  .account-info .muted{display:block;margin-top:2px;}
+  .delete-account-btn{
+    flex:0 0 auto;background:transparent;border:1px solid var(--red);color:var(--red);
+    border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;
+    white-space:nowrap;
+  }
+  .delete-account-btn:hover{background:rgba(226,69,61,0.12);}
+  .delete-account-btn:disabled{opacity:0.55;cursor:default;}
+  /* Phones: the fixed 72px-per-column window tables and the two-ended stat rows above
+     were both sized against the 820px desktop .wrap and get cramped well before real
+     phone widths (~360-400px) -- tighten padding/type size and narrow those columns
+     rather than letting content clip or wrap awkwardly. */
+  @media (max-width: 520px){
+    body{padding:20px 14px 48px;}
+    h1{font-size:19px;margin-bottom:18px;}
+    .block{padding:13px 14px;}
+    .section-title{font-size:11px;}
+    .window-table{font-size:12px;}
+    .window-table th:not(:first-child), .window-table td:not(:first-child){width:50px;padding:6px 4px;}
+    .window-table th{font-size:9.5px;}
+    .stat-row{flex-wrap:wrap;}
+  }
 </style>
 </head>
 <body>
@@ -182,7 +211,7 @@ function windowTableHtml(rows, tableId){
   const th = (k, label) => `<th data-table-id="${tableId}" data-sort-key="${k}">${label}${arrow(k)}</th>`;
   const header = `<tr>${th('label', '')}${th('week', 'Week')}${th('month', 'Month')}${th('year', 'Year')}${th('all', 'All')}</tr>`;
   const body = sorted.map(r => `<tr><td>${escapeHtml(r.label)}</td><td>${escapeHtml(r.w.week)}</td><td>${escapeHtml(r.w.month)}</td><td>${escapeHtml(r.w.year)}</td><td>${escapeHtml(r.w.all)}</td></tr>`).join('');
-  return `<table class="window-table">${header}${body}</table>`;
+  return `<div class="table-scroll"><table class="window-table">${header}${body}</table></div>`;
 }
 
 function renderStats(data){
@@ -192,7 +221,10 @@ function renderStats(data){
     : '<div class="empty">No subscribers yet.</div>';
 
   const usersHtml = data.users.list.length
-    ? data.users.list.map(u => `<div class="stat-row"><span>${escapeHtml(u.email)}</span><span class="muted">${escapeHtml(u.myShowsCount)} shows &middot; ${escapeHtml(u.favoritesCount)} favorites</span></div>`).join('')
+    ? data.users.list.map(u => `<div class="stat-row account-row">
+        <div class="account-info"><span>${escapeHtml(u.email)}</span><span class="muted">${escapeHtml(u.myShowsCount)} shows &middot; ${escapeHtml(u.favoritesCount)} favorites</span></div>
+        <button type="button" class="delete-account-btn" data-delete-account="${escapeHtml(u.email)}">Delete</button>
+      </div>`).join('')
     : '<div class="empty">No accounts yet.</div>';
   const usersWindowHtml = windowTableHtml([{ label: 'New accounts', w: data.users.window }], 'users');
 
@@ -331,6 +363,50 @@ document.getElementById('content').addEventListener('click', (e) => {
     ? { key, dir: current.dir === 'asc' ? 'desc' : 'asc' }
     : { key, dir: key === 'label' ? 'asc' : 'desc' };
   renderStats(LAST_STATS_DATA);
+});
+
+// Same delegation approach as the sort handler above, for the per-account Delete
+// button in the Accounts list. Confirms first (this is permanent and there's no
+// undo), then calls the backend and -- on success -- drops the row from the
+// already-loaded LAST_STATS_DATA and re-renders, the same "no re-fetch needed"
+// pattern the sort handler uses, rather than reloading every stat on the page.
+document.getElementById('content').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-delete-account]');
+  if (!btn) return;
+  const email = btn.getAttribute('data-delete-account');
+  if (!confirm(`Delete the account for ${email}?\n\nThis permanently removes their My Shows and Favorite Artists data. This can't be undone.`)) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Deleting…';
+  try {
+    const res = await fetch(`${WORKER_BASE_URL}/api/admin/delete-account`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SESSION_TOKEN}` },
+      body: JSON.stringify({ email })
+    });
+    if (res.status === 401) {
+      SESSION_TOKEN = null;
+      localStorage.removeItem('sessionToken');
+      renderSignInBox();
+      return;
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) {
+      alert(data.error || 'Failed to delete that account. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Delete';
+      return;
+    }
+    if (LAST_STATS_DATA) {
+      LAST_STATS_DATA.users.list = LAST_STATS_DATA.users.list.filter(u => u.email !== email);
+      LAST_STATS_DATA.users.count = LAST_STATS_DATA.users.list.length;
+      renderStats(LAST_STATS_DATA);
+    }
+  } catch (err) {
+    alert('Something went wrong deleting that account. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Delete';
+  }
 });
 
 (function init(){
