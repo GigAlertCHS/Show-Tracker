@@ -117,10 +117,17 @@
   }
   .meta-note b{color:var(--text);}
   section.block{margin-bottom:34px;}
-  /* toggleSignInSection() scrollIntoView()s this on open; without scroll-margin-top
-     the browser aligns its top edge with the literal viewport top, which lands it
-     directly under (hidden behind) the sticky banner instead of below it. */
-  #sign-in-section{scroll-margin-top:var(--banner-h, 0px);}
+  /* All of these are scrollIntoView({block:'start'}) targets (sign-in toggle, and the
+     jump-to-X / jump-next links). Safari computes that scroll destination as if the
+     sticky banner weren't there, landing each target's top edge -- including ones
+     that have their own internal .sticky-head -- directly under (hidden behind) the
+     banner instead of below it. scroll-margin-top is what scrollIntoView actually
+     honors to leave the right amount of clearance. */
+  #sign-in-section,
+  #favorite-artists-mgmt,
+  #suggest-venue-section,
+  #my-shows-section,
+  #all-shows-section{scroll-margin-top:var(--banner-h, 0px);}
   .section-title{
     font-family:'Bebas Neue',sans-serif;
     font-size:22px;
