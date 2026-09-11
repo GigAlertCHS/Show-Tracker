@@ -30,13 +30,13 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // The bare apex domain doesn't have its own site -- it's routed to this same
-    // Worker (see wrangler.toml's [[routes]] entry for it) purely so it can bounce
-    // straight to the real site at chs.shownotice.com, path and query string intact.
-    // This has to come before everything else below: none of the API routes are
-    // meaningful on this hostname, and CORS/OPTIONS handling is irrelevant to a plain
-    // browser redirect.
-    if (url.hostname === 'shownotice.com') {
+    // Neither the bare apex nor its www alias has a site of its own -- both are
+    // routed to this same Worker (see wrangler.toml's [[routes]] entries for them)
+    // purely so they can bounce straight to the real site at chs.shownotice.com, path
+    // and query string intact. This has to come before everything else below: none of
+    // the API routes are meaningful on either hostname, and CORS/OPTIONS handling is
+    // irrelevant to a plain browser redirect.
+    if (url.hostname === 'shownotice.com' || url.hostname === 'www.shownotice.com') {
       return Response.redirect(`https://chs.shownotice.com${url.pathname}${url.search}`, 301);
     }
 
