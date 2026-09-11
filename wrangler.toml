@@ -71,6 +71,22 @@ pattern = "api.chs.shownotice.com"
 custom_domain = true
 zone_name = "shownotice.com"
 
+# --- Observability: Workers Logs + Traces ---
+# Optional (nothing depends on this to function), but without it declared here the
+# same "wrangler is the source of truth" rule applies as everything else in this file:
+# turning it on in the dashboard alone wouldn't survive the next deploy. Exact shape
+# copied from what the Cloudflare dashboard itself gave as the wrangler.toml to add.
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+persist = true
+
 # --- Plain (non-secret) vars ---
 # Secrets (RESEND_API_KEY, TURNSTILE_SECRET_KEY, COWORK_API_SECRET) are deliberately
 # NOT here -- they stay as dashboard-managed secrets / Secrets Store bindings and are
