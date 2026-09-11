@@ -53,20 +53,20 @@ secret_name = "cowork-api-secret"
 crons = ["0 19 * * wed"]
 
 # --- Custom domain route ---
-# The site calls https://api.gigalertchs.com; without this the Worker is only
+# The site calls https://api.chs.shownotice.com; without this the Worker is only
 # reachable at its *.workers.dev URL and every frontend API call breaks.
-# zone_name is included to match the live remote config exactly.
+# zone_name must be an active zone in this Cloudflare account, or deploy fails.
 [[routes]]
-pattern = "api.gigalertchs.com"
+pattern = "api.chs.shownotice.com"
 custom_domain = true
-zone_name = "gigalertchs.com"
+zone_name = "shownotice.com"
 
 # --- Plain (non-secret) vars ---
 # Secrets (RESEND_API_KEY, TURNSTILE_SECRET_KEY, COWORK_API_SECRET) are deliberately
 # NOT here -- they stay as dashboard-managed secrets / Secrets Store bindings and are
 # not affected by a wrangler deploy. Never put secret values in this file; it's public.
 [vars]
-RESEND_FROM_ADDRESS = "Lowcountry Show Tracker <shows@gigalertchs.com>"
-SITE_URL = "https://gigalertchs.com/"
-WORKER_BASE_URL = "https://api.gigalertchs.com"
+RESEND_FROM_ADDRESS = "Charleston Show Tracker <shows@shownotice.com>"
+SITE_URL = "https://chs.shownotice.com/"
+WORKER_BASE_URL = "https://api.chs.shownotice.com"
 OWNER_EMAIL = "gigalertchs@gmail.com"

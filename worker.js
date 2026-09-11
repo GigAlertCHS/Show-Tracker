@@ -13,9 +13,9 @@
 // link, it returns the link directly in the JSON response so we can test the whole flow end-to-end
 // before Resend is wired up. Once the key is set, it switches automatically to actually sending email.
 
-const DEFAULT_WORKER_BASE_URL = 'https://api.gigalertchs.com';
-const DEFAULT_SITE_URL = 'https://gigalertchs.com/';
-const ALLOWED_ORIGIN = 'https://gigalertchs.com';
+const DEFAULT_WORKER_BASE_URL = 'https://api.chs.shownotice.com';
+const DEFAULT_SITE_URL = 'https://chs.shownotice.com/';
+const ALLOWED_ORIGIN = 'https://chs.shownotice.com';
 
 // Real show ids (`showId()` below) are `venue|date|band-slug` — comfortably under 150
 // chars even for the longest real band/event names currently in shows.json (~85 chars).
