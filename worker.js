@@ -145,6 +145,10 @@ async function handleRequestLink(request, env, headers) {
   const body = await request.json().catch(() => null);
   const email = body && body.email ? String(body.email).trim().toLowerCase() : null;
   const turnstileToken = body && body.turnstileToken ? String(body.turnstileToken) : null;
+  // Allowlist of exactly one value -- this is what lets handleVerify send an
+  // admin.html-initiated sign-in back to admin.html instead of the main site,
+  // without opening up an arbitrary-redirect target.
+  const returnTo = body && body.returnTo === 'admin' ? 'admin' : null;
 
   if (!isValidEmail(email)) {
     return json({ error: 'A valid email address is required' }, 400, headers);
@@ -192,7 +196,7 @@ async function handleRequestLink(request, env, headers) {
   const token = crypto.randomUUID();
   await env.SHOW_TRACKER_KV.put(
     `token:${token}`,
-    JSON.stringify({ email }),
+    JSON.stringify(returnTo ? { email, returnTo } : { email }),
     { expirationTtl: 900 } // link is valid for 15 minutes
   );
 
@@ -272,7 +276,7 @@ async function handleVerify(request, env, headers) {
     return Response.redirect(`${siteUrl}?authError=invalid_or_expired`, 302);
   }
 
-  const { email } = JSON.parse(raw);
+  const { email, returnTo } = JSON.parse(raw);
   await env.SHOW_TRACKER_KV.delete(`token:${token}`); // one-time use
 
   const sessionToken = crypto.randomUUID();
@@ -287,7 +291,11 @@ async function handleVerify(request, env, headers) {
   // silently re-subscribing someone who opted out).
   await ensureSubscribed(email, env);
 
-  const redirectUrl = `${siteUrl}?session=${encodeURIComponent(sessionToken)}&email=${encodeURIComponent(email)}`;
+  // returnTo === 'admin' sends an admin.html-initiated sign-in back there instead of
+  // the main site -- admin.html reads ?session=/&email= off its own URL the same way
+  // index.html does. siteUrl always ends in '/' (see DEFAULT_SITE_URL/wrangler.toml).
+  const landingUrl = returnTo === 'admin' ? `${siteUrl}admin.html` : siteUrl;
+  const redirectUrl = `${landingUrl}?session=${encodeURIComponent(sessionToken)}&email=${encodeURIComponent(email)}`;
   return Response.redirect(redirectUrl, 302);
 }
 

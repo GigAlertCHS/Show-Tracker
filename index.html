@@ -1026,17 +1026,6 @@ async function handleIncomingSession(){
     // Fresh sign-in redirect (just clicked a magic link) — always merge with the server.
     await syncWithServer();
 
-    // Clicking the emailed link opens a new tab/window (mail clients do this, not
-    // something we control), so whoever requested the link is now looking at two
-    // copies of the site: the original tab they signed in from, and this one. The
-    // 'storage' listener below makes the original tab pick up the new session on
-    // its own, so it's safe to tell the user this tab is done and can be closed.
-    // window.close() only works on a tab the page itself opened via script, which
-    // this one wasn't (it was opened by the mail client) — so it's expected to be a
-    // no-op in the vast majority of cases; that's why the message doesn't depend on
-    // it succeeding.
-    await showAlert("You're signed in! If you still have your original Show Notice tab open, switch back to it — it'll pick this up automatically. This tab can be closed.");
-    window.close();
   } else if(SESSION_TOKEN){
     // Returning visit with an existing session. Only pull from the server if there's
     // NOTHING local yet (a genuinely new device/browser).

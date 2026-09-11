@@ -68,7 +68,7 @@ async function beginSignIn(){
     : '';
   try{
     const res = await fetch(`${WORKER_BASE_URL}/api/auth/request-link`, {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, turnstileToken})
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, turnstileToken, returnTo:'admin'})
     });
     const data = await res.json();
     if(window.turnstile && ADMIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(ADMIN_TURNSTILE_WIDGET_ID);
