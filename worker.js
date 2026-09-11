@@ -531,10 +531,12 @@ async function handleStarShow(request, env, headers) {
   }
 
   const raw = await env.SHOW_TRACKER_KV.get(`user:${email}`);
-  const data = raw ? JSON.parse(raw) : { myShows: [], favorites: [] };
+  const data = raw ? JSON.parse(raw) : { myShows: [], favorites: [], createdAt: Date.now() };
   if (!Array.isArray(data.myShows)) data.myShows = [];
+  if (!data.myShowsAddedAt || typeof data.myShowsAddedAt !== 'object') data.myShowsAddedAt = {};
   if (!data.myShows.includes(showIdParam) && data.myShows.length < MAX_MY_SHOWS) {
     data.myShows.push(showIdParam);
+    data.myShowsAddedAt[showIdParam] = Date.now();
     await env.SHOW_TRACKER_KV.put(`user:${email}`, JSON.stringify(data));
   }
   return new Response(
@@ -589,9 +591,32 @@ async function handleSaveUserData(request, env, headers) {
   // plus an array-size cap, so a client can't grow one user's KV record without bound.
   const isSafeFavorite = (f) => typeof f === 'string' && f.trim().length > 0 && f.length <= 100 && !/[<>]/.test(f);
   const isSafeShowId = (id) => typeof id === 'string' && id.length > 0 && id.length <= MAX_SHOW_ID_LENGTH;
+  const myShows = Array.isArray(body.myShows) ? body.myShows.filter(isSafeShowId).slice(0, MAX_MY_SHOWS) : [];
+  const favorites = Array.isArray(body.favorites) ? body.favorites.filter(isSafeFavorite).slice(0, MAX_MY_SHOWS) : [];
+
+  // This endpoint replaces the whole record on every save (the client always sends its
+  // full current list, not a diff) -- myShows/favorites themselves stay plain string
+  // arrays exactly as index.html has always read/written them, so none of that code
+  // needed to change. What's new here is a *separate* per-item "when was this added"
+  // map, used only for the admin panel's week/month/year/all breakdowns: an id/name
+  // already in the previous save keeps its original timestamp, anything new gets one
+  // now, and anything dropped from the array just falls out of the map on its own.
+  const raw = await env.SHOW_TRACKER_KV.get(`user:${email}`);
+  const existing = raw ? JSON.parse(raw) : null;
+  const prevShowsAt = (existing && existing.myShowsAddedAt) || {};
+  const prevFavsAt = (existing && existing.favoritesAddedAt) || {};
+  const now = Date.now();
+  const myShowsAddedAt = {};
+  myShows.forEach(id => { myShowsAddedAt[id] = prevShowsAt[id] || now; });
+  const favoritesAddedAt = {};
+  favorites.forEach(name => { favoritesAddedAt[name] = prevFavsAt[name] || now; });
+
   const data = {
-    myShows: Array.isArray(body.myShows) ? body.myShows.filter(isSafeShowId).slice(0, MAX_MY_SHOWS) : [],
-    favorites: Array.isArray(body.favorites) ? body.favorites.filter(isSafeFavorite).slice(0, MAX_MY_SHOWS) : []
+    createdAt: (existing && existing.createdAt) || now,
+    myShows,
+    favorites,
+    myShowsAddedAt,
+    favoritesAddedAt
   };
   await env.SHOW_TRACKER_KV.put(`user:${email}`, JSON.stringify(data));
   return json({ ok: true }, 200, headers);
@@ -892,6 +917,26 @@ function windowCounts(items, getTs) {
     if (ts >= cutoffs.week) result.week++;
   });
   return result;
+}
+
+// Same idea as windowCounts(), but tallying separate week/month/year/all counts per
+// group (e.g. per artist) instead of one grand total -- what topFavoriteArtists/
+// topVenues/topStarredShows use so each row in those tables gets its own breakdown.
+function windowGroupedCounts(events, getKey, getTs) {
+  const now = Date.now();
+  const cutoffs = { week: now - 7 * 86400000, month: now - 30 * 86400000, year: now - 365 * 86400000 };
+  const groups = {};
+  events.forEach(event => {
+    const key = getKey(event);
+    if (!groups[key]) groups[key] = { week: 0, month: 0, year: 0, all: 0 };
+    groups[key].all++;
+    const ts = getTs(event);
+    if (!ts) return;
+    if (ts >= cutoffs.year) groups[key].year++;
+    if (ts >= cutoffs.month) groups[key].month++;
+    if (ts >= cutoffs.week) groups[key].week++;
+  });
+  return groups;
 }
 
 // digest-stats:{type}:{YYYY-MM-DD} is one KV key per day per event type (see
@@ -1268,8 +1313,14 @@ async function handleAdminStats(request, env, headers) {
     unsubscribes.push({ unsubscribedAt: raw ? JSON.parse(raw).unsubscribedAt : null });
   }
 
-  const artistCounts = {};
-  const showStarCounts = {}; // showId -> number of users with it in myShows
+  // One-time self-healing backfill: createdAt/myShowsAddedAt/favoritesAddedAt didn't
+  // exist before this change, so an account/favorite/starred-show from before today has
+  // no real added date. Per instruction, anything missing one gets stamped with today's
+  // date (now) the first time this runs into it, and that gets written back so it's a
+  // real, stable value from here on rather than drifting every time stats are viewed.
+  const backfillNow = Date.now();
+  const favoriteEvents = []; // {artist, addedAt}
+  const showEvents = []; // {id, addedAt}
   const users = [];
   for (const key of userKeys) {
     const raw = await env.SHOW_TRACKER_KV.get(key.name);
@@ -1277,37 +1328,44 @@ async function handleAdminStats(request, env, headers) {
     const data = JSON.parse(raw);
     const myShows = Array.isArray(data.myShows) ? data.myShows : [];
     const favorites = Array.isArray(data.favorites) ? data.favorites : [];
-    users.push({ email: key.name.slice('user:'.length), myShowsCount: myShows.length, favoritesCount: favorites.length });
+    let touched = false;
+    if (!data.createdAt) { data.createdAt = backfillNow; touched = true; }
+    if (!data.myShowsAddedAt || typeof data.myShowsAddedAt !== 'object') { data.myShowsAddedAt = {}; touched = true; }
+    if (!data.favoritesAddedAt || typeof data.favoritesAddedAt !== 'object') { data.favoritesAddedAt = {}; touched = true; }
+    myShows.forEach(id => { if (!data.myShowsAddedAt[id]) { data.myShowsAddedAt[id] = backfillNow; touched = true; } });
+    favorites.forEach(artist => { if (!data.favoritesAddedAt[artist]) { data.favoritesAddedAt[artist] = backfillNow; touched = true; } });
+    if (touched) await env.SHOW_TRACKER_KV.put(key.name, JSON.stringify(data));
+
+    users.push({ email: key.name.slice('user:'.length), myShowsCount: myShows.length, favoritesCount: favorites.length, createdAt: data.createdAt });
     favorites.forEach(artist => {
       const norm = artist.trim();
       if (!norm) return;
-      artistCounts[norm] = (artistCounts[norm] || 0) + 1;
+      favoriteEvents.push({ artist: norm, addedAt: data.favoritesAddedAt[artist] });
     });
     myShows.forEach(id => {
       if (!upcomingShowById.has(id)) return; // past show, or one no longer in the catalog
-      showStarCounts[id] = (showStarCounts[id] || 0) + 1;
+      showEvents.push({ id, addedAt: data.myShowsAddedAt[id] });
     });
   }
 
-  const topFavoriteArtists = Object.entries(artistCounts)
-    .map(([artist, count]) => ({ artist, count }))
+  const artistWindows = windowGroupedCounts(favoriteEvents, e => e.artist, e => e.addedAt);
+  const topFavoriteArtists = Object.entries(artistWindows)
+    .map(([artist, w]) => ({ artist, count: w.all, window: w }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 20);
 
-  const venueCounts = {};
-  Object.entries(showStarCounts).forEach(([id, count]) => {
-    const v = upcomingShowById.get(id).v;
-    venueCounts[v] = (venueCounts[v] || 0) + count;
-  });
-  const topVenues = Object.entries(venueCounts)
-    .map(([code, count]) => ({ venue: (venueNames[code] && venueNames[code].name) || code, count }))
+  const venueEvents = showEvents.map(e => ({ venue: upcomingShowById.get(e.id).v, addedAt: e.addedAt }));
+  const venueWindows = windowGroupedCounts(venueEvents, e => e.venue, e => e.addedAt);
+  const topVenues = Object.entries(venueWindows)
+    .map(([code, w]) => ({ venue: (venueNames[code] && venueNames[code].name) || code, count: w.all, window: w }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 20);
 
-  const topStarredShows = Object.entries(showStarCounts)
-    .map(([id, count]) => {
+  const showWindows = windowGroupedCounts(showEvents, e => e.id, e => e.addedAt);
+  const topStarredShows = Object.entries(showWindows)
+    .map(([id, w]) => {
       const s = upcomingShowById.get(id);
-      return { band: s.b, venue: (venueNames[s.v] && venueNames[s.v].name) || s.v, date: s.d, count };
+      return { band: s.b, venue: (venueNames[s.v] && venueNames[s.v].name) || s.v, date: s.d, count: w.all, window: w };
     })
     .sort((a, b) => b.count - a.count)
     .slice(0, 20);
@@ -1337,7 +1395,7 @@ async function handleAdminStats(request, env, headers) {
       count: unsubscribedKeys.length,
       window: windowCounts(unsubscribes, u => u.unsubscribedAt)
     },
-    users: { count: users.length, list: users },
+    users: { count: users.length, list: users, window: windowCounts(users, u => u.createdAt) },
     topFavoriteArtists,
     topVenues,
     topStarredShows,
