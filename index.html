@@ -954,7 +954,7 @@ async function submitSignIn(){
       // No email service connected yet — surface the link directly so sign-in is still testable.
       await showAlert('Email sending isn\'t connected yet, so here\'s your link directly:\n\n' + data.magicLink);
     } else {
-      await showAlert('Check your email for a sign-in link.');
+      await showAlert('Close this tab and check your email for a sign-in link.');
     }
     emailInput.value = '';
   }catch(e){

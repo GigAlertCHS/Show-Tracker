@@ -74,7 +74,7 @@ async function beginSignIn(){
     if(window.turnstile && ADMIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(ADMIN_TURNSTILE_WIDGET_ID);
     if(data.error){ alert(data.error); return; }
     if(data.testMode){ alert('Test mode — sign-in link:\\n\\n' + data.magicLink); }
-    else { alert('Check your email for a sign-in link.'); }
+    else { alert('Close this tab and check your email for a sign-in link.'); }
   }catch(e){
     if(window.turnstile && ADMIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(ADMIN_TURNSTILE_WIDGET_ID);
     alert('Something went wrong. Please try again.');
