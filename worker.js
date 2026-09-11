@@ -1420,20 +1420,17 @@ async function handleAdminStats(request, env, headers) {
     console.error('handleAdminStats: fetchShowData failed:', err);
   }
 
-  const subscribers = [];
-  for (const key of subscriberKeys) {
-    const raw = await env.SHOW_TRACKER_KV.get(key.name);
-    if (!raw) continue;
-    const data = JSON.parse(raw);
-    subscribers.push({ email: key.name.slice('subscriber:'.length), subscribedAt: data.subscribedAt });
-  }
+  // Each key's KV read has no dependency on any other key's -- fetching them
+  // concurrently rather than one-at-a-time is what keeps this endpoint's latency from
+  // scaling linearly with total record count (every KV get is a real network hop).
+  const subscriberRows = await Promise.all(subscriberKeys.map(key => env.SHOW_TRACKER_KV.get(key.name)));
+  const subscribers = subscriberKeys
+    .map((key, i) => subscriberRows[i] ? { email: key.name.slice('subscriber:'.length), subscribedAt: JSON.parse(subscriberRows[i]).subscribedAt } : null)
+    .filter(Boolean);
   subscribers.sort((a, b) => (b.subscribedAt || 0) - (a.subscribedAt || 0));
 
-  const unsubscribes = [];
-  for (const key of unsubscribedKeys) {
-    const raw = await env.SHOW_TRACKER_KV.get(key.name);
-    unsubscribes.push({ unsubscribedAt: raw ? JSON.parse(raw).unsubscribedAt : null });
-  }
+  const unsubscribeRows = await Promise.all(unsubscribedKeys.map(key => env.SHOW_TRACKER_KV.get(key.name)));
+  const unsubscribes = unsubscribeRows.map(raw => ({ unsubscribedAt: raw ? JSON.parse(raw).unsubscribedAt : null }));
 
   // One-time self-healing backfill: createdAt/myShowsAddedAt/favoritesAddedAt didn't
   // exist before this change, so an account/favorite/starred-show from before today has
@@ -1444,9 +1441,13 @@ async function handleAdminStats(request, env, headers) {
   const favoriteEvents = []; // {artist, addedAt}
   const showEvents = []; // {id, addedAt}
   const users = [];
-  for (const key of userKeys) {
+  // Pushing into the three shared arrays above from within concurrent map() callbacks
+  // is safe here despite running "in parallel" -- JS has no true multi-threading, so
+  // each Array.push() still completes as one atomic step with no risk of interleaving
+  // mid-operation the way it could in a genuinely multi-threaded language.
+  await Promise.all(userKeys.map(async key => {
     const raw = await env.SHOW_TRACKER_KV.get(key.name);
-    if (!raw) continue;
+    if (!raw) return;
     const data = JSON.parse(raw);
     const myShows = Array.isArray(data.myShows) ? data.myShows : [];
     const favorites = Array.isArray(data.favorites) ? data.favorites : [];
@@ -1468,7 +1469,7 @@ async function handleAdminStats(request, env, headers) {
       if (!upcomingShowById.has(id)) return; // past show, or one no longer in the catalog
       showEvents.push({ id, addedAt: data.myShowsAddedAt[id] });
     });
-  }
+  }));
 
   const artistWindows = windowGroupedCounts(favoriteEvents, e => e.artist, e => e.addedAt);
   const topFavoriteArtists = Object.entries(artistWindows)
@@ -1492,12 +1493,8 @@ async function handleAdminStats(request, env, headers) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 20);
 
-  const suggestions = [];
-  for (const key of suggestionKeys) {
-    const raw = await env.SHOW_TRACKER_KV.get(key.name);
-    if (!raw) continue;
-    suggestions.push(JSON.parse(raw));
-  }
+  const suggestionRows = await Promise.all(suggestionKeys.map(key => env.SHOW_TRACKER_KV.get(key.name)));
+  const suggestions = suggestionRows.filter(Boolean).map(raw => JSON.parse(raw));
   suggestions.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
 
   const [digestDelivered, digestOpened, digestClicked, cloudflareStats] = await Promise.all([

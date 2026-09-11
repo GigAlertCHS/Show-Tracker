@@ -782,6 +782,14 @@ function priceOrTicketsHTML(s, venue){
   return url ? `<a class="price-or-tickets" href="${url}" target="_blank" rel="noopener">Tickets</a>` : '';
 }
 
+// Shared with both call sites that need to know if a show counts as recently added
+// (the main render()'s "Added This Week" section and a venue page's own listing) --
+// keeping this in one place is what keeps them from drifting out of sync the way the
+// site and digest email cutoffs previously did.
+function recentAddedCutoff(){
+  return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
 function cardHTML(s, isNew){
   const id = showId(s);
   // shows.json is written weekly by an automated scraping agent, so a venue code
@@ -913,6 +921,13 @@ async function syncWithServer(){
     MY_SHOWS = new Set(mergedWatch);
     FAVORITES = mergedFavs;
     INITIALIZED = true; // we've now loaded state ourselves; render() shouldn't reload from storage
+    // Also satisfies loadStorageOnce()'s own memoization guard (STORAGE_READY), not
+    // just INITIALIZED -- without this, the first loadStorageOnce() call anywhere
+    // else (e.g. the star-toggle handler) after a fresh sign-in still treats itself
+    // as the very first load ever, re-reads the pre-sync localStorage snapshot, and
+    // silently clobbers whatever was just set here (including a star click made in
+    // the same tick, before this promise resolves).
+    STORAGE_READY = Promise.resolve();
 
     const newWatchObj = {}; mergedWatch.forEach(id=>newWatchObj[id]=true);
     localStorage.setItem('my-shows', JSON.stringify(newWatchObj));
@@ -1255,8 +1270,11 @@ async function render(){
   // "Added This Week": based on each show's own 'added' field (a real, shared date
   // stamped when the show was actually added to the data), not a per-browser "have I
   // seen this yet" heuristic — so everyone sees the same "recently added" list,
-  // regardless of when they personally first opened the site.
-  const recentCutoff = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  // regardless of when they personally first opened the site. 7 days, matching the
+  // digest email's identically-labeled section (worker.js's own recentCutoff) --
+  // this used to say 10, which meant a show 8-9 days old showed as "new" here but
+  // not in that week's email.
+  const recentCutoff = recentAddedCutoff();
   const recentShows = sorted.filter(s => s.added && s.added >= recentCutoff);
   const recentSectionEl = document.getElementById('recently-added-section');
   const recentListEl = document.getElementById('recent-list');
@@ -1309,7 +1327,7 @@ async function render(){
     });
     return Object.values(groups).map(g=>{
       const head = fmtDate(g.d, g.e);
-      const cards = g.items.map(s=>cardHTML(s, false)).join('');
+      const cards = g.items.map(s=>cardHTML(s, !!(s.added && s.added >= recentCutoff))).join('');
       return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
     }).join('');
   }
@@ -1363,6 +1381,7 @@ function renderVenueShowsBody(){
   const bodyEl = document.getElementById('venue-shows-body');
   if(!bodyEl || !CURRENT_VENUE_CODE) return;
   const allShowsForVenue = CURRENT_VENUE_SORTED.filter(s => s.v === CURRENT_VENUE_CODE && s.g !== 'classical');
+  const recentCutoff = recentAddedCutoff();
   const groups = {};
   allShowsForVenue.forEach(s=>{
     const key = s.d + (s.e ? "_" + s.e : "");
@@ -1372,7 +1391,7 @@ function renderVenueShowsBody(){
   Object.values(groups).forEach(g => g.items.sort((a, b) => timeToMinutes(a.sh) - timeToMinutes(b.sh)));
   bodyEl.innerHTML = Object.values(groups).map(g=>{
     const head = fmtDate(g.d, g.e);
-    const cards = g.items.map(s=>cardHTML(s, false)).join('');
+    const cards = g.items.map(s=>cardHTML(s, !!(s.added && s.added >= recentCutoff))).join('');
     return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
   }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
 }

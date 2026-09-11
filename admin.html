@@ -67,7 +67,12 @@
 </div>
 
 <script>
-const WORKER_BASE_URL = 'https://show-tracker-api.gigalertchs.workers.dev';
+// Matches index.html/worker.js's own DEFAULT_WORKER_BASE_URL/wrangler.toml exactly --
+// this used to point at the raw *.workers.dev URL instead, which happened to work
+// (CORS only restricts browsers, not which URL a request targets) but made this page's
+// sign-in/stats silently dependent on wrangler.toml's `workers_dev = true` staying
+// enabled forever, with no error pointing at the real cause if it were ever turned off.
+const WORKER_BASE_URL = 'https://api.chs.shownotice.com';
 let SESSION_TOKEN = localStorage.getItem('sessionToken') || null;
 const TURNSTILE_SITE_KEY = '0x4AAAAAAEkfZ3ATboand-06';
 let ADMIN_TURNSTILE_WIDGET_ID = null;
@@ -80,6 +85,25 @@ window.onTurnstileLoad = function(){
   const container = document.getElementById('admin-turnstile');
   if(container) ADMIN_TURNSTILE_WIDGET_ID = turnstile.render(container, { sitekey: TURNSTILE_SITE_KEY });
 };
+
+// Used to get back to the sign-in form after an expired/invalid session (see
+// loadStats()'s 401 handling) -- same markup the static HTML starts with, since by
+// that point renderStats() has already replaced #content with the stats view.
+function renderSignInBox(){
+  document.getElementById('content').innerHTML = `
+    <div class="signin-box">
+      <p class="muted">Sign in with the owner account to view stats.</p>
+      <div><input type="email" id="admin-email" placeholder="your@email.com"></div>
+      <div id="admin-turnstile" style="margin:10px auto;display:flex;justify-content:center;"></div>
+      <button id="admin-signin-btn">Send sign-in link</button>
+    </div>
+  `;
+  document.getElementById('admin-signin-btn').addEventListener('click', beginSignIn);
+  // onTurnstileLoad only fires once, the first time the Turnstile script itself
+  // finishes loading -- if that's already happened, render directly into this fresh
+  // container instead of waiting for a callback that's already fired.
+  if(window.turnstile) onTurnstileLoad();
+}
 
 function fmtDate(ms){
   if(!ms) return '—';
@@ -273,6 +297,15 @@ async function loadStats(){
     const res = await fetch(`${WORKER_BASE_URL}/api/admin/stats`, {
       headers: { 'Authorization': `Bearer ${SESSION_TOKEN}` }
     });
+    if(res.status === 401){
+      // Session expired (30-day TTL) or otherwise invalid. Without this, the page had
+      // no way back to the sign-in form short of manually clearing site data --
+      // there's no sign-out control, and a reload just resends the same dead token.
+      SESSION_TOKEN = null;
+      localStorage.removeItem('sessionToken');
+      renderSignInBox();
+      return;
+    }
     const data = await res.json();
     if(data.error){
       el.innerHTML = `<div class="error">${escapeHtml(data.error)}${data.error === 'Not authorized' ? ' — this page only works for the site owner account.' : ''}</div>`;
