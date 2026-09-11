@@ -27,7 +27,7 @@ id = "d6ce7eeb579342ddaab94ae9560ddfc2"
 # protection (worker.js deliberately "fails open" when TURNSTILE_SECRET_KEY is absent).
 # The secret VALUES are never in this file -- only references to them. Safe to commit.
 # NOTE: `binding` is the name worker.js reads off `env` (uppercase, matching the code).
-# `secret_name` must match the name in the Secrets Store EXACTLY. Three of these are
+# `secret_name` must match the name in the Secrets Store EXACTLY. Four of these are
 # lowercase AND hyphenated in the store, unlike the binding names -- that asymmetry
 # is real, not a typo. (Confirmed from wrangler's own remote-vs-local config diff.)
 [[secrets_store_secrets]]
@@ -49,6 +49,11 @@ secret_name = "cowork-api-secret"
 binding = "RESEND_WEBHOOK_SECRET"
 store_id = "30c772729ee04e95b2d1ee57b4be87fd"
 secret_name = "resend-webhook-secret"
+
+[[secrets_store_secrets]]
+binding = "CLOUDFLARE_ANALYTICS_TOKEN"
+store_id = "30c772729ee04e95b2d1ee57b4be87fd"
+secret_name = "cloudflare-analytics-token"
 
 # --- Cron: weekly digest email ---
 # This must match what's live, or a deploy silently reschedules the digest. The
