@@ -316,9 +316,13 @@ async function handleResendWebhook(request, env) {
   const tags = (payload.data && payload.data.tags) || [];
   const isDigest = tags.some(t => t.name === 'type' && t.value === 'digest');
   if (isDigest) {
-    if (payload.type === 'email.delivered') await incrementCounter(env, 'digest-stats:delivered');
-    else if (payload.type === 'email.opened') await incrementCounter(env, 'digest-stats:opened');
-    else if (payload.type === 'email.clicked') await incrementCounter(env, 'digest-stats:clicked');
+    // Bucketed by day (not one running total) so handleAdminStats can sum a
+    // week/month/year/all window over these, the same as it does for subscribers/
+    // suggestions/unsubscribes -- see windowCounts()/digestStatsWindow().
+    const today = new Date().toISOString().slice(0, 10);
+    if (payload.type === 'email.delivered') await incrementCounter(env, `digest-stats:delivered:${today}`);
+    else if (payload.type === 'email.opened') await incrementCounter(env, `digest-stats:opened:${today}`);
+    else if (payload.type === 'email.clicked') await incrementCounter(env, `digest-stats:clicked:${today}`);
   }
 
   return new Response('ok', { status: 200 });
@@ -872,6 +876,49 @@ async function listAllKeys(env, prefix) {
   }
 }
 
+// Rolling windows (last 7/30/365 days), not calendar week/month/year -- simpler and
+// unambiguous (no "which day does the week start on" question) for what's really just
+// "recent activity at a glance" in the admin panel. `getTs` pulls a ms timestamp out of
+// each item; items with no timestamp only count toward `all`.
+function windowCounts(items, getTs) {
+  const now = Date.now();
+  const cutoffs = { week: now - 7 * 86400000, month: now - 30 * 86400000, year: now - 365 * 86400000 };
+  const result = { week: 0, month: 0, year: 0, all: items.length };
+  items.forEach(item => {
+    const ts = getTs(item);
+    if (!ts) return;
+    if (ts >= cutoffs.year) result.year++;
+    if (ts >= cutoffs.month) result.month++;
+    if (ts >= cutoffs.week) result.week++;
+  });
+  return result;
+}
+
+// digest-stats:{type}:{YYYY-MM-DD} is one KV key per day per event type (see
+// handleResendWebhook) rather than one running total, specifically so this can sum a
+// week/month/year/all window the same way windowCounts() does for everything else.
+// Digest sends are weekly, so this stays cheap indefinitely -- at most ~52 date-keys
+// per type per year.
+async function digestStatsWindow(env, type) {
+  const keys = await listAllKeys(env, `digest-stats:${type}:`);
+  const items = await Promise.all(keys.map(async key => {
+    const dateStr = key.name.slice(`digest-stats:${type}:`.length);
+    const raw = await env.SHOW_TRACKER_KV.get(key.name);
+    const count = raw ? parseInt(raw, 10) : 0;
+    return { ts: new Date(dateStr + 'T12:00:00').getTime(), count };
+  }));
+  const now = Date.now();
+  const cutoffs = { week: now - 7 * 86400000, month: now - 30 * 86400000, year: now - 365 * 86400000 };
+  const result = { week: 0, month: 0, year: 0, all: 0 };
+  items.forEach(({ ts, count }) => {
+    result.all += count;
+    if (ts >= cutoffs.year) result.year += count;
+    if (ts >= cutoffs.month) result.month += count;
+    if (ts >= cutoffs.week) result.week += count;
+  });
+  return result;
+}
+
 // Called by the scheduled() Cron handler. Sends one personalized email per subscriber.
 // A failure sending to one person doesn't stop the rest of the batch — logged and moved on.
 async function sendDigestToAllSubscribers(env) {
@@ -1215,6 +1262,12 @@ async function handleAdminStats(request, env, headers) {
   }
   subscribers.sort((a, b) => (b.subscribedAt || 0) - (a.subscribedAt || 0));
 
+  const unsubscribes = [];
+  for (const key of unsubscribedKeys) {
+    const raw = await env.SHOW_TRACKER_KV.get(key.name);
+    unsubscribes.push({ unsubscribedAt: raw ? JSON.parse(raw).unsubscribedAt : null });
+  }
+
   const artistCounts = {};
   const showStarCounts = {}; // showId -> number of users with it in myShows
   const users = [];
@@ -1268,24 +1321,35 @@ async function handleAdminStats(request, env, headers) {
   suggestions.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
 
   const [digestDelivered, digestOpened, digestClicked] = await Promise.all([
-    env.SHOW_TRACKER_KV.get('digest-stats:delivered'),
-    env.SHOW_TRACKER_KV.get('digest-stats:opened'),
-    env.SHOW_TRACKER_KV.get('digest-stats:clicked')
+    digestStatsWindow(env, 'delivered'),
+    digestStatsWindow(env, 'opened'),
+    digestStatsWindow(env, 'clicked')
   ]);
 
   return json({
     ok: true,
-    subscribers: { count: subscribers.length, list: subscribers },
-    unsubscribedCount: unsubscribedKeys.length,
+    subscribers: {
+      count: subscribers.length,
+      list: subscribers,
+      window: windowCounts(subscribers, s => s.subscribedAt)
+    },
+    unsubscribed: {
+      count: unsubscribedKeys.length,
+      window: windowCounts(unsubscribes, u => u.unsubscribedAt)
+    },
     users: { count: users.length, list: users },
     topFavoriteArtists,
     topVenues,
     topStarredShows,
     digestStats: {
-      delivered: digestDelivered ? parseInt(digestDelivered, 10) : 0,
-      opened: digestOpened ? parseInt(digestOpened, 10) : 0,
-      clicked: digestClicked ? parseInt(digestClicked, 10) : 0
+      delivered: digestDelivered,
+      opened: digestOpened,
+      clicked: digestClicked
     },
-    suggestions: { count: suggestions.length, list: suggestions }
+    suggestions: {
+      count: suggestions.length,
+      list: suggestions,
+      window: windowCounts(suggestions, s => s.submittedAt)
+    }
   }, 200, headers);
 }
