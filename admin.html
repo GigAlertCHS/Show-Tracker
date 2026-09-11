@@ -24,7 +24,6 @@
   .signin-box input{width:100%;max-width:280px;padding:10px 12px;border-radius:6px;border:1px solid var(--line);background:var(--ink);color:var(--text);font-size:14px;margin-bottom:10px;}
   .signin-box button, .refresh-btn{padding:10px 20px;border-radius:6px;border:none;background:var(--teal);color:#0b1512;font-weight:600;font-size:14px;cursor:pointer;}
   .error{color:var(--red);font-size:13px;padding:12px;text-align:center;}
-  .chip{display:inline-block;background:rgba(240,168,60,0.1);border:1px solid var(--amber);border-radius:20px;padding:3px 10px;font-size:12px;margin:3px 4px 3px 0;}
   .window-table{width:100%;border-collapse:collapse;font-size:13px;}
   .window-table th, .window-table td{padding:6px 4px;text-align:right;}
   .window-table th:first-child, .window-table td:first-child{text-align:left;}
@@ -115,17 +114,22 @@ function renderStats(data){
   const usersHtml = data.users.list.length
     ? data.users.list.map(u => `<div class="stat-row"><span>${escapeHtml(u.email)}</span><span class="muted">${escapeHtml(u.myShowsCount)} shows &middot; ${escapeHtml(u.favoritesCount)} favorites</span></div>`).join('')
     : '<div class="empty">No accounts yet.</div>';
+  const usersWindowHtml = windowTableHtml([{ label: 'New accounts', w: data.users.window }]);
 
+  // Backfilled entries (see handleAdminStats) all share the same added-at moment (the
+  // first admin-panel load after that backfill ran), so their week/month/year columns
+  // will look identical to their all-time count until real new activity comes in --
+  // expected, not a bug.
   const artistsHtml = data.topFavoriteArtists.length
-    ? data.topFavoriteArtists.map(a => `<span class="chip">${escapeHtml(a.artist)} (${escapeHtml(a.count)})</span>`).join('')
+    ? windowTableHtml(data.topFavoriteArtists.map(a => ({ label: a.artist, w: a.window })))
     : '<div class="empty">No favorite artists tracked yet.</div>';
 
   const venuesHtml = data.topVenues.length
-    ? data.topVenues.map(v => `<span class="chip">${escapeHtml(v.venue)} (${escapeHtml(v.count)})</span>`).join('')
+    ? windowTableHtml(data.topVenues.map(v => ({ label: v.venue, w: v.window })))
     : '<div class="empty">No starred upcoming shows yet.</div>';
 
   const starredShowsHtml = data.topStarredShows.length
-    ? data.topStarredShows.map(s => `<div class="stat-row"><span><strong>${escapeHtml(s.band)}</strong> <span class="muted">— ${escapeHtml(s.venue)} &middot; ${escapeHtml(fmtDate(new Date(s.date + 'T12:00:00').getTime()))}</span></span><span class="muted">${escapeHtml(s.count)}&nbsp;starred</span></div>`).join('')
+    ? windowTableHtml(data.topStarredShows.map(s => ({ label: `${s.band} — ${s.venue} · ${fmtDate(new Date(s.date + 'T12:00:00').getTime())}`, w: s.window })))
     : '<div class="empty">No starred upcoming shows yet.</div>';
 
   const d = data.digestStats;
@@ -150,7 +154,8 @@ function renderStats(data){
   el.innerHTML = `
     <div class="block"><h2>Subscribers (${data.subscribers.count}) &middot; Unsubscribed (${data.unsubscribed.count})</h2>${subsWindowHtml}</div>
     <div class="block"><h2>Subscriber list</h2>${subsHtml}</div>
-    <div class="block"><h2>Accounts (${data.users.count})</h2>${usersHtml}</div>
+    <div class="block"><h2>Accounts (${data.users.count})</h2>${usersWindowHtml}</div>
+    <div class="block"><h2>Account list</h2>${usersHtml}</div>
     <div class="block"><h2>Digest email engagement</h2>${digestHtml}</div>
     <div class="block"><h2>Top favorited artists</h2>${artistsHtml}</div>
     <div class="block"><h2>Top favorited venues</h2>${venuesHtml}</div>
