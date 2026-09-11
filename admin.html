@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Show Notice — Admin</title>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
 <style>
   :root{
     --ink:#12141c;--panel:#1b1e2a;--line:#2c3040;--text:#eee9db;--muted:#9599ad;
@@ -33,6 +34,7 @@
     <div class="signin-box">
       <p class="muted">Sign in with the owner account to view stats.</p>
       <div><input type="email" id="admin-email" placeholder="your@email.com"></div>
+      <div id="admin-turnstile" style="margin:10px auto;display:flex;justify-content:center;"></div>
       <button id="admin-signin-btn">Send sign-in link</button>
     </div>
   </div>
@@ -41,6 +43,17 @@
 <script>
 const WORKER_BASE_URL = 'https://show-tracker-api.gigalertchs.workers.dev';
 let SESSION_TOKEN = localStorage.getItem('sessionToken') || null;
+const TURNSTILE_SITE_KEY = '0x4AAAAAAEkfZ3ATboand-06';
+let ADMIN_TURNSTILE_WIDGET_ID = null;
+
+// The backend's /api/auth/request-link now requires a Turnstile token whenever a
+// secret key is configured (it used to "fail open" only while that secret was
+// missing) -- this page never rendered a widget, so every request-link call here
+// was silently getting rejected with "Verification failed" once the secret was set.
+window.onTurnstileLoad = function(){
+  const container = document.getElementById('admin-turnstile');
+  if(container) ADMIN_TURNSTILE_WIDGET_ID = turnstile.render(container, { sitekey: TURNSTILE_SITE_KEY });
+};
 
 function fmtDate(ms){
   if(!ms) return '—';
@@ -50,15 +63,22 @@ function fmtDate(ms){
 async function beginSignIn(){
   const email = document.getElementById('admin-email').value.trim();
   if(!email){ alert('Enter an email address.'); return; }
+  const turnstileToken = (window.turnstile && ADMIN_TURNSTILE_WIDGET_ID !== null)
+    ? turnstile.getResponse(ADMIN_TURNSTILE_WIDGET_ID)
+    : '';
   try{
     const res = await fetch(`${WORKER_BASE_URL}/api/auth/request-link`, {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email})
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, turnstileToken})
     });
     const data = await res.json();
+    if(window.turnstile && ADMIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(ADMIN_TURNSTILE_WIDGET_ID);
     if(data.error){ alert(data.error); return; }
     if(data.testMode){ alert('Test mode — sign-in link:\\n\\n' + data.magicLink); }
     else { alert('Check your email for a sign-in link.'); }
-  }catch(e){ alert('Something went wrong. Please try again.'); }
+  }catch(e){
+    if(window.turnstile && ADMIN_TURNSTILE_WIDGET_ID !== null) turnstile.reset(ADMIN_TURNSTILE_WIDGET_ID);
+    alert('Something went wrong. Please try again.');
+  }
 }
 
 // Every value below originates from other people: subscriber/account emails, artist
