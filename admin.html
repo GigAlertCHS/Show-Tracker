@@ -25,6 +25,12 @@
   .signin-box button, .refresh-btn{padding:10px 20px;border-radius:6px;border:none;background:var(--teal);color:#0b1512;font-weight:600;font-size:14px;cursor:pointer;}
   .error{color:var(--red);font-size:13px;padding:12px;text-align:center;}
   .chip{display:inline-block;background:rgba(240,168,60,0.1);border:1px solid var(--amber);border-radius:20px;padding:3px 10px;font-size:12px;margin:3px 4px 3px 0;}
+  .window-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .window-table th, .window-table td{padding:6px 4px;text-align:right;}
+  .window-table th:first-child, .window-table td:first-child{text-align:left;}
+  .window-table th{color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--line);}
+  .window-table td{border-bottom:1px solid var(--line);}
+  .window-table tr:last-child td{border-bottom:none;}
 </style>
 </head>
 <body>
@@ -90,6 +96,16 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// Renders a { '': '', Week, Month, Year, All } table for any set of rows shaped
+// {label, w:{week,month,year,all}} -- used for everything with a rolling-window
+// breakdown (new subscribers, unsubscribes, suggestions, digest engagement) so they
+// all read the same way instead of each inventing their own layout.
+function windowTableHtml(rows){
+  const header = '<tr><th></th><th>Week</th><th>Month</th><th>Year</th><th>All</th></tr>';
+  const body = rows.map(r => `<tr><td>${escapeHtml(r.label)}</td><td>${escapeHtml(r.w.week)}</td><td>${escapeHtml(r.w.month)}</td><td>${escapeHtml(r.w.year)}</td><td>${escapeHtml(r.w.all)}</td></tr>`).join('');
+  return `<table class="window-table">${header}${body}</table>`;
+}
+
 function renderStats(data){
   const el = document.getElementById('content');
   const subsHtml = data.subscribers.list.length
@@ -114,26 +130,34 @@ function renderStats(data){
 
   const d = data.digestStats;
   const pct = (n, of) => of ? Math.round((n / of) * 100) + '%' : '—';
-  const digestHtml = `
-    <div class="stat-row"><span>Delivered</span><span class="muted">${escapeHtml(d.delivered)}</span></div>
-    <div class="stat-row"><span>Opened</span><span class="muted">${escapeHtml(d.opened)} (${pct(d.opened, d.delivered)})</span></div>
-    <div class="stat-row"><span>Clicked</span><span class="muted">${escapeHtml(d.clicked)} (${pct(d.clicked, d.delivered)})</span></div>
-  `;
+  const digestHtml = windowTableHtml([
+    { label: 'Delivered', w: d.delivered },
+    { label: 'Opened', w: d.opened },
+    { label: 'Clicked', w: d.clicked }
+  ]) + `<p class="muted" style="font-size:11px;margin:8px 0 0;">All-time open rate ${pct(d.opened.all, d.delivered.all)} &middot; click rate ${pct(d.clicked.all, d.delivered.all)}</p>`;
+
+  const subsWindowHtml = windowTableHtml([
+    { label: 'New subscribers', w: data.subscribers.window },
+    { label: 'Unsubscribed', w: data.unsubscribed.window }
+  ]);
+
+  const suggestionsWindowHtml = windowTableHtml([{ label: 'Suggestions', w: data.suggestions.window }]);
 
   const suggestionsHtml = data.suggestions.list.length
     ? data.suggestions.list.map(s => `<div class="stat-row" style="display:block;"><div><strong>${escapeHtml(s.venueName)}</strong> <span class="muted">— ${escapeHtml(s.submitterEmail)} &middot; ${escapeHtml(fmtDate(s.submittedAt))}</span></div>${s.notes ? `<div class="muted" style="margin-top:4px;">${escapeHtml(s.notes)}</div>` : ''}</div>`).join('')
     : '<div class="empty">No suggestions yet.</div>';
 
   el.innerHTML = `
-    <div class="block"><h2>Subscribers (${data.subscribers.count})</h2><div class="stat-row"><span class="muted">Unsubscribed</span><span class="muted">${escapeHtml(data.unsubscribedCount)}</span></div>${subsHtml}</div>
+    <div class="block"><h2>Subscribers (${data.subscribers.count}) &middot; Unsubscribed (${data.unsubscribed.count})</h2>${subsWindowHtml}</div>
+    <div class="block"><h2>Subscriber list</h2>${subsHtml}</div>
     <div class="block"><h2>Accounts (${data.users.count})</h2>${usersHtml}</div>
     <div class="block"><h2>Digest email engagement</h2>${digestHtml}</div>
     <div class="block"><h2>Top favorited artists</h2>${artistsHtml}</div>
     <div class="block"><h2>Top favorited venues</h2>${venuesHtml}</div>
     <div class="block"><h2>Most-starred upcoming shows</h2>${starredShowsHtml}</div>
-    <div class="block"><h2>Venue suggestions (${data.suggestions.count})</h2>${suggestionsHtml}</div>
+    <div class="block"><h2>Venue suggestions (${data.suggestions.count})</h2>${suggestionsWindowHtml}${suggestionsHtml}</div>
     <button class="refresh-btn" id="refresh-btn">Refresh</button>
-    <p class="muted" style="font-size:11px;margin-top:16px;">Not tracked here yet: site pageviews (Cloudflare Web Analytics isn't enabled for this domain).</p>
+    <p class="muted" style="font-size:11px;margin-top:16px;">Week/Month/Year columns are rolling windows (last 7/30/365 days), not calendar periods. Site traffic lives in Cloudflare's own Web Analytics dashboard, not pulled in here.</p>
   `;
   document.getElementById('refresh-btn').addEventListener('click', loadStats);
 }
