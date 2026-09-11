@@ -80,3 +80,5 @@ RESEND_FROM_ADDRESS = "Lowcountry Show Notice <shows@shownotice.com>"
 SITE_URL = "https://chs.shownotice.com/"
 WORKER_BASE_URL = "https://api.chs.shownotice.com"
 OWNER_EMAIL = "gigalertchs@gmail.com"
+# Not secret -- just an identifier for which zone to query in fetchCloudflareZoneAnalytics.
+CLOUDFLARE_ZONE_ID = "dfc9d980ae14b42d5ea591a4bdc90136"

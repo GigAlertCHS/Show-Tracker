@@ -250,6 +250,86 @@ async function getResendWebhookSecret(env) {
   return env.RESEND_WEBHOOK_SECRET;
 }
 
+async function getCloudflareAnalyticsToken(env) {
+  if (!env.CLOUDFLARE_ANALYTICS_TOKEN) return null;
+  if (typeof env.CLOUDFLARE_ANALYTICS_TOKEN.get === 'function') {
+    return await env.CLOUDFLARE_ANALYTICS_TOKEN.get();
+  }
+  return env.CLOUDFLARE_ANALYTICS_TOKEN;
+}
+
+// Requests and page views are plain daily counts, safe to sum across days into a
+// window. Unique visitors deliberately isn't included here: Cloudflare's uniq counts
+// are HyperLogLog-estimated per day, and summing per-day estimates across a window
+// overcounts (the same visitor on two days would count twice) -- there's no accurate
+// way to turn daily uniques into a weekly/monthly one without querying that whole
+// range as its own single bucket, which httpRequests1dGroups (daily-grouped, as the
+// name says) doesn't support. Cloudflare's own Web Analytics dashboard remains the
+// place to look for an accurate unique-visitor figure.
+async function fetchCloudflareZoneAnalytics(env) {
+  const token = await getCloudflareAnalyticsToken(env);
+  const zoneTag = env.CLOUDFLARE_ZONE_ID;
+  if (!token || !zoneTag) return { error: 'Not configured yet' };
+
+  const until = new Date().toISOString().slice(0, 10);
+  const since = new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+
+  const query = `
+    query ZoneAnalytics($zoneTag: String!, $since: String!, $until: String!) {
+      viewer {
+        zones(filter: { zoneTag: $zoneTag }) {
+          httpRequests1dGroups(
+            limit: 400
+            filter: { date_geq: $since, date_leq: $until }
+            orderBy: [date_ASC]
+          ) {
+            dimensions { date }
+            sum { requests pageViews }
+          }
+        }
+      }
+    }
+  `;
+
+  let res;
+  try {
+    res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { zoneTag, since, until } })
+    });
+  } catch (err) {
+    return { error: `Request failed: ${err.message}` };
+  }
+
+  const body = await res.json().catch(() => null);
+  if (!res.ok || !body) {
+    return { error: `Cloudflare API responded ${res.status}` };
+  }
+  if (body.errors && body.errors.length) {
+    return { error: body.errors.map(e => e.message).join('; ') };
+  }
+
+  const zones = body.data && body.data.viewer && body.data.viewer.zones;
+  const rows = (zones && zones[0] && zones[0].httpRequests1dGroups) || [];
+
+  const now = Date.now();
+  const cutoffs = { week: now - 7 * 86400000, month: now - 30 * 86400000, year: now - 365 * 86400000 };
+  const requests = { week: 0, month: 0, year: 0, all: 0 };
+  const pageViews = { week: 0, month: 0, year: 0, all: 0 };
+  rows.forEach(row => {
+    const ts = new Date(row.dimensions.date + 'T12:00:00').getTime();
+    const r = (row.sum && row.sum.requests) || 0;
+    const p = (row.sum && row.sum.pageViews) || 0;
+    requests.all += r; pageViews.all += p;
+    if (ts >= cutoffs.year) { requests.year += r; pageViews.year += p; }
+    if (ts >= cutoffs.month) { requests.month += r; pageViews.month += p; }
+    if (ts >= cutoffs.week) { requests.week += r; pageViews.week += p; }
+  });
+
+  return { requests, pageViews };
+}
+
 function base64ToBytes(b64) {
   const bin = atob(b64);
   const bytes = new Uint8Array(bin.length);
@@ -1378,10 +1458,11 @@ async function handleAdminStats(request, env, headers) {
   }
   suggestions.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
 
-  const [digestDelivered, digestOpened, digestClicked] = await Promise.all([
+  const [digestDelivered, digestOpened, digestClicked, cloudflareStats] = await Promise.all([
     digestStatsWindow(env, 'delivered'),
     digestStatsWindow(env, 'opened'),
-    digestStatsWindow(env, 'clicked')
+    digestStatsWindow(env, 'clicked'),
+    fetchCloudflareZoneAnalytics(env).catch(err => ({ error: err.message }))
   ]);
 
   return json({
@@ -1404,6 +1485,7 @@ async function handleAdminStats(request, env, headers) {
       opened: digestOpened,
       clicked: digestClicked
     },
+    cloudflareStats,
     suggestions: {
       count: suggestions.length,
       list: suggestions,
