@@ -1327,7 +1327,7 @@ async function render(){
     });
     return Object.values(groups).map(g=>{
       const head = fmtDate(g.d, g.e);
-      const cards = g.items.map(s=>cardHTML(s, !!(s.added && s.added >= recentCutoff))).join('');
+      const cards = g.items.map(s=>cardHTML(s, false)).join('');
       return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
     }).join('');
   }
@@ -1381,7 +1381,6 @@ function renderVenueShowsBody(){
   const bodyEl = document.getElementById('venue-shows-body');
   if(!bodyEl || !CURRENT_VENUE_CODE) return;
   const allShowsForVenue = CURRENT_VENUE_SORTED.filter(s => s.v === CURRENT_VENUE_CODE && s.g !== 'classical');
-  const recentCutoff = recentAddedCutoff();
   const groups = {};
   allShowsForVenue.forEach(s=>{
     const key = s.d + (s.e ? "_" + s.e : "");
@@ -1391,7 +1390,7 @@ function renderVenueShowsBody(){
   Object.values(groups).forEach(g => g.items.sort((a, b) => timeToMinutes(a.sh) - timeToMinutes(b.sh)));
   bodyEl.innerHTML = Object.values(groups).map(g=>{
     const head = fmtDate(g.d, g.e);
-    const cards = g.items.map(s=>cardHTML(s, !!(s.added && s.added >= recentCutoff))).join('');
+    const cards = g.items.map(s=>cardHTML(s, false)).join('');
     return `<div class="day-group"><div class="day-head">${head}</div>${cards}</div>`;
   }).join('') || '<div class="empty">No upcoming shows currently listed for this venue.</div>';
 }
