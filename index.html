@@ -450,7 +450,6 @@
       <div class="section-title-row">
         <div class="section-title gold">My Shows</div>
         <div class="section-title-links">
-          <button type="button" class="link-btn back-to-top-link">Back to top ↑</button>
           <button type="button" class="link-btn jump-next-link" data-jump-next="all-shows-section">All Shows ↓</button>
         </div>
       </div>
@@ -1013,6 +1012,18 @@ async function handleIncomingSession(){
   if(incomingSession){
     // Fresh sign-in redirect (just clicked a magic link) — always merge with the server.
     await syncWithServer();
+
+    // Clicking the emailed link opens a new tab/window (mail clients do this, not
+    // something we control), so whoever requested the link is now looking at two
+    // copies of the site: the original tab they signed in from, and this one. The
+    // 'storage' listener below makes the original tab pick up the new session on
+    // its own, so it's safe to tell the user this tab is done and can be closed.
+    // window.close() only works on a tab the page itself opened via script, which
+    // this one wasn't (it was opened by the mail client) — so it's expected to be a
+    // no-op in the vast majority of cases; that's why the message doesn't depend on
+    // it succeeding.
+    await showAlert("You're signed in! If you still have your original Show Notice tab open, switch back to it — it'll pick this up automatically. This tab can be closed.");
+    window.close();
   } else if(SESSION_TOKEN){
     // Returning visit with an existing session. Only pull from the server if there's
     // NOTHING local yet (a genuinely new device/browser).
@@ -1592,6 +1603,16 @@ updateBannerHeight();
 updateAllShowsHeadHeight();
 updateMyShowsHeadHeight();
 window.addEventListener('resize', ()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateMyShowsHeadHeight(); updateVenueHeadHeight(); updateAddedThisWeekHeadHeight(); });
+
+// Cross-tab sign-in sync: fires in every OTHER same-origin tab (never the tab that
+// made the change) whenever localStorage's sessionToken changes -- specifically so a
+// tab left open from before picks up the sign-in that just happened in the new tab
+// the magic-link email opened, without the user having to do anything themselves.
+window.addEventListener('storage', (e)=>{
+  if(e.key === 'sessionToken' && e.newValue && e.newValue !== SESSION_TOKEN){
+    window.location.reload();
+  }
+});
 if(document.fonts && document.fonts.ready){
   document.fonts.ready.then(()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateMyShowsHeadHeight(); updateVenueHeadHeight(); updateAddedThisWeekHeadHeight(); });
 }
