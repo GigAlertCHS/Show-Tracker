@@ -9,7 +9,7 @@
      Turnstile) means that token can't leak to them via the Referer header in that
      window, even though none of those loads need referrer info to function anyway. -->
 <meta name="referrer" content="same-origin">
-<title>Lowcountry Show Tracker</title>
+<title>Lowcountry Show Notice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,7 +29,16 @@
     --beach:#4fb0d1;
   }
   *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{
+    scroll-behavior:smooth;
+    /* Without this, iOS Safari's automatic text-size adjustment can render the same
+       font-size value differently across devices (e.g. iPhone Pro vs. Pro Max), since
+       it boosts/shrinks text based on its own per-device heuristics rather than what's
+       actually declared here. Pinning it to 100% makes every declared font-size render
+       literally, the same on every device. */
+    -webkit-text-size-adjust:100%;
+    text-size-adjust:100%;
+  }
   body{
     margin:0;
     background:var(--ink);
@@ -411,7 +420,7 @@
 
   <div class="banner-sticky" id="banner-sticky">
     <div class="b2-frame">
-      <div class="b2-title">LOWCOUNTRY SHOW TRACKER</div>
+      <div class="b2-title">LOWCOUNTRY SHOW NOTICE</div>
     </div>
     <div class="tagline">Live music across Charleston</div>
   </div>
