@@ -633,6 +633,19 @@ function loadStorageOnce(){
   return STORAGE_READY;
 }
 
+// Re-reads the storage-backed state and re-renders -- used by the cross-tab 'storage'
+// listener below so a change made in one open tab (favoriting an artist, starring a
+// show) shows up in any other open tab too, not just the one it was made in.
+async function refreshFromStorageAndRender(){
+  const watchObj = await getMap('my-shows');
+  MY_SHOWS = new Set(Object.keys(watchObj));
+  const favObj = await getMap('favorite-artists');
+  FAVORITES = Object.keys(favObj);
+  const autoObj = await getMap('auto-added-shows');
+  AUTO_ADDED_SHOWS = new Set(Object.keys(autoObj));
+  await render();
+}
+
 const WORKER_BASE_URL = 'https://api.chs.shownotice.com';
 const TURNSTILE_SITE_KEY = '0x4AAAAAAEkfZ3ATboand-06';
 let SIGNIN_TURNSTILE_WIDGET_ID = null;
@@ -1604,13 +1617,18 @@ updateAllShowsHeadHeight();
 updateMyShowsHeadHeight();
 window.addEventListener('resize', ()=>{ updateBannerHeight(); updateAllShowsHeadHeight(); updateMyShowsHeadHeight(); updateVenueHeadHeight(); updateAddedThisWeekHeadHeight(); });
 
-// Cross-tab sign-in sync: fires in every OTHER same-origin tab (never the tab that
-// made the change) whenever localStorage's sessionToken changes -- specifically so a
-// tab left open from before picks up the sign-in that just happened in the new tab
-// the magic-link email opened, without the user having to do anything themselves.
+// Cross-tab sync: 'storage' fires in every OTHER same-origin tab (never the tab that
+// made the change) whenever localStorage changes. sessionToken changing is handled
+// with a full reload -- it's a rare, fundamental state transition (account UI, the
+// whole page's signed-in/out state) that a full reload cleanly covers. The
+// my-shows/favorite-artists/auto-added-shows keys change far more often (any star
+// toggle or favorite add/remove) and re-rendering in place -- rather than reloading
+// the whole page every time -- keeps that fast and avoids losing scroll position.
 window.addEventListener('storage', (e)=>{
   if(e.key === 'sessionToken' && e.newValue && e.newValue !== SESSION_TOKEN){
     window.location.reload();
+  } else if(e.key === 'my-shows' || e.key === 'favorite-artists' || e.key === 'auto-added-shows'){
+    if(INITIALIZED) refreshFromStorageAndRender();
   }
 });
 if(document.fonts && document.fonts.ready){
