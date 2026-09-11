@@ -289,7 +289,14 @@ async function fetchCloudflareZoneAnalytics(env) {
             orderBy: [date_ASC]
           ) {
             dimensions { date }
-            sum { requests pageViews }
+            sum {
+              requests
+              pageViews
+              threats
+              cachedRequests
+              countryMap { clientCountryName requests }
+              responseStatusMap { edgeResponseStatus requests }
+            }
           }
         }
       }
@@ -320,19 +327,49 @@ async function fetchCloudflareZoneAnalytics(env) {
 
   const now = Date.now();
   const cutoffs = { week: now - 7 * 86400000, month: now - 30 * 86400000, year: now - 365 * 86400000 };
+  const bump = (bucket, ts, v) => {
+    bucket.all += v;
+    if (ts >= cutoffs.year) bucket.year += v;
+    if (ts >= cutoffs.month) bucket.month += v;
+    if (ts >= cutoffs.week) bucket.week += v;
+  };
   const requests = { week: 0, month: 0, year: 0, all: 0 };
   const pageViews = { week: 0, month: 0, year: 0, all: 0 };
+  const threats = { week: 0, month: 0, year: 0, all: 0 };
+  const cachedRequests = { week: 0, month: 0, year: 0, all: 0 };
+  const errorRequests = { week: 0, month: 0, year: 0, all: 0 };
+  const countryCounts = {}; // country code -> {week,month,year,all}
+
   rows.forEach(row => {
     const ts = new Date(row.dimensions.date + 'T12:00:00').getTime();
-    const r = (row.sum && row.sum.requests) || 0;
-    const p = (row.sum && row.sum.pageViews) || 0;
-    requests.all += r; pageViews.all += p;
-    if (ts >= cutoffs.year) { requests.year += r; pageViews.year += p; }
-    if (ts >= cutoffs.month) { requests.month += r; pageViews.month += p; }
-    if (ts >= cutoffs.week) { requests.week += r; pageViews.week += p; }
+    const sum = row.sum || {};
+    bump(requests, ts, sum.requests || 0);
+    bump(pageViews, ts, sum.pageViews || 0);
+    bump(threats, ts, sum.threats || 0);
+    bump(cachedRequests, ts, sum.cachedRequests || 0);
+    (sum.responseStatusMap || []).forEach(s => {
+      if (s.edgeResponseStatus >= 400) bump(errorRequests, ts, s.requests || 0);
+    });
+    (sum.countryMap || []).forEach(c => {
+      const code = c.clientCountryName || 'Unknown';
+      if (!countryCounts[code]) countryCounts[code] = { week: 0, month: 0, year: 0, all: 0 };
+      bump(countryCounts[code], ts, c.requests || 0);
+    });
   });
 
-  return { requests, pageViews };
+  // Cache hit ratio and error rate are derived from the same all-time totals above --
+  // rates like these are meaningful as a single current snapshot, not usefully
+  // "windowed" the same way a raw count is (a week with few requests can have a wildly
+  // noisy rate), so this stays a single all-time figure rather than four more columns.
+  const cacheHitRatio = requests.all ? Math.round((cachedRequests.all / requests.all) * 100) : null;
+  const errorRate = requests.all ? Math.round((errorRequests.all / requests.all) * 1000) / 10 : null;
+
+  const topCountries = Object.entries(countryCounts)
+    .map(([country, w]) => ({ country, count: w.all, window: w }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  return { requests, pageViews, threats, cacheHitRatio, errorRate, topCountries };
 }
 
 function base64ToBytes(b64) {
