@@ -1,22 +1,30 @@
-# Lowcountry Show Tracker — Project Notes
+# Show Notice (Lowcountry Show Tracker) — Project Notes
 
-Consolidated reference for anyone (human or automated session) picking up work on this repo. Merges the GitHub `main` version (last updated 2026-09-10, through PR #24) with the Claude-project research/operations notes (last updated 2026-09-09), plus four same-day 2026-09-10 sessions: the first covering two Riverfront Park festival entries and two new standing policy decisions (Pops/jazz exclusion precedent, tiered-festival-pricing fallback); the second a full frontend UX pass (PRs #10–#17) covering favorite-artist matching against openers, storage-reliability fixes, a mobile layout overflow fix, a header utility-row reorg with new jump links, header sizing, a star-to-favorite-artist flow (including a per-artist picker for multi-artist/festival shows), and a sweep replacing every native `alert()`/`confirm()` with a consistent in-page modal; the third (PR #19) a full header/navigation redesign — a sticky title banner and sticky per-section headers, "Full List" renamed to "All Shows" with its own section, chained "Back to top"/"next section" links on every major section, and the utility-row/two-column nav from PRs #13/#16/#17 fully replaced by a single scrollable row of 4 nav pills plus a separate status row; the fourth (PRs #21–#24) rounding out that redesign — a divider between the venue pills and nav pills, sticky venue names, tighter mobile nav pills, and sticky date headers extended to every day-grouped list (All Shows, a venue's own page, My Shows, and Added This Week alike) plus a sticky "← Back" link on venue pages. Replace all prior versions with this file.
+Consolidated reference for anyone (human or automated session) picking up work on this repo. Merges the GitHub `main` version (last updated 2026-09-10, through PR #24) with the Claude-project research/operations notes (last updated 2026-09-09), plus everything from a long 2026-09-11 session: four same-day 2026-09-10 sessions carried over from the prior update (Riverfront Park festival entries + two standing policy decisions; a frontend UX pass, PRs #10–#17; a header/nav redesign, PR #19; redesign follow-ups, PRs #21–#24) — and then, on 2026-09-11 itself: the **Show Notice rebrand and domain migration** off `gigalertchs.com` onto `CHS.ShowNotice.com` (PRs #26–#31), a further round of frontend/UX fixes (PRs #32–#39), a full **admin analytics panel build-out** — subscriber/account/digest-engagement/favorited-artist&venue/starred-show/suggestion stats, each with week/month/year/all rolling-window columns, plus Cloudflare zone traffic & country data (PRs #40–#49), Workers Logs + Traces observability (PR #50), and a full-project debug/security/stability audit with 6 fixes (PR #51). Replace all prior versions with this file.
 
 ## What this is
 
-A live-music show tracker for the Charleston, SC area (site: gigalertchs.com; repo: [github.com/GigAlertCHS/Show-Tracker](https://github.com/GigAlertCHS/Show-Tracker)). Static frontend + a Cloudflare Worker backend for accounts, subscriptions, and a weekly digest email. Show data is refreshed by a separate automated research routine that pushes `shows.json` updates via PR.
+A live-music show tracker for the Charleston, SC area, branded **Show Notice**.
+- **Site:** [chs.shownotice.com](https://chs.shownotice.com/) — static frontend, served via GitHub Pages.
+- **API:** [api.chs.shownotice.com](https://api.chs.shownotice.com/) — Cloudflare Worker backend.
+- **Repo:** [github.com/ShowNotice/Show-Tracker-CHS](https://github.com/ShowNotice/Show-Tracker-CHS).
+- **Admin panel:** `admin.html`, served from the same site, owner-only (Turnstile + magic-link + `OWNER_EMAIL` check).
+
+Static frontend + a Cloudflare Worker backend for accounts, subscriptions, a weekly digest email, and (as of 2026-09-11) a full admin analytics dashboard. Show data is refreshed by a separate automated research routine that pushes `shows.json` updates via PR.
+
+**Former identity, retired 2026-09-11:** this project was previously "GigAlert CHS," served from `gigalertchs.com` (repo `GigAlertCHS/Show-Tracker`) and the Worker's `*.workers.dev` fallback URL. See "Domain migration" below — `gigalertchs.com` now 301-redirects to `chs.shownotice.com` (confirmed working on both desktop and mobile) rather than being decommissioned outright, so old links/bookmarks keep working.
 
 ## Files
 
 | File | Role |
 |---|---|
 | `index.html` | The public site. Static HTML/CSS/vanilla JS, no build step. Fetches `shows.json` client-side and renders it. Served via GitHub Pages (custom domain via `CNAME`). |
-| `worker.js` | Cloudflare Worker backend: passwordless sign-in, My Shows/Favorite Artists storage, digest email, admin stats, venue suggestions. Deployed via `.github/workflows/deploy-worker.yml`. |
-| `admin.html` | Owner-only stats dashboard. Talks to the Worker's `/api/admin/stats`. Also static, no build step. |
+| `worker.js` | Cloudflare Worker backend: passwordless sign-in, My Shows/Favorite Artists storage, digest email, admin stats (incl. Cloudflare zone analytics), venue suggestions. Deployed via `.github/workflows/deploy-worker.yml`. |
+| `admin.html` | Owner-only stats dashboard. Talks to the Worker's `/api/admin/stats`; calls it at `api.chs.shownotice.com` directly (not the `*.workers.dev` fallback — see Domain migration). Also static, no build step. |
 | `shows.json` | The show data itself: `{ dataUpdatedAt, venues, shows }`. Updated by the weekly automated research routine, not hand-edited. |
-| `wrangler.toml` | Worker deploy config: KV binding, Secrets Store bindings, cron trigger, custom domain route, plain vars. Source of truth for `wrangler deploy` — see the warning comment at the top of the file about what gets silently stripped if this file is wrong/missing. |
-| `CNAME` | GitHub Pages custom domain (`gigalertchs.com`). |
-| `.github/workflows/deploy-worker.yml` | Auto-deploys `worker.js` to Cloudflare on every push to `main` that touches `worker.js` or `wrangler.toml`. No test suite, no required review — see "Deploy process" below. |
+| `wrangler.toml` | Worker deploy config: KV binding, Secrets Store bindings, cron trigger, custom domain route, observability, plain vars. Source of truth for `wrangler deploy` — see the warning comment at the top of the file about what gets silently stripped if this file is wrong/missing. |
+| `CNAME` | GitHub Pages custom domain — now `chs.shownotice.com` (moved 2026-09-11, was `gigalertchs.com`). |
+| `.github/workflows/deploy-worker.yml` | Auto-deploys `worker.js` to Cloudflare on every push to `main` that touches `worker.js` or `wrangler.toml`. Runs `node --check` plus a duplicate-top-level-function-declaration scan as a sanity check before deploying. No test suite, no required review — see "Deploy process" below. |
 
 `index.html`/`admin.html`/`shows.json` need no separate deploy step — GitHub Pages serves them straight from the repo.
 
@@ -58,7 +66,7 @@ Show fields:
 | `subscriber:<email>` | `{ subscribedAt, unsubscribeToken }` | Presence = actively subscribed to the digest. |
 | `unsubtoken:<uuid>` | `<email>` (plain string) | Reverse lookup from a subscriber's unsubscribe token to their email. Reused as the auth credential for `/api/star-show` too — same trust level either way, since whoever holds it can already unsubscribe the person. |
 | `unsubscribed:<email>` | `{ unsubscribedAt }` | Permanent marker so a later sign-in doesn't silently re-subscribe someone who opted out. No TTL. |
-| `user:<email>` | `{ myShows: [showId...], favorites: [artistName...] }` | Both arrays length/count-capped (`MAX_SHOW_ID_LENGTH` = 150, favorites item cap 100 chars, both arrays capped to `MAX_MY_SHOWS` = 300) since this is written from unauthenticated-by-anything-but-a-token paths (`/api/star-show`) as well as the authenticated `/api/user/data`. |
+| `user:<email>` | `{ myShows: [showId...], favorites: [artistName...], createdAt?, myShowsAddedAt?, favoritesAddedAt? }` | Both arrays length/count-capped (`MAX_SHOW_ID_LENGTH` = 150, favorites item cap 100 chars, both arrays capped to `MAX_MY_SHOWS` = 300) since this is written from unauthenticated-by-anything-but-a-token paths (`/api/star-show`) as well as the authenticated `/api/user/data`. The three `*At` timestamp fields were added 2026-09-11 to drive the admin panel's week/month/year/all rolling-window stats; they self-heal via a one-time backfill on first read for any record created before this change, rather than needing a migration script — `myShows`/`favorites` themselves stay plain string arrays throughout (a deliberate side-channel design, not a schema change) so none of the extensive existing client-side code touching those two fields needed to change. |
 | `suggestion:<uuid>` | `{ submitterEmail, venueName, notes, submittedAt }` | From "Suggest a Venue." |
 | `ratelimit:<email>` | `'1'`, 60s TTL | One sign-in link request per email per minute. |
 | `ratelimit-ip:<ip>` | request count string, 1hr TTL | Best-effort per-IP cap (10/hr) on sign-in requests — not atomic; KV has no atomic increment, so a burst of simultaneous requests can overshoot the cap. A hard guarantee would need Durable Objects. Treated as a best-effort volume brake, with the per-email limit and Turnstile as the tighter controls. |
@@ -90,10 +98,12 @@ Set in Cloudflare (dashboard or Secrets Store), **never** committed:
 - `RESEND_API_KEY` — Resend email API key. Until set, `/api/auth/request-link` runs in "test mode" and returns the magic link directly in the JSON response instead of emailing it.
 - `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile bot-protection secret. **Fails open** (skips verification) if absent — deliberate, so frontend/backend can be deployed slightly out of order without locking out sign-in, but means bot protection is silently off until this is actually set.
 - `COWORK_API_SECRET` — shared secret for the automated research routine's `/api/report-conflicts` calls.
+- `RESEND_WEBHOOK_SECRET` (added 2026-09-11) — verifies Resend's delivery/open/click webhook callbacks using the Svix signing scheme (HMAC-SHA256 over `{svix-id}.{svix-timestamp}.{body}`, compared timing-safe). Feeds the admin panel's digest-engagement stats.
+- `CLOUDFLARE_ANALYTICS_TOKEN` (added 2026-09-11) — a Cloudflare API token scoped to Analytics/GraphQL read access, used by `fetchCloudflareZoneAnalytics()` to pull traffic/threat/cache/country data from Cloudflare's GraphQL Analytics API (`httpRequests1dGroups`) into the admin panel. Needs Secrets Store permissions specifically, not just an Analytics-read template — see "Deploy process" below for the same caveat on the CI deploy token.
 
-Plain vars (in `wrangler.toml`, safe to commit): `RESEND_FROM_ADDRESS`, `SITE_URL`, `WORKER_BASE_URL`, `OWNER_EMAIL`.
+Plain vars (in `wrangler.toml`, safe to commit): `RESEND_FROM_ADDRESS`, `SITE_URL`, `WORKER_BASE_URL`, `OWNER_EMAIL`, `CLOUDFLARE_ZONE_ID` (added 2026-09-11 — not secret, just identifies which zone `fetchCloudflareZoneAnalytics` queries).
 
-**Secrets Store secret names do not match their binding names** (cost real debugging time): bindings are uppercase (what `worker.js` reads off `env`), but the actual secret names in the store are `RESEND_API_KEY` (uppercase), `turnstile-secret-key` (lowercase, hyphenated), `cowork-api-secret` (lowercase, hyphenated). Store ID is `30c772729ee04e95b2d1ee57b4be87fd`. KV namespace is `SHOW_TRACKER_KV`, id `d6ce7eeb579342ddaab94ae9560ddfc2`.
+**Secrets Store secret names do not match their binding names** (cost real debugging time): bindings are uppercase (what `worker.js` reads off `env`), but the actual secret names in the store are `RESEND_API_KEY` (uppercase), `turnstile-secret-key` (lowercase, hyphenated), `cowork-api-secret` (lowercase, hyphenated), `resend-webhook-secret` (lowercase, hyphenated), `cloudflare-analytics-token` (lowercase, hyphenated). Store ID is `30c772729ee04e95b2d1ee57b4be87fd`. KV namespace is `SHOW_TRACKER_KV`, id `d6ce7eeb579342ddaab94ae9560ddfc2`.
 
 `wrangler.toml` is the deploy source of truth — anything a deploy needs that isn't declared there gets silently dropped. This has happened twice: once stripping the KV binding (broke sign-in entirely) and once stripping the Secrets Store bindings (broke magic-link email and silently disabled Turnstile). Read the comments at the top of that file before touching it.
 
@@ -108,7 +118,8 @@ Other deploy notes:
 - `cloudflare/wrangler-action` swallows Wrangler's own output and reports only "exit code 1," which made two separate failures impossible to diagnose. The workflow now calls `npx wrangler@4 deploy` directly as a plain `run:` step, plus a `--dry-run` validation step first — keep it that way, since the visible error output is what finally solved those failures.
 - The `CLOUDFLARE_API_TOKEN` used by GitHub Actions needs Secrets Store permissions, not just Workers Scripts. A token made from the "Edit Cloudflare Workers" template alone fails with error 10021 on any deploy touching Secrets Store bindings.
 - The Cowork automation path (for the weekly data-update routine) was abandoned — its GitHub connector fails OAuth against the official GitHub MCP server. Weekly data updates instead run through a **Claude Code Routine**: cloud-hosted, scheduled, pushes to a `claude/`-prefixed branch and opens a PR for review rather than committing straight to main.
-- `test_worker.js` (a 30-test suite referenced in older notes) is not in the repo and has never been located.
+- `test_worker.js` (a 30-test suite referenced in older notes) is not in the repo and has never been located. **No automated test suite exists** — every deploy this session was validated manually (`node --check`, the duplicate-declaration scan, and the `code-review` skill) rather than by a test run. Worth building a small smoke-test suite for the Worker's request handlers eventually; flagged as an open suggestion, not yet actioned.
+- **Workers Logs + Traces observability** (added 2026-09-11, `[observability.logs]`/`[observability.traces]` in `wrangler.toml`, `head_sampling_rate = 1`, `persist = true` on both) is declared in config for the same reason every other binding is — turning it on in the dashboard alone wouldn't survive the next deploy. Optional; nothing in the Worker depends on it to function.
 
 ## Incident history
 
@@ -133,6 +144,17 @@ If a commit/PR title doesn't match its diff size, or an empty PR body sits on a 
 - **Low**: `/api/report-conflicts`'s `conflicts` array had no length cap, unlike every other caller-supplied input in the file.
 - **Low**: the session token briefly sits in the URL after a magic-link redirect (`index.html` already strips it via `history.replaceState`, but a `Referer` leak to third-party loads — Google Fonts, Turnstile — was still possible in that window) — added `<meta name="referrer" content="same-origin">`.
 
+### 2026-09-11: full-project audit, 6 findings, all fixed in PR #51
+
+Ran on explicit request ("debug and clean up the entire project in all respects... check all security and stability aspects") via the `code-review` skill (whole-project pass, `max` effort) plus a manual security sweep on top. All 6 verified and fixed:
+
+- **Correctness/data-race**: `index.html`'s `syncWithServer()` resolved `INITIALIZED` but not `STORAGE_READY` — a star-toggle's own `loadStorageOnce()` call, if it happened to be the first one after a fresh sign-in/sync, could re-read stale pre-sync `localStorage` and silently clobber the just-added star. Fixed by resolving `STORAGE_READY` too.
+- **Stability/lockout**: `admin.html`'s `loadStats()` had no handling for a `401` (expired/invalid session) — the owner would get stuck on a raw error with no way back short of manually clearing site data. Now clears the stored session and re-renders the sign-in form.
+- **Dead code**: `cardHTML()`'s `isNew` parameter (drives the "New" badge) was hardcoded `false` at both call sites, so the badge could never render. Wired to a new shared `recentAddedCutoff()` helper — this also caught a real inconsistency, since the site's own "Added This Week" cutoff had drifted to 10 days while the digest email used 7; now both use 7.
+- **Fragile config**: `admin.html`'s `WORKER_BASE_URL` still pointed at the raw `*.workers.dev` fallback URL. Switched to `api.chs.shownotice.com`, removing a silent dependency on `wrangler.toml`'s `workers_dev = true` staying enabled forever.
+- **Performance**: `handleAdminStats` read KV in four sequential per-key loops (subscribers, unsubscribes, users, suggestions) — latency scaled linearly with total record count. Batched each loop via `Promise.all`.
+- **Manual sweep, no fix needed**: re-confirmed Turnstile + 60s per-email rate limit + length caps + `<>` rejection are all intact on `handleSuggestVenue`, and spot-checked `escapeHtml()` usage on less-obvious `innerHTML` sites (venue/festival chips) — no further issues found.
+
 ## Security posture (audited and fixed)
 
 - **All rendered data is escaped.** `index.html` and `admin.html` both have an `escapeHtml()` helper applied to every interpolated value — this matters more than it used to, since `shows.json` is now written by an automated agent scraping venue websites, making a malformed venue listing a plausible injection path, not a hypothetical one.
@@ -140,6 +162,43 @@ If a commit/PR title doesn't match its diff size, or an empty PR body sits on a 
 - **Input validation is applied on both sides.** Favorite artist names and venue suggestions reject angle brackets and enforce length limits in both the browser and the Worker. Server-side is the real gate; client-side just prevents the value from rendering locally before any round-trip.
 - **Admin authorization is server-enforced** (`handleAdminStats` checks the session email against `OWNER_EMAIL`), not merely hidden in the UI — correct and should stay that way, since that endpoint exposes other users' email addresses.
 - The per-IP sign-in rate limit's non-atomic KV race (see KV table above) is a known, accepted limitation, not an oversight.
+
+## Domain migration (2026-09-11): gigalertchs.com → CHS.ShowNotice.com
+
+The project rebranded from "GigAlert CHS" to **Show Notice** and moved off `gigalertchs.com` onto `chs.shownotice.com`, following a pre-written migration plan. Summary of what changed:
+
+- **GitHub Pages custom domain**: `CNAME` updated from `gigalertchs.com` to `chs.shownotice.com` (PR #27).
+- **Site/Worker config**: `SITE_URL`, `WORKER_BASE_URL`, and every hardcoded reference in `index.html`/`admin.html` repointed at the new domain (PR #28).
+- **Worker custom domain route**: `api.chs.shownotice.com` wired via `[[routes]]` in `wrangler.toml` (`custom_domain = true`, `zone_name = "shownotice.com"`) so the API isn't dependent on the `*.workers.dev` fallback.
+- **Old domain kept alive as a redirect, not decommissioned**: `gigalertchs.com` now 301-redirects to the new domain via a Cloudflare Redirect Rule — confirmed working via a direct `curl -I` test (301 status, correct `Location` header) and confirmed by the user on both desktop and mobile browsers, so existing bookmarks/links/search results keep working.
+- **Email sender identity**: `RESEND_FROM_ADDRESS` updated to `Lowcountry Show Notice <shows@shownotice.com>` (PR #31); owner contact address is `admin@ShowNotice.com`.
+- **Stale infrastructure removed**: the old `show-tracker-api.gigalertchs.workers.dev` Worker route/domain entry was confirmed no longer needed (everything now goes through `api.chs.shownotice.com`) and removed from the Worker's Domains panel in the Cloudflare dashboard — a dashboard-side cleanup step, not a `wrangler.toml` change.
+- **Cloudflare Web Analytics and Zone-level features** (bot detection, WAF, etc.) enabled on the new `shownotice.com` zone as part of the same session — see "Admin analytics panel & Cloudflare integration" below for what actually got wired into the app itself.
+
+If a future session finds any remaining `gigalertchs` references (in code comments, email templates, or elsewhere), that's leftover from the old identity and should be updated to match — the redirect exists so *external* links keep working, not so the codebase can keep referencing the old name internally.
+
+## Admin analytics panel & Cloudflare integration (2026-09-11)
+
+`admin.html` was substantially built out from a bare stats page into a full analytics dashboard, driven by the user's "what else of use can we track without getting too esoteric or nosy" → "add them all" → "add week/month/year/all columns" progression. Everything below is server-computed in `handleAdminStats` (`worker.js`) and rendered in `admin.html`; **no client-side tracking/cookies were added** — all app-level numbers are derived from existing KV records (subscribers, users, suggestions) plus the timestamp-backfill fields described in the KV table above, and the Cloudflare numbers come from Cloudflare's own edge/zone data, not client-side beacons.
+
+**App-level stats, each broken out by rolling week/month/year/all-time windows** (a `windowCounts`/`windowGroupedCounts` helper pattern — last 7/30/365 days from *now*, not calendar periods):
+- Subscribers (signups, unsubscribes, net).
+- Accounts created, and per-account My Shows/Favorite Artists counts.
+- Digest email engagement (opens/clicks), sourced from Resend's webhook via `RESEND_WEBHOOK_SECRET` (see Secrets section) — this is why that secret and its Svix-signature verification exist.
+- Top favorited artists and venues.
+- Top starred shows.
+- Venue suggestions submitted.
+
+**Cloudflare zone data** (via `fetchCloudflareZoneAnalytics()`, `worker.js`, using `CLOUDFLARE_ANALYTICS_TOKEN` and `CLOUDFLARE_ZONE_ID` against Cloudflare's GraphQL Analytics API, `httpRequests1dGroups`):
+- Requests / page views.
+- Threats blocked.
+- Cache hit ratio and error rate.
+- Top countries by traffic — rendered with full country names, not ISO codes.
+- The query window is deliberately capped at 358 days, not the full year, to stay under Cloudflare's 52-week-1-day-1-hour query-span limit — querying a full calendar year would occasionally exceed it depending on leap-year/DST alignment.
+
+**Layout**: reworked from a flat stat dump into grouped sections with wider numeric columns (so larger numbers don't get clipped as the dataset grows) and click-to-sort tables.
+
+**What this doesn't cover** (deliberately, per the "not too esoteric or nosy" framing that shaped this feature): no per-user browsing/click tracking, no IP-level user profiling, no third-party analytics/ad trackers. Everything shown is either an app-necessary record (who's subscribed, what they starred) or Cloudflare's own aggregate edge telemetry.
 
 ## Digest email
 
@@ -356,6 +415,10 @@ DJ nights/dance parties/raves, themed party nights with no booked act, podcast t
 - **Header/navigation redesign, 2026-09-10 (PR #19)** — sticky title banner, sticky per-section headers, "Full List" renamed to "All Shows" with its own section, chained "Back to top"/"next section" links on 5 sections, and the PR #13/#16/#17 utility-row/two-column nav fully replaced by a single-row nav-pill layout. See "Header layout & mobile responsiveness" above.
 - **Redesign follow-ups, 2026-09-10 (PRs #21–#24)** — pill-row divider, sticky venue names, tighter mobile nav pills, sticky date headers extended to all four show lists (My Shows/Added This Week joining All Shows/venue pages, via a new shared `groupByDayHTML()` helper), `flatDate` removed as dead code, and a sticky "← Back" link on venue pages. See "Header layout & mobile responsiveness" above.
 - **Branch cleanup, 2026-09-10** — "Automatically delete head branches" confirmed enabled and working (every PR from #18 on auto-deleted its branch on merge); the 13 legacy pre-setting branches were deleted manually. `main` is now the repo's only branch. See "Repo notes" below.
+- **Domain migration, 2026-09-11 (PRs #26–#31)** — moved off `gigalertchs.com` onto `chs.shownotice.com`/`api.chs.shownotice.com`, old domain kept alive as a working 301 redirect, stale `*.workers.dev` Worker route removed from the dashboard. See "Domain migration" above.
+- **Admin analytics panel build-out, 2026-09-11 (PRs #40–#49)** — full week/month/year/all-time stats across subscribers, accounts, digest engagement, favorited artists/venues, starred shows, and suggestions, plus Cloudflare zone traffic/threats/cache/error-rate/country data, redesigned layout. See "Admin analytics panel & Cloudflare integration" above.
+- **Workers Logs + Traces observability declared in `wrangler.toml`, 2026-09-11 (PR #50).**
+- **Full-project debug/security/stability audit, 2026-09-11 (PR #51)** — 6 findings (1 data race, 1 lockout bug, 1 dead-code/unfinished feature, 1 fragile config, 1 performance issue, 1 data-consistency mismatch), all fixed; manual security sweep found nothing further. See "2026-09-11: full-project audit" under Incident history above.
 
 **Not yet resolved:**
 1. **AXS/Bandsintown bot detection** — AXS (for CMH pricing) and Bandsintown (for New Realm and Tin Roof) are confirmed reachable by some clients but bot-blocked by whatever fetch mechanism the routine actually uses. Not fixable via the domain allowlist. Worth investigating whether the routine's fetch tool can send browser-like headers, or whether this needs a different approach (e.g. browser automation).
@@ -365,8 +428,12 @@ DJ nights/dance parties/raves, themed party nights with no booked act, podcast t
 5. **Confirm whether AXS shows face-value price for Charleston Music Hall** once the bot-detection block is resolved by some means (item 1) — try again from a different network context/client if possible.
 6. **Turn on required PR review for `main`**, if not already in place — the CI sanity-check step catches the specific corruption class that happened once (duplicate function declarations) but doesn't replace human review for anything else.
 7. **Riverfront Revival Friday/Saturday day-split** — currently sourced from AXS and only covers 10 of 17 acts; re-check once the festival publishes its own daily set-time page (see "Standing known issues" above).
+8. **No automated test suite** (see "Deploy process" above) — all validation this session was manual. Worth a small smoke-test suite for the Worker's request handlers if the project keeps growing.
+9. **Admin session-expiry UX** — a 401 now recovers gracefully (PR #51) but there's no advance warning before a session expires; worth a "session expiring soon" notice if the owner finds themselves logged out mid-task often. Not actioned — a suggestion, not a confirmed problem.
+10. **Suggestion-form rate limit is per-KV-key, not atomic** — same class of best-effort limitation as the per-IP sign-in rate limit (see Security posture above); Turnstile is the tighter control in front of it. Low risk, not worth added complexity (e.g. Durable Objects) unless abuse is actually observed.
 
 ## Repo notes
 
 - `cowork-task-instructions.md` was rewritten from scratch in an earlier session.
 - **Branch hygiene is now clean.** "Automatically delete head branches" is enabled and confirmed working (every PR from #18 on had its branch auto-deleted on merge). The 13 legacy branches that predated the setting (`digest-email-header-border`, `fav-storage-race-fix`, `favorite-match-openers`, `header-size-tweak`, `notes-and-festival-data`, `project-notes-consolidated`, `project-notes-update-2`, `rfp-venue-url-wrap`, `riverfront-revival-venue-fix`, `star-favorite-prompt`, `star-modal-and-columns`, `utility-row-alignment-fix`, `utility-row-jump-links`) were deleted manually as of 2026-09-10 — `main` is now the only branch in the repo. (Note for any future automated session: git push credentials here get an HTTP 403 specifically on branch **deletion**, confirmed 2026-09-10 — a deliberate scope restriction, not a bug, and no GitHub MCP tool exists for it either — so an automated session still can't do this cleanup itself if it's ever needed again; it has to be done manually.)
+- **A single long remote session (2026-09-11) reused one branch name, `claude/kind-brahmagupta-wmw4ya`, across ~26 sequential PRs (#26–#51)** — each PR merged, then the same branch name was recreated from the new `main` tip for the next round of work, rather than a fresh branch per change. This is a property of that session's designated-branch setup, not a hygiene regression; branch auto-delete-on-merge still applies normally between rounds. A future session picking up work here should still create/reuse its own designated branch per its own instructions rather than assuming a fixed name.
