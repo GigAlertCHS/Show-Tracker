@@ -182,8 +182,15 @@ function renderStats(data){
     ? `<div class="error" style="text-align:left;padding:8px 0;">Couldn't load: ${escapeHtml(cf.error)}</div>`
     : windowTableHtml([
         { label: 'Requests', w: cf.requests },
-        { label: 'Page views', w: cf.pageViews }
-      ], 'cloudflare') + '<p class="muted" style="font-size:11px;margin:8px 0 0;">Unique visitors aren\'t shown here (can\'t be summed accurately across days) -- see Cloudflare\'s own Web Analytics dashboard for that.</p>';
+        { label: 'Page views', w: cf.pageViews },
+        { label: 'Threats blocked', w: cf.threats }
+      ], 'cloudflare')
+      + `<p class="muted" style="font-size:11px;margin:8px 0 0;">All-time cache hit rate ${cf.cacheHitRatio === null ? '—' : cf.cacheHitRatio + '%'} &middot; error rate (4xx/5xx) ${cf.errorRate === null ? '—' : cf.errorRate + '%'}</p>`
+      + `<p class="muted" style="font-size:11px;margin:4px 0 0;">Unique visitors aren't shown here (can't be summed accurately across days) -- see Cloudflare's own Web Analytics dashboard for that.</p>`;
+
+  const countriesHtml = !cf.error && cf.topCountries.length
+    ? windowTableHtml(cf.topCountries.map(c => ({ label: c.country, w: c.window })), 'countries')
+    : '<div class="empty">No country data yet.</div>';
 
   const suggestionsHtml = data.suggestions.list.length
     ? data.suggestions.list.map(s => `<div class="stat-row" style="display:block;"><div><strong>${escapeHtml(s.venueName)}</strong> <span class="muted">— ${escapeHtml(s.submitterEmail)} &middot; ${escapeHtml(fmtDate(s.submittedAt))}</span></div>${s.notes ? `<div class="muted" style="margin-top:4px;">${escapeHtml(s.notes)}</div>` : ''}</div>`).join('')
@@ -196,6 +203,7 @@ function renderStats(data){
     <div class="block"><h2>Account list</h2>${usersHtml}</div>
     <div class="block"><h2>Digest email engagement</h2>${digestHtml}</div>
     <div class="block"><h2>Site traffic (Cloudflare)</h2>${cloudflareHtml}</div>
+    <div class="block"><h2>Top countries (Cloudflare)</h2>${countriesHtml}</div>
     <div class="block"><h2>Top favorited artists</h2>${artistsHtml}</div>
     <div class="block"><h2>Top favorited venues</h2>${venuesHtml}</div>
     <div class="block"><h2>Most-starred upcoming shows</h2>${starredShowsHtml}</div>
