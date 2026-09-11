@@ -24,10 +24,18 @@
   .signin-box input{width:100%;max-width:280px;padding:10px 12px;border-radius:6px;border:1px solid var(--line);background:var(--ink);color:var(--text);font-size:14px;margin-bottom:10px;}
   .signin-box button, .refresh-btn{padding:10px 20px;border-radius:6px;border:none;background:var(--teal);color:#0b1512;font-weight:600;font-size:14px;cursor:pointer;}
   .error{color:var(--red);font-size:13px;padding:12px;text-align:center;}
-  .window-table{width:100%;border-collapse:collapse;font-size:13px;}
-  .window-table th, .window-table td{padding:6px 4px;text-align:right;}
-  .window-table th:first-child, .window-table td:first-child{text-align:left;}
-  .window-table th{color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--line);}
+  /* table-layout:fixed + the same fixed width on every numeric column, on every
+     instance of this table across every block, is what makes the Week/Month/Year/All
+     columns line up vertically down the page -- every .window-table shares the same
+     overall width (all inside the same max-width .wrap), so identical column widths
+     land at identical horizontal positions regardless of how long each table's own
+     label column content is. */
+  .window-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+  .window-table th, .window-table td{padding:6px 8px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .window-table th:first-child, .window-table td:first-child{text-align:left;padding-left:0;}
+  .window-table th:not(:first-child), .window-table td:not(:first-child){width:54px;}
+  .window-table th{color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;}
+  .window-table th:hover{color:var(--text);}
   .window-table td{border-bottom:1px solid var(--line);}
   .window-table tr:last-child td{border-bottom:none;}
 </style>
@@ -95,13 +103,35 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// Last-loaded stats and each table's current sort, keyed by table id -- clicking a
+// header re-sorts just that table and re-renders from this same data rather than
+// re-fetching, so sort state persists across a click but resets on the next Refresh.
+let LAST_STATS_DATA = null;
+const SORT_STATE = {};
+
+function sortRows(rows, state){
+  const mul = state.dir === 'asc' ? 1 : -1;
+  return rows.slice().sort((a, b) => {
+    const av = state.key === 'label' ? a.label : a.w[state.key];
+    const bv = state.key === 'label' ? b.label : b.w[state.key];
+    return typeof av === 'string' ? mul * av.localeCompare(bv) : mul * (av - bv);
+  });
+}
+
 // Renders a { '': '', Week, Month, Year, All } table for any set of rows shaped
 // {label, w:{week,month,year,all}} -- used for everything with a rolling-window
 // breakdown (new subscribers, unsubscribes, suggestions, digest engagement) so they
-// all read the same way instead of each inventing their own layout.
-function windowTableHtml(rows){
-  const header = '<tr><th></th><th>Week</th><th>Month</th><th>Year</th><th>All</th></tr>';
-  const body = rows.map(r => `<tr><td>${escapeHtml(r.label)}</td><td>${escapeHtml(r.w.week)}</td><td>${escapeHtml(r.w.month)}</td><td>${escapeHtml(r.w.year)}</td><td>${escapeHtml(r.w.all)}</td></tr>`).join('');
+// all read the same way instead of each inventing their own layout. tableId must be
+// unique per table on the page -- it's both the sort-state key and how the click
+// handler below knows which table's rows to re-sort.
+function windowTableHtml(rows, tableId){
+  const state = SORT_STATE[tableId] || { key: 'all', dir: 'desc' };
+  SORT_STATE[tableId] = state;
+  const sorted = sortRows(rows, state);
+  const arrow = k => state.key === k ? (state.dir === 'asc' ? ' ▲' : ' ▼') : '';
+  const th = (k, label) => `<th data-table-id="${tableId}" data-sort-key="${k}">${label}${arrow(k)}</th>`;
+  const header = `<tr>${th('label', '')}${th('week', 'Week')}${th('month', 'Month')}${th('year', 'Year')}${th('all', 'All')}</tr>`;
+  const body = sorted.map(r => `<tr><td>${escapeHtml(r.label)}</td><td>${escapeHtml(r.w.week)}</td><td>${escapeHtml(r.w.month)}</td><td>${escapeHtml(r.w.year)}</td><td>${escapeHtml(r.w.all)}</td></tr>`).join('');
   return `<table class="window-table">${header}${body}</table>`;
 }
 
@@ -114,22 +144,22 @@ function renderStats(data){
   const usersHtml = data.users.list.length
     ? data.users.list.map(u => `<div class="stat-row"><span>${escapeHtml(u.email)}</span><span class="muted">${escapeHtml(u.myShowsCount)} shows &middot; ${escapeHtml(u.favoritesCount)} favorites</span></div>`).join('')
     : '<div class="empty">No accounts yet.</div>';
-  const usersWindowHtml = windowTableHtml([{ label: 'New accounts', w: data.users.window }]);
+  const usersWindowHtml = windowTableHtml([{ label: 'New accounts', w: data.users.window }], 'users');
 
   // Backfilled entries (see handleAdminStats) all share the same added-at moment (the
   // first admin-panel load after that backfill ran), so their week/month/year columns
   // will look identical to their all-time count until real new activity comes in --
   // expected, not a bug.
   const artistsHtml = data.topFavoriteArtists.length
-    ? windowTableHtml(data.topFavoriteArtists.map(a => ({ label: a.artist, w: a.window })))
+    ? windowTableHtml(data.topFavoriteArtists.map(a => ({ label: a.artist, w: a.window })), 'artists')
     : '<div class="empty">No favorite artists tracked yet.</div>';
 
   const venuesHtml = data.topVenues.length
-    ? windowTableHtml(data.topVenues.map(v => ({ label: v.venue, w: v.window })))
+    ? windowTableHtml(data.topVenues.map(v => ({ label: v.venue, w: v.window })), 'venues')
     : '<div class="empty">No starred upcoming shows yet.</div>';
 
   const starredShowsHtml = data.topStarredShows.length
-    ? windowTableHtml(data.topStarredShows.map(s => ({ label: `${s.band} — ${s.venue} · ${fmtDate(new Date(s.date + 'T12:00:00').getTime())}`, w: s.window })))
+    ? windowTableHtml(data.topStarredShows.map(s => ({ label: `${s.band} — ${s.venue} · ${fmtDate(new Date(s.date + 'T12:00:00').getTime())}`, w: s.window })), 'shows')
     : '<div class="empty">No starred upcoming shows yet.</div>';
 
   const d = data.digestStats;
@@ -138,14 +168,14 @@ function renderStats(data){
     { label: 'Delivered', w: d.delivered },
     { label: 'Opened', w: d.opened },
     { label: 'Clicked', w: d.clicked }
-  ]) + `<p class="muted" style="font-size:11px;margin:8px 0 0;">All-time open rate ${pct(d.opened.all, d.delivered.all)} &middot; click rate ${pct(d.clicked.all, d.delivered.all)}</p>`;
+  ], 'digest') + `<p class="muted" style="font-size:11px;margin:8px 0 0;">All-time open rate ${pct(d.opened.all, d.delivered.all)} &middot; click rate ${pct(d.clicked.all, d.delivered.all)}</p>`;
 
   const subsWindowHtml = windowTableHtml([
     { label: 'New subscribers', w: data.subscribers.window },
     { label: 'Unsubscribed', w: data.unsubscribed.window }
-  ]);
+  ], 'subs');
 
-  const suggestionsWindowHtml = windowTableHtml([{ label: 'Suggestions', w: data.suggestions.window }]);
+  const suggestionsWindowHtml = windowTableHtml([{ label: 'Suggestions', w: data.suggestions.window }], 'suggestions');
 
   const cf = data.cloudflareStats;
   const cloudflareHtml = cf.error
@@ -153,7 +183,7 @@ function renderStats(data){
     : windowTableHtml([
         { label: 'Requests', w: cf.requests },
         { label: 'Page views', w: cf.pageViews }
-      ]) + '<p class="muted" style="font-size:11px;margin:8px 0 0;">Unique visitors aren\'t shown here (can\'t be summed accurately across days) -- see Cloudflare\'s own Web Analytics dashboard for that.</p>';
+      ], 'cloudflare') + '<p class="muted" style="font-size:11px;margin:8px 0 0;">Unique visitors aren\'t shown here (can\'t be summed accurately across days) -- see Cloudflare\'s own Web Analytics dashboard for that.</p>';
 
   const suggestionsHtml = data.suggestions.list.length
     ? data.suggestions.list.map(s => `<div class="stat-row" style="display:block;"><div><strong>${escapeHtml(s.venueName)}</strong> <span class="muted">— ${escapeHtml(s.submitterEmail)} &middot; ${escapeHtml(fmtDate(s.submittedAt))}</span></div>${s.notes ? `<div class="muted" style="margin-top:4px;">${escapeHtml(s.notes)}</div>` : ''}</div>`).join('')
@@ -188,11 +218,27 @@ async function loadStats(){
       el.innerHTML = `<div class="error">${escapeHtml(data.error)}${data.error === 'Not authorized' ? ' — this page only works for the site owner account.' : ''}</div>`;
       return;
     }
+    LAST_STATS_DATA = data;
     renderStats(data);
   }catch(e){
     el.innerHTML = '<div class="error">Failed to load stats. Try refreshing.</div>';
   }
 }
+
+// Delegated so it keeps working across every renderStats() rebuild -- clicking a
+// column header re-sorts just that one table (toggling direction on a repeat click of
+// the same column) and re-renders from the already-loaded data, no re-fetch needed.
+document.getElementById('content').addEventListener('click', (e) => {
+  const th = e.target.closest('th[data-sort-key]');
+  if (!th || !LAST_STATS_DATA) return;
+  const tableId = th.getAttribute('data-table-id');
+  const key = th.getAttribute('data-sort-key');
+  const current = SORT_STATE[tableId] || { key: 'all', dir: 'desc' };
+  SORT_STATE[tableId] = current.key === key
+    ? { key, dir: current.dir === 'asc' ? 'desc' : 'asc' }
+    : { key, dir: key === 'label' ? 'asc' : 'desc' };
+  renderStats(LAST_STATS_DATA);
+});
 
 (function init(){
   const params = new URLSearchParams(window.location.search);

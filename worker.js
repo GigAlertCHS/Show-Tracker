@@ -271,8 +271,13 @@ async function fetchCloudflareZoneAnalytics(env) {
   const zoneTag = env.CLOUDFLARE_ZONE_ID;
   if (!token || !zoneTag) return { error: 'Not configured yet' };
 
+  // Cloudflare caps a single query's time range at 52w1d1h. A naive 365-day span trips
+  // that (confirmed against a live error: "...spans 52w1d18h56m..." for exactly this
+  // calculation) once date-truncating `since` down to midnight is factored in -- 358
+  // days leaves a safe multi-day margin under the cap without meaningfully changing
+  // what "the last year" shows.
   const until = new Date().toISOString().slice(0, 10);
-  const since = new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+  const since = new Date(Date.now() - 358 * 86400000).toISOString().slice(0, 10);
 
   const query = `
     query ZoneAnalytics($zoneTag: String!, $since: String!, $until: String!) {
